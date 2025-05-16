@@ -1,0 +1,39 @@
+@import "tailwindcss";
+// tailwind.config.js
+module.exports = {
+  content: [
+    './app/views/**/*.html.erb',
+    './app/helpers/**/*.rb',
+    './app/javascript/**/*.js'
+  ],
+  theme: {
+    extend: {
+      // カラーパレットの拡張
+      colors: {
+        'primary': {
+          light: '#4da6ff',
+          DEFAULT: '#0066cc',
+          dark: '#004c99',
+        },
+        'secondary': '#ff6b6b',
+      },
+      // フォントサイズの拡張
+      fontSize: {
+        'xxs': '0.625rem',
+      },
+      // コンテナのカスタマイズ
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+        },
+      },
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+}

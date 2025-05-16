@@ -75,3 +75,7 @@ gem 'pry-rails'
 group :production do
   gem "pg", "~> 1.2"
 end
+
+gem 'tailwindcss-rails'
+
+gem 'image_processing', '~> 1.2'
