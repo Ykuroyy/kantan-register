@@ -1,42 +1,38 @@
-<div class="max-w-4xl mx-auto">
-  <div class="mb-6 flex justify-between items-center">
-    <h1 class="text-3xl font-bold"><%= @product.name %></h1>
-    <div class="space-x-2">
-      <%= link_to "編集", edit_product_path(@product), class: "bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded" %>
-      <%= link_to "戻る", products_path, class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded" %>
+<!-- app/views/products/show.html.erb -->
+<div style="max-width: 42rem; margin: 2.5rem auto 0;">
+  <div style="background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+    <% if @product.image.attached? %>
+      <%= image_tag @product.image, style: "width: 100%; height: 16rem; object-fit: cover;" %>
+    <% else %>
+      <div style="width: 100%; height: 16rem; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center;">
+        <span style="color: #6b7280;">画像なし</span>
+      </div>
+    <% end %>
+    
+    <div style="padding: 1.5rem;">
+      <h1 style="font-size: 1.875rem; font-weight: bold; margin-bottom: 0.5rem;"><%= @product.name %></h1>
+      <p style="color: #059669; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">¥<%= number_with_delimiter(@product.price) %></p>
+      
+      <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <a href="<%= products_path %>" style="color: #3b82f6; text-decoration: none;">← 商品一覧に戻る</a>
+        
+        <div style="display: flex; gap: 0.5rem;">
+          <a href="<%= edit_product_path(@product) %>" 
+             style="background-color: #f59e0b; color: white; padding: 0.5rem 1rem; border-radius: 0.25rem; text-decoration: none; display: inline-block;">
+            編集
+          </a>
+          
+          <form action="<%= product_path(@product) %>" method="post" style="display: inline-block; margin: 0; padding: 0;">
+            <input type="hidden" name="_method" value="delete">
+            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+            <button type="submit" 
+                    style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.25rem; border: none; cursor: pointer;"
+                    onclick="return confirm('本当に削除しますか？');">
+              削除
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-    <div class="md:flex">
-      <div class="md:w-1/2">
-        <% if @product.image.attached? %>
-          <%= image_tag @product.image, class: "w-full h-auto object-cover" %>
-        <% else %>
-          <div class="w-full h-64 bg-gray-200 flex items-center justify-center">
-            <span class="text-gray-500">画像なし</span>
-          </div>
-        <% end %>
-      </div>
-      <div class="p-6 md:w-1/2">
-        <div class="mb-4">
-          <h2 class="text-sm text-gray-600 uppercase tracking-wide">商品情報</h2>
-          <p class="text-3xl font-bold text-green-600">¥<%= number_with_delimiter(@product.price) %></p>
-        </div>
-
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold mb-2">商品説明</h3>
-          <p class="text-gray-700"><%= @product.description.present? ? @product.description : "説明はありません" %></p>
-        </div>
-
-        <div class="border-t pt-4">
-          <div class="flex justify-between text-sm text-gray-600">
-            <span>商品ID</span>
-            <span><%= @product.id %></span>
-          </div>
-          <div class="flex justify-between text-sm text-gray-600 mt-2">
-            <span>登録日</span>
-            <span><%= l @product.created_at, format: :long %></span>
-          </div>
-          <div class="flex justify-between text-sm text-gray-600 mt-2">
-            <span>最終更新日
+</div>
