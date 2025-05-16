@@ -1,28 +1,24 @@
 default: &default
-  adapter: mysql2
   encoding: utf8
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password:
-  socket: /tmp/mysql.sock
-
-
 
 development:
   <<: *default
-  database: kantan_register_development
-
-
+  adapter: mysql2
+  username: root
+  password:
+  host: localhost
+  database: kantan-register_development
 
 test:
   <<: *default
-  database: kantan_register_test
-
-
-
+  adapter: mysql2
+  username: root
+  password:
+  host: localhost
+  database: kantan-register_test
 
 production:
+  <<: *default
   adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   url: <%= ENV['DATABASE_URL'] %>

@@ -8,8 +8,6 @@ gem "rails", "~> 7.1.0"
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 
-# PostgreSQL gem をトップレベルに移動
-gem 'pg', '~> 1.2'
 
 # Use mysql as the database for Active Record
 # gem "mysql2", "~> 0.5"
@@ -74,3 +72,6 @@ end
 
 gem 'pry-rails'
 
+group :production do
+  gem 'pg'
+end
