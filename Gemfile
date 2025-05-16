@@ -73,5 +73,5 @@ end
 gem 'pry-rails'
 
 group :production do
-  gem 'pg'
+  gem "pg", "~> 1.2"
 end
