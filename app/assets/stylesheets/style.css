@@ -1,0 +1,123 @@
+.form-heading {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.form-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+}
+
+.form-card {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 16px;
+  width: 250px;
+  text-align: center;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+}
+
+.preview-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.preview-image.no-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+  background-color: #eee;
+  color: #666;
+  margin: 0 auto 10px;
+  font-size: 12px;
+}
+
+.form-field {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 共通ボタンベースクラス */
+.form-button {
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 5px;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.form-button:hover {
+  transform: scale(0.95); /* 押されたような動き */
+}
+
+.form-button:focus {
+  outline: none; /* 黒い枠を消す */
+}
+
+/* 色バリエーション */
+.form-button.yellow {
+  background-color: #facc15; /* 明るい黄色 */
+  color: #000;
+}
+
+.form-button.gray {
+  background-color: #6b7280; /* グレー */
+  color: #fff;
+}
+
+.form-button.red {
+  background-color: #dc2626; /* 赤 */
+  color: #fff;
+}
+
+.form-button.blue {
+  background-color: #3b82f6; /* 青（必要であれば） */
+  color: #fff;
+}
+
+
+
+
+/* 共通 */
+.indispensable {
+  background: #ea352d;
+  margin-left: 8px;
+  padding: 3px;
+  border-radius: 2px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+
+.optional {
+  background: #666;
+  margin-left: 8px;
+  padding: 3px;
+  border-radius: 2px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+

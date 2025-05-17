@@ -1,38 +1,23 @@
-<!-- app/views/products/show.html.erb -->
-<div style="max-width: 42rem; margin: 2.5rem auto 0;">
-  <div style="background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+<h1 class="form-heading">商品詳細</h1>
+
+<div class="form-container">
+  <div class="form-card">
     <% if @product.image.attached? %>
-      <%= image_tag @product.image, style: "width: 100%; height: 16rem; object-fit: cover;" %>
+      <%= image_tag @product.image, class: "preview-image" %>
     <% else %>
-      <div style="width: 100%; height: 16rem; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center;">
-        <span style="color: #6b7280;">画像なし</span>
-      </div>
+      <p>画像なし</p>
     <% end %>
-    
-    <div style="padding: 1.5rem;">
-      <h1 style="font-size: 1.875rem; font-weight: bold; margin-bottom: 0.5rem;"><%= @product.name %></h1>
-      <p style="color: #059669; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">¥<%= number_with_delimiter(@product.price) %></p>
-      
-      <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
-        <a href="<%= products_path %>" style="color: #3b82f6; text-decoration: none;">← 商品一覧に戻る</a>
-        
-        <div style="display: flex; gap: 0.5rem;">
-          <a href="<%= edit_product_path(@product) %>" 
-             style="background-color: #f59e0b; color: white; padding: 0.5rem 1rem; border-radius: 0.25rem; text-decoration: none; display: inline-block;">
-            編集
-          </a>
-          
-          <form action="<%= product_path(@product) %>" method="post" style="display: inline-block; margin: 0; padding: 0;">
-            <input type="hidden" name="_method" value="delete">
-            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-            <button type="submit" 
-                    style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.25rem; border: none; cursor: pointer;"
-                    onclick="return confirm('本当に削除しますか？');">
-              削除
-            </button>
-          </form>
-        </div>
-      </div>
+
+    <h2 class="form-field"><%= @product.name %></h2>
+    <p class="form-field">¥<%= number_with_delimiter(@product.price) %></p>
+
+    <div class="form-actions">
+      <%= link_to "編集", edit_product_path(@product), class: "form-button yellow" %>
+      <%= link_to "削除", product_path(@product), data: {turbo_method: :delete}, class: "product-destroy form-button red" %>
+      <%= link_to "一覧に戻る", products_path, class: "form-button gray"  %>
     </div>
   </div>
 </div>
+
+
+

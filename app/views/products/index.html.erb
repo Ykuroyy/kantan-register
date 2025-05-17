@@ -1,36 +1,29 @@
-<div class="mb-6 flex justify-between items-center">
-  <h1 class="text-3xl font-bold">商品一覧</h1>
-  <%= link_to "新規商品登録", new_product_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-</div>
+<h1 class="form-heading">商品一覧</h1>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="form-container">
   <% @products.each do |product| %>
-    <div class="border rounded-lg overflow-hidden shadow-lg">
+    <div class="form-card">
       <% if product.image.attached? %>
-        <%= image_tag product.image, class: "w-full h-48 object-cover" %>
+        <%= image_tag product.image, class: "preview-image" %>
       <% else %>
-        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-          <span class="text-gray-500">画像なし</span>
-        </div>
+        <div class="preview-image no-image">画像なし</div>
       <% end %>
-      <div class="p-4">
-        <h2 class="text-xl font-bold mb-2"><%= product.name %></h2>
-        <p class="text-green-600 font-bold text-xl">¥<%= number_with_delimiter(product.price) %></p>
-        <div class="mt-4 flex justify-end">
-          <%= link_to "詳細", product_path(product), class: "bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded" %>
-        </div>
+
+      <div class="form-field">
+        <strong>商品名:</strong> <%= product.name %>
+      </div>
+
+      <div class="form-field">
+        <strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %>
+      </div>
+
+      <div class="form-actions">
+        <%= link_to "詳細", product_path(product), class: "form-button blue" %>
       </div>
     </div>
   <% end %>
 </div>
 
-
-
-<% if @products.empty? %>
-  <div class="text-center py-10">
-    <p class="text-gray-500 text-xl">商品がまだ登録されていません</p>
-    <%= link_to "最初の商品を登録する", new_product_path, class: "mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-  </div>
-<% end %>
-
-
+<div class="text-center" style="margin-top: 20px;">
+  <%= link_to "新規商品登録", new_product_path, class: "form-button blue" %>
+</div>

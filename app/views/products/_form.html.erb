@@ -1,109 +1,58 @@
-<% submit_text ||= "登録する" %>
 
-<%= form_with(model: product, local: true, class: "max-w-md mx-auto p-6 bg-white rounded") do |form| %>
-  <% if product.errors.any? %>
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      <h2><%= pluralize(product.errors.count, "error") %> 件のエラーがあります:</h2>
-      <ul class="list-disc pl-5">
-        <% product.errors.full_messages.each do |message| %>
+
+<%= form_with model: @product, local: true do |f| %>
+  <% if @product.errors.any? %>
+    <div class="alert">
+      <ul>
+        <% @product.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
-  <!-- 商品画像 -->
-  <div class="mb-6 text-left">
-    <%= form.label :image, "商品画像", class: "block mb-1 text-sm font-medium text-gray-700" %>
+  <h2><%= @product.new_record? ? "新規商品登録" : "商品情報の編集" %></h2>
 
-    <% if product.image.attached? %>
-      <div class="mb-2">
-        <%= image_tag product.image, id: "preview-image", class: "w-[100px] h-[100px] object-cover rounded border" %>
+  <div class="form-container">
+    <div class="form-card">
+      
+       <%# 商品画像 %>
+        <div class="img-upload">
+          <strong>商品画像:</strong>
+          <span class="optional">任意</span>
+        <div class="click-upload">
+          <p>クリックしてファイルをアップロード</p>
+          <%= f.file_field :image, id: "product.image" %>
+        </div>
+
+        <% if @product.persisted? && @product.image.attached? %>
+           <div class="preview">
+             <%= image_tag @product.image, class: "preview-image", id: "preview-image" %>
+           </div>
+         <% else %>
+         <img id="preview-image" class="preview-image" style="display: none;" />
+        <% end %>
       </div>
-    <% else %>
-      <img id="preview-image" class="hidden w-[100px] h-[100px] object-cover rounded border" />
-    <% end %>
 
-    <!-- ファイル選択ボタン -->
-    <div class="mb-2">
-      <label for="product_image"
-        class="w-[250px] block bg-gray-100 hover:bg-gray-200 text-sm text-gray-700 font-medium px-4 py-2 border border-gray-300 rounded text-center transition transform hover:scale-95 cursor-pointer">
-        ファイルを選択
-      </label>
-      <%= form.file_field :image, id: "product_image", accept: "image/*", hidden: true %>
+      <%# 商品名 %>
+        <div class="form-field">
+          <div><strong>商品名:</strong> <span class="indispensable">必須</span></div>
+          <%= f.text_field :name, class: "products-text", id: "products-name", placeholder: "カタカナのみ", maxlength: "30" %>
+        </div>
+
+      <%# 価格 %>
+      <div class="form-field">
+        <div><strong>価格:</strong> <span class="indispensable">必須</span></div>
+        <%= f.text_field :price, class: "price-input", id: "products-price", placeholder: "半角数字のみ" %>
+      </div>
+
+
+      <%# ボタンエリア %>
+      <div class="form-actions">
+        <%= f.submit submit_text, class: "form-button yellow" %>      
+        <%= link_to "もどる", cancel_path, class: "form-button gray" %>
+      </div>
     </div>
-
-    <!-- ファイル名表示 -->
-    <p id="selected-file" class="text-xs text-blue-600 hidden">選択：ファイル名</p>
-  </div>
-
-  <!-- 商品名 -->
-  <div class="mb-4">
-    <div class="mb-1">
-      <%= form.label :name, "商品名", class: "text-sm font-medium text-gray-700" %>
-      <span class="text-red-500 text-xs ml-2">※必須</span>
-    </div>
-    <%= form.text_field :name,
-        class: "w-[250px] px-3 py-2 border border-gray-300 rounded shadow-sm focus:ring-2 focus:ring-blue-500",
-        placeholder: "例: 食パン" %>
-  </div>
-
-  <!-- 価格 -->
-  <div class="mb-6">
-    <div class="mb-1">
-      <%= form.label :price, "価格", class: "text-sm font-medium text-gray-700" %>
-      <span class="text-red-500 text-xs ml-2">※必須</span>
-    </div>
-    <%= form.text_field :price,
-        class: "w-[250px] px-3 py-2 border border-gray-300 rounded shadow-sm focus:ring-2 focus:ring-blue-500",
-        placeholder: "例: 300" %>
-  </div>
-
-  <!-- ボタン -->
-  <div class="flex items-center mt-6 space-x-4">
-    <%= button_tag type: "submit",
-        class: "w-[120px] bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition transform hover:scale-95 cursor-pointer" do %>
-      <%= submit_text %>
-    <% end %>
-
-    <!-- ❗ イレギュラー対応でキャンセルボタンを style にて表示 -->
-    <%= link_to "キャンセル", products_path,
-        style: "background-color: #6b7280; color: white; padding: 8px 16px; font-weight: bold; border-radius: 0.25rem; cursor: pointer;" %>
   </div>
 <% end %>
 
-<!-- JavaScript: プレビューとファイル名 -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('product_image');
-    const preview = document.getElementById('preview-image');
-    const fileNameDisplay = document.getElementById('selected-file');
-    const MAX_SIZE_MB = 2;
-
-    input.addEventListener('change', () => {
-      const file = input.files[0];
-      if (!file) return;
-
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        alert(`ファイルサイズが大きすぎます（最大 ${MAX_SIZE_MB}MB）`);
-        input.value = '';
-        preview.classList.add('hidden');
-        fileNameDisplay.classList.add('hidden');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
-
-      fileNameDisplay.textContent = `選択：${file.name}`;
-      fileNameDisplay.classList.remove('hidden');
-    });
-  });
-</script>
-
-<!-- safelist強制 -->
-<span class="hidden bg-blue-500 hover:bg-blue-600 bg-gray-500 hover:bg-gray-600 text-white transition transform hover:scale-95 cursor-pointer"></span>

@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  root "home#index"
+  root "products#index"
 
   resources :products do
     patch :remove_image, on: :member
