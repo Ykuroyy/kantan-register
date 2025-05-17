@@ -3,5 +3,10 @@
 pin "application"
 
 
-pin "preview", to: "preview.js"
+pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true
+
+
+# pin "preview", to: "preview.js"
+
+pin "preview"
 

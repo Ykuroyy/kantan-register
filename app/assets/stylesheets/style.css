@@ -22,12 +22,18 @@
   box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
 }
 
+
 .preview-image {
   width: 100px;
   height: 100px;
   object-fit: cover;
-  margin-bottom: 10px;
+  display: block;            /* 画像をブロック要素に */
+  margin: 0 auto;            /* 中央寄せ */
 }
+
+
+
+
 
 .preview-image.no-image {
   display: flex;

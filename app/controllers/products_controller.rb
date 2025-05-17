@@ -60,4 +60,12 @@ class ProductsController < ApplicationController
   def product_params
     params.require(:product).permit(:name, :price, :image)
   end
+
+  def remove_image
+    @product = Product.find(params[:id])
+    @product.image.purge
+    redirect_to edit_product_path(@product), notice: "画像を削除しました"
+  end
+
+
 end

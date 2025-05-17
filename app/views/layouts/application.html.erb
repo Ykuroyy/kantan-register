@@ -5,11 +5,17 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <!-- CSS を読み込む -->
+    <!-- ✅ CSS 読み込み -->
     <%= stylesheet_link_tag 'application', media: 'all' %>
-    <%= stylesheet_link_tag 'style', media: 'all' %> 
-    
-    <%= javascript_importmap_tags %>
+    <%= stylesheet_link_tag 'style', media: 'all' %>
+
+
+    <%= javascript_include_tag "preview", defer: true %>
+    <%= javascript_include_tag 'application', 'data-turbo-track': 'reload', defer: true %>
+      
+    <%# <%= javascript_importmap_tags %> 
+
+
   </head>
 
   <body>
