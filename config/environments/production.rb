@@ -26,8 +26,17 @@ Rails.application.configure do
   # Compress CSS using a preprocessor.
   # config.assets.css_compressor = :sass
 
+
+
+
+
+
   # Do not fallback to assets pipeline if a precompiled asset is missed.
-  config.assets.compile = false
+  # config.assets.compile = false
+  config.assets.compile = true
+
+
+
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
@@ -94,4 +103,30 @@ Rails.application.configure do
   # ]
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
-end
+
+
+  # Enable DNS rebinding protection and other `Host` header attacks.
+  # config.hosts = [
+  #   "example.com",     # Allow requests from example.com
+  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
+  # ]
+  # Skip DNS rebinding protection for the default health check endpoint.
+  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # 👇👇👇 ここから追加 👇👇👇
+
+  # --- Render無料プラン用：本番環境で自動マイグレーション実行（デプロイ後に必ず削除！） ---
+  config.after_initialize do
+    if Rails.env.production?
+      begin
+        ActiveRecord::Base.connection.migration_context.migrate
+        Rails.logger.info "✅ 自動マイグレーション成功"
+      rescue => e
+        Rails.logger.error "❌ マイグレーションエラー: #{e.message}"
+      end
+    end
+  end
+
+end  # 👈 この `end` の直前に書きます
+
+

@@ -49,6 +49,8 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
   gem 'mysql2', '~> 0.5'
+  gem 'rspec-rails', '~> 4.0.0'
+  gem 'factory_bot_rails'
 end
 
 group :development do
@@ -75,3 +77,6 @@ gem 'pry-rails'
 group :production do
   gem "pg", "~> 1.2"
 end
+
+
+gem "image_processing", "~> 1.2"

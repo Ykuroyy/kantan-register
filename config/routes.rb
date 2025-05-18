@@ -1,15 +1,19 @@
 Rails.application.routes.draw do
-  
-  root to: 'items#index'
-  
-  
-  resources :products
+  root "top#index"
 
-  
+  resources :products do
+    patch :remove_image, on: :member
+  end
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+
+  resources :orders, only: [:new, :create]
+  
+  get "/reports", to: "reports#index", as: :reports
+
   get "up" => "rails/health#show", as: :rails_health_check
 
-
 end
+
+
+
+

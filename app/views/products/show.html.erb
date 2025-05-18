@@ -1,0 +1,30 @@
+<h1 class="form-heading">商品詳細</h1>
+
+<div class="form-container">
+  <div class="form-card">
+    <% if @product.image.attached? %>
+      <%= image_tag @product.image, class: "preview-image" %>
+    <% else %>
+      <p>画像なし</p>
+    <% end %>
+
+    <h2 class="form-field"><%= @product.name %></h2>
+    <p class="form-field">¥<%= number_with_delimiter(@product.price) %></p>
+
+    <div class="form-actions">
+      <%= link_to "編集", edit_product_path(@product), class: "form-button yellow" %>
+
+      <%= form_with(url: product_path(@product), method: :delete, class: "inline-block") do |form| %>
+        <%= form.submit "削除", 
+          class: "form-button red", 
+          data: { confirm: "本当に削除しますか？" },
+          onclick: "return confirm('本当に削除しますか？');" %>
+      <% end %>
+
+      <%= link_to "商品一覧に戻る", products_path, class: "form-button gray" %>
+    </div>
+   </div>
+</div>
+
+
+
