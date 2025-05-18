@@ -4,6 +4,11 @@ class ProductsController < ApplicationController
   # 一覧表示
   def index
     @products = Product.all.order(created_at: :desc)
+    if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
+      @products = Product.where("name LIKE ?", "%#{params[:keyword]}%")
+    else
+      @products = Product.all
+    end
   end
 
   # 詳細表示
