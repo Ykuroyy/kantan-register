@@ -9,13 +9,9 @@
     <%= stylesheet_link_tag 'application', media: 'all' %>
     <%= stylesheet_link_tag 'style', media: 'all' %>
 
-
+    <!-- ✅ JavaScript（Importmap用 + 画像プレビュー用） -->
+    <%= javascript_importmap_tags %>
     <%= javascript_include_tag "preview", defer: true %>
-    <%= javascript_include_tag 'application', 'data-turbo-track': 'reload', defer: true %>
-      
-    <%# <%= javascript_importmap_tags %> 
-
-
   </head>
 
   <body>

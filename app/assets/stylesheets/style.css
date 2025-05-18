@@ -1,26 +1,6 @@
-.form-heading {
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 24px;
-}
 
-.form-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 24px;
-}
 
-.form-card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 16px;
-  width: 250px;
-  text-align: center;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-}
+
 
 
 .preview-image {
@@ -47,6 +27,33 @@
   font-size: 12px;
 }
 
+
+
+.form-heading {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.form-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+}
+
+.form-card {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 16px;
+  width: 250px;
+  text-align: center;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+}
+
+
 .form-field {
   margin-bottom: 10px;
   font-size: 14px;
@@ -57,6 +64,8 @@
   flex-direction: column;
   gap: 8px;
 }
+
+
 
 /* 共通ボタンベースクラス */
 .form-button {
@@ -71,6 +80,11 @@
   cursor: pointer;
   border: none;
 }
+
+
+
+
+
 
 .form-button:hover {
   transform: scale(0.95); /* 押されたような動き */
@@ -127,3 +141,9 @@
 }
 
 
+
+
+/* app/assets/stylesheets/style.css に追加 */
+.inline-block {
+  display: inline-block;
+}

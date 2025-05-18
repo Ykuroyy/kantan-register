@@ -76,8 +76,5 @@ group :production do
   gem "pg", "~> 1.2"
 end
 
-gem 'tailwindcss-rails'
-
-gem 'image_processing', '~> 1.2'
 
 gem "image_processing", "~> 1.2"

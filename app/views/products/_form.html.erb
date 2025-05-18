@@ -1,59 +1,62 @@
+<div class="form-container">
+  <div class="form-card">
 
 
-<%= form_with model: @product, local: true do |f| %>
-  <% if @product.errors.any? %>
-    <div class="alert">
-      <ul>
-        <% @product.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+    <%= form_with model: @product, local: true do |f| %>
+      <% if @product.errors.any? %>
+        <div class="alert">
+          <ul>
+            <% @product.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
-  <h2><%= @product.new_record? ? "新規商品登録" : "商品情報の編集" %></h2>
+ 
 
-  <div class="form-container">
-    <div class="form-card">
+
       
-      <%# 商品画像 %>
-      <div class="img-upload">
-          <strong>商品画像:</strong>
-          <span class="optional">任意</span>
-        
-          <div class="click-upload">
-            <%= f.file_field :image, id: "product_image" %>
+        <%# 商品画像 %>
+        <div class="img-upload">
+            <strong>商品画像:</strong>
+            <span class="optional">任意</span>
+          
+            <div class="click-upload">
+              <%= f.file_field :image, id: "product_image" %>
+            </div>
+
+          <%# プレビュー表示タグ - JavaScript で切り替え用 %>
+          <div class="preview">
+            <% if @product.persisted? && @product.image.attached? %>
+              <%= image_tag @product.image, id: "preview-image", class: "preview-image" %>
+            <% else %>
+              <img id="preview-image" class="preview-image" style="display: none;" />
+            <% end %>
+          </div>
+        </div>
+
+        <%# 商品名 %>
+          <div class="form-field">
+            <div><strong>商品名:</strong> <span class="indispensable">必須</span></div>
+            <%= f.text_field :name, class: "products-text", id: "products-name", placeholder: "カタカナのみ", maxlength: "30" %>
           </div>
 
-        <%# プレビュー表示タグ - JavaScript で切り替え用 %>
-        <div class="preview">
-          <% if @product.persisted? && @product.image.attached? %>
-            <%= image_tag @product.image, id: "preview-image", class: "preview-image" %>
-          <% else %>
-            <img id="preview-image" class="preview-image" style="display: none;" />
-          <% end %>
-        </div>
-      </div>
-
-      <%# 商品名 %>
+        <%# 価格 %>
         <div class="form-field">
-          <div><strong>商品名:</strong> <span class="indispensable">必須</span></div>
-          <%= f.text_field :name, class: "products-text", id: "products-name", placeholder: "カタカナのみ", maxlength: "30" %>
+          <div><strong>価格:</strong> <span class="indispensable">必須</span></div>
+          <%= f.text_field :price, class: "price-input", id: "products-price", placeholder: "半角数字のみ" %>
         </div>
+  
 
-      <%# 価格 %>
-      <div class="form-field">
-        <div><strong>価格:</strong> <span class="indispensable">必須</span></div>
-        <%= f.text_field :price, class: "price-input", id: "products-price", placeholder: "半角数字のみ" %>
-      </div>
-
-
-      <%# ボタンエリア %>
-      <div class="form-actions">
-        <%= f.submit submit_text, class: "form-button yellow" %>      
-        <%= link_to "もどる", cancel_path, class: "form-button gray" %>
-      </div>
-    </div>
+        <%# ボタンエリア %>
+        <div class="form-actions">
+          <%= f.submit submit_text, class: "form-button yellow" %>      
+          <%= link_to "もどる", cancel_path, class: "form-button gray" %>
+       </div>
+    <% end %>   
+    
   </div>
-<% end %>
+</div>
+    
 
