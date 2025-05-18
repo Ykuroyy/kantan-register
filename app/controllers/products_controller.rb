@@ -37,7 +37,7 @@ class ProductsController < ApplicationController
     end
 
     if @product.update(product_params)
-      redirect_to @product, notice: "商品情報を更新しました。"
+      redirect_to products_path, notice: "商品情報を更新しました。"
     else
       render :edit, status: :unprocessable_entity
     end
