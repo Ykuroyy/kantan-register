@@ -1,13 +1,14 @@
 class ProductsController < ApplicationController
+  # CSRFトークンの検証を予測APIでスキップ（fetch対応のため）
+  skip_before_action :verify_authenticity_token, only: [:predict]
   before_action :set_product, only: [:show, :edit, :update, :destroy]
 
-  # 一覧表示
+  # 商品一覧（カタカナ検索対応）
   def index
-    @products = Product.all.order(created_at: :desc)
     if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
-      @products = Product.where("name LIKE ?", "%#{params[:keyword]}%")
+      @products = Product.where("name LIKE ?", "%#{params[:keyword]}%").order(created_at: :desc)
     else
-      @products = Product.all
+      @products = Product.all.order(created_at: :desc)
     end
   end
 
@@ -15,12 +16,12 @@ class ProductsController < ApplicationController
   def show
   end
 
-  # 新規登録フォーム
+  # 商品新規登録フォーム
   def new
     @product = Product.new
   end
 
-  # 登録処理
+  # 商品登録処理
   def create
     @product = Product.new(product_params)
     if @product.save
@@ -34,9 +35,8 @@ class ProductsController < ApplicationController
   def edit
   end
 
-  # 更新処理（画像変更含む）
+  # 商品更新処理（画像削除オプション付き）
   def update
-    # チェックボックス等で画像削除を明示的に行う場合（オプション）
     if params[:remove_image] == "1"
       @product.image.purge if @product.image.attached?
     end
@@ -48,29 +48,48 @@ class ProductsController < ApplicationController
     end
   end
 
-  # 削除処理
+  # 商品削除
   def destroy
     @product.destroy
     redirect_to products_path, notice: "商品を削除しました。"
   end
 
+  # カメラ起動ページ
+  def camera
+  end
+
+  # 画像予測API（仮ロジック）
+  def predict
+    uploaded_file = params[:image]
+
+    # 登録済みの中から「メロンパン」「クロワッサン」だけを抽出
+    available_products = Product.where(name: ["メロンパン", "クロワッサン"])
+
+    if available_products.any?
+      product = available_products.sample
+      render json: { name: product.name }
+    else
+      render json: { error: "対象商品が登録されていません" }, status: :not_found
+    end
+  end
+
+
   private
 
-  # IDから商品を取得（編集/表示/削除時に使用）
+  # 商品をIDから取得
   def set_product
     @product = Product.find(params[:id])
   end
 
-  # 許可されたパラメータ
+  # パラメータ許可
   def product_params
     params.require(:product).permit(:name, :price, :image)
   end
 
+  # 画像削除アクション（使っている場合）
   def remove_image
     @product = Product.find(params[:id])
     @product.image.purge
     redirect_to edit_product_path(@product), notice: "画像を削除しました"
   end
-
-
 end

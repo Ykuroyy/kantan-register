@@ -1,4 +1,56 @@
-<div>
-  <h1 class="font-bold text-4xl">Orders#new</h1>
-  <p>Find me in app/views/orders/new.html.erb</p>
+<h2 class="form-heading">レジ画面</h2>
+
+<div class="form-container">
+  <!-- カメラ起動ボタン -->
+  <div class="form-card">
+    <p class="form-field">画像認識で商品を選ぶ</p>
+    <%= link_to "カメラで撮影", camera_path, class: "form-button blue" %>
+  </div>
+
+  <!-- 手動選択 -->
+  <% @products.each do |product| %>
+    <div class="form-card">
+      <% if product.image.attached? %>
+        <%= image_tag product.image, class: "preview-image" %>
+      <% else %>
+        <div class="preview-image no-image">画像なし</div>
+      <% end %>
+
+      <div class="form-field"><%= product.name %></div>
+      <div class="form-field"><%= number_to_currency(product.price) %></div>
+
+      <%= button_to "カートに追加", add_to_cart_orders_path(product_id: product.id), method: :post, class: "form-button yellow" %>
+    </div>
+  <% end %>
 </div>
+
+<h3 class="form-heading">カートの中身</h3>
+
+<% if @cart_items.present? %>
+  <ul>
+    <% total = 0 %>
+    <% @cart_items.each do |item| %>
+      <li>
+        <%= item.name %> - <%= number_to_currency(item.price) %>
+        <% total += item.price %>
+      </li>
+    <% end %>
+  </ul>
+  <p><strong>合計金額:</strong> <%= number_to_currency(total) %></p>
+
+  <%= button_to "会計する", orders_path, method: :post, class: "form-button blue" %>
+<% else %>
+  <p>カートに商品はありません</p>
+<% end %>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const productName = localStorage.getItem("recognizedProductName");
+    if (productName) {
+      localStorage.removeItem("recognizedProductName");
+      const encoded = encodeURIComponent(productName);
+      window.location.href = `/orders/new?recognized=${encoded}`;
+    }
+  });
+</script>

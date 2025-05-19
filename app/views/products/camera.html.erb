@@ -1,0 +1,64 @@
+<h2>カメラを起動して商品を撮影</h2>
+
+<!-- 映像表示 -->
+<video id="video" width="320" height="240" autoplay></video>
+<br>
+
+<!-- 撮影ボタン -->
+<button id="capture">撮影する</button>
+
+<!-- 撮影結果表示 -->
+<canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+<!-- 認識結果表示用 -->
+<p id="result" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
+
+<script>
+  // カメラ起動
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) => {
+      const video = document.getElementById("video");
+      video.srcObject = stream;
+    })
+    .catch((err) => {
+      alert("カメラが使用できません: " + err);
+    });
+
+  // 撮影ボタン処理
+  document.getElementById("capture").addEventListener("click", () => {
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
+
+    // Canvasに描画（撮影）
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // CanvasからBlobを作成
+    canvas.toBlob((blob) => {
+      const formData = new FormData();
+      formData.append("image", blob, "photo.png");
+
+      // fetchでRailsに送信
+      fetch("/image_predict", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("📦 受信したJSON:", data);
+        document.getElementById("result").textContent = `認識された商品名: ${data.name}`;
+
+        localStorage.setItem("recognizedProductName", data.name);
+        setTimeout(() => {
+          window.location.href = "/orders/new";
+        }, 500);
+      })
+      .catch((error) => {
+        alert("エラーが発生しました: " + error);
+      });
+
+    }, "image/png");
+  });
+</script>
+
+<%= link_to "レジ画面に戻る", new_order_path, class: "form-button gray" %>
