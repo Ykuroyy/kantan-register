@@ -57,11 +57,7 @@
             <!-- 🔁 数量更新 -->
             <%= submit_tag "数量を更新", class: "form-button yellow", name: "commit_#{product.id}" %>
 
-            <!-- ❌ 削除ボタン（商品ごと削除） -->
-
-            <%# <%= button_to "削除", remove_item_orders_path(product_id: product.id), method: :delete, form: { data: { turbo: false } }, class: "form-button red", form_class: "inline-form" %>
-            <%= button_to "削除", update_cart_orders_path(quantities: { product.id => 0 }), method: :patch, class: "form-button red" %>
-
+  
             <% total += product.price * quantity %>
           </li>
         <% end %>
@@ -83,6 +79,10 @@
     <p>カートに商品はありません</p>
   <% end %>
 </div>
+
+
+<!-- 🔙 トップに戻る -->
+<%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
 
 
 <script>
