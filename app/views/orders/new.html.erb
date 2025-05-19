@@ -13,45 +13,70 @@
     <% end %>
   </div>
 
-
-
-
   <!-- 手動選択 -->
   <% @products.each do |product| %>
     <div class="form-card">
       <% if product.image.attached? %>
-        <%= image_tag product.image, class: "preview-image" %>
+        <%= image_tag product.image.variant(resize_to_limit: [500, 500]).processed, class: "preview-image" %>
+
       <% else %>
         <div class="preview-image no-image">画像なし</div>
       <% end %>
 
-      <div class="form-field"><%= product.name %></div>
-      <div class="form-field"><%= number_to_currency(product.price) %></div>
+      <div class="form-field">
+        <strong>商品名:</strong> <%= product.name %>
+      </div>
 
-      <%= button_to "カートに追加", add_to_cart_orders_path(product_id: product.id), method: :post, class: "form-button yellow" %>
+      <div class="form-field">
+        <strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %>
+      </div>
+
+      <%= form_with url: add_to_cart_orders_path, method: :post, local: true do %>
+        <%= hidden_field_tag :product_id, product.id %>
+        <%= submit_tag "カートに追加", class: "form-button yellow" %>
+      <% end %>
     </div>
   <% end %>
 </div>
 
-<h3 class="form-heading">カートの中身</h3>
+<!-- 🧺 カートの中身 -->
+<div class="form-card">
+  <p class="form-field">カートの中身</p>
 
-<% if @cart_items.present? %>
-  <ul>
-    <% total = 0 %>
-    <% @cart_items.each do |item| %>
-      <li>
-        <%= item.name %> - <%= number_to_currency(item.price) %>
-        <% total += item.price %>
-      </li>
+  <% if @cart_items.present? %>
+    <%= form_with url: update_cart_orders_path, method: :patch, local: true do %>
+      <ul>
+        <% total = 0 %>
+        <% @cart_items.each do |item| %>
+          <% product = item[:product] %>
+          <% quantity = item[:quantity].to_i %>
+          <li>
+            <%= product.name %> - ¥<%= number_with_delimiter(product.price) %>
+            ×
+            <%= number_field_tag "quantities[#{product.id}]", quantity, min: 1, class: "quantity-field", style: "width: 60px;" %>
+            <% total += product.price * quantity %>
+          </li>
+        <% end %>
+      </ul>
+
+      <!-- 合計金額 -->
+      <p><strong>合計金額:</strong> ¥<%= number_with_delimiter(total) %></p>
+
+      <%= submit_tag "数量を更新する", class: "form-button yellow" %>
     <% end %>
-  </ul>
-  <p><strong>合計金額:</strong> <%= number_to_currency(total) %></p>
 
-  <%= button_to "会計する", orders_path, method: :post, class: "form-button blue" %>
-<% else %>
-  <p>カートに商品はありません</p>
-<% end %>
+    <!-- ✅ 支払いボタン -->
+    <%= button_to "支払い", orders_path, method: :post, class: "form-button blue" %>
 
+    <!-- 🔁 カートを空にする -->
+    <%= button_to "カゴを空にする", clear_cart_orders_path, method: :post, class: "form-button red" %>
+
+    <!-- 🔙 トップに戻る -->
+    <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
+  <% else %>
+    <p>カートに商品はありません</p>
+  <% end %>
+</div>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -63,3 +88,4 @@
     }
   });
 </script>
+

@@ -26,8 +26,8 @@
           <%# プレビュー表示タグ - JavaScript で切り替え用 %>
           <div class="preview">
             <% if @product.persisted? && @product.image.attached? %>
-              <%= image_tag @product.image, id: "preview-image", class: "preview-image" %>
-            <% else %>
+              <%= image_tag @product.image.variant(resize_to_limit: [500, 500]), id: "preview-image", class: "preview-image" %>
+             <% else %>
               <img id="preview-image" class="preview-image" style="display: none;" />
             <% end %>
           </div>

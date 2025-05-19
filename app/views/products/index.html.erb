@@ -15,7 +15,7 @@
   <% @products.each do |product| %>
     <div class="form-card">
       <% if product.image.attached? %>
-        <%= image_tag product.image, class: "preview-image" %>
+        <%= image_tag product.image.variant(resize_to_limit: [500, 500]), class: "preview-image" %>
       <% else %>
         <div class="preview-image no-image">画像なし</div>
       <% end %>
@@ -34,6 +34,7 @@
     </div>
   <% end %>
 </div>
+
 
 <div class="text-center" style="margin-top: 20px;">
   <%= link_to "新規商品登録", new_product_path, class: "form-button blue" %>

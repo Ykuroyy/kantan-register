@@ -10,6 +10,8 @@ Rails.application.routes.draw do
   # 注文管理（レジ画面、カート追加、注文保存）
   resources :orders, only: [:new, :create] do
     post 'add_to_cart', on: :collection  # カートに追加するルート
+    post :clear_cart, on: :collection  # カートをリセットするルート
+    patch 'update_cart', on: :collection
   end
 
   # カメラ画面（撮影ボタンでpredictへ）
