@@ -51,56 +51,70 @@
           endpoint = `/camera/capture_product${mode === "edit" ? `?product_id=${productId}` : ""}`;
         }
 
-        if (mode === "order") {
-          // 商品認識モード（購入時）
-          fetch(endpoint, {
-            method: "POST",
-            body: formData,
-            credentials: "same-origin"
-            }
-          })
+    
+    if (mode === "order") {
+    // 商品認識モード（購入時）
+      fetch(endpoint, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRF-Token": csrfToken
+        },
+        credentials: "same-origin"
+      })
+      .then(response => response.json())
+      .then(data => {
+        const resultElem = document.getElementById("result");
+        resultElem.style.display = "block";
 
-          .then(response => response.json())
-          .then(data => {
-            const resultElem = document.getElementById("result");
 
-            if (data.name) {
-              resultElem.textContent = `認識された商品名: ${data.name}`;
-              resultElem.style.color = "black";
-              localStorage.setItem("recognizedProductName", data.name);
-              window.location.href = "/orders/new?recognized_name=" + encodeURIComponent(data.name);
-            } else {
-              resultElem.textContent = "認識できませんでした。もう一度お試しください。";
-              resultElem.style.color = "red";
-            }
-          })
-          .catch((error) => {
-            alert("エラーが発生しました: " + error);
-          });
-
+        if (data.name) {
+          resultElem.textContent = `認識された商品名: ${data.name}`;
+          resultElem.style.color = "black";
+          localStorage.setItem("recognizedProductName", data.name);
+          window.location.href = "/orders/new?recognized_name=" + encodeURIComponent(data.name);
         } else {
-          // 商品登録モード（new/edit）
-          fetch(endpoint, {
-            method: "POST",
-            body: formData,
-            headers: {
-              "X-CSRF-Token": csrfToken
-            }
-          })
-          .then(() => {
-            if (mode === "edit" && productId) {
-              window.location.href = `/products/${productId}/edit`;
-            } else {
-              window.location.href = "/products/new";
-            }
-          })
-          .catch((error) => {
-            alert("画像の送信に失敗しました: " + error);
-          });
+          resultElem.textContent = "認識できませんでした。もう一度お試しください。";
+          resultElem.style.color = "red";
         }
+      })
+      .catch((error) => {
+        alert("エラーが発生しました: " + error);
+      });
+
+      } else {
+        // 商品登録モード（new/edit）
+        fetch(endpoint, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-CSRF-Token": csrfToken
+          }
+        })
+        .then(() => {
+          if (mode === "edit" && productId) {
+            window.location.href = `/products/${productId}/edit`;
+          } else {
+            window.location.href = "/products/new";
+          }
+        })
+        .catch((error) => {
+          alert("画像の送信に失敗しました: " + error);
+        });
+      }
+
+
+
+      
+  
       }, "image/png");
     });
   });
+
+
+
+
+
 </script>
 
 <!-- モードに応じた戻り先ボタン -->
