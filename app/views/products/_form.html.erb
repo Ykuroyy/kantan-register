@@ -12,47 +12,70 @@
         </div>
       <% end %>
 
+
+      <!-- ✅ カメラで撮影された画像がセッションにある場合 -->
+      <% if session[:product_image_blob_id].present? %>
+        <% blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id]) %>
+        <% if blob %>
+          <div class="form-card">
+            <p class="form-field">カメラで撮影した画像:</p>
+            <%= image_tag url_for(blob), class: "preview-image" %>
+            <%= f.hidden_field :image, value: blob.signed_id %>
+          </div>
+        <% end %>
+      <% end %>
+
+
+
+      <!-- ✅ カメラで撮影ボタン -->
+      <div class="form-card">
+        <p class="form-field">カメラで商品を撮影</p>
+        <% if action_name == "edit" %>
+          <%= link_to "カメラで撮影", camera_path(mode: "edit", product_id: @product.id), class: "form-button blue" %>
+        <% else %>
+          <%= link_to "カメラで撮影", camera_path(mode: "new"), class: "form-button blue" %>
+        <% end %>
+      </div>
+
  
 
-        <%# 商品画像 %>
-        <div class="img-upload">
-            <strong>商品画像:</strong>
-            <span class="optional">任意</span>
-          
-            <div class="click-upload">
-              <%= f.file_field :image, id: "product_image" %>
-            </div>
+      <!-- ✅ 通常の画像アップロード -->
+      <div class="img-upload">
+        <strong>商品画像:</strong>
+        <span class="optional">任意</span>
 
-          <%# プレビュー表示タグ - JavaScript で切り替え用 %>
-          <div class="preview">
-            <% if @product.persisted? && @product.image.attached? %>
-              <%= image_tag @product.resize_image, id: "preview-image", class: "preview-image" %>
-            <% else %>
-              <img id="preview-image" class="preview-image" style="display: none;" />
-            <% end %>
-
-          </div>
+        <div class="click-upload">
+          <%= f.file_field :image, id: "product_image" %>
         </div>
 
-        <%# 商品名 %>
-          <div class="form-field">
-            <div><strong>商品名:</strong> <span class="indispensable">必須</span></div>
-            <%= f.text_field :name, class: "products-text", id: "products-name", placeholder: "カタカナのみ", maxlength: "30" %>
-          </div>
-
-        <%# 価格 %>
-        <div class="form-field">
-          <div><strong>価格:</strong> <span class="indispensable">必須</span></div>
-          <%= f.text_field :price, class: "price-input", id: "products-price", placeholder: "半角数字のみ" %>
+        <!-- プレビュー -->
+        <div class="preview">
+          <% if @product.persisted? && @product.image.attached? %>
+            <%= image_tag @product.resize_image, id: "preview-image", class: "preview-image" %>
+          <% else %>
+            <img id="preview-image" class="preview-image" style="display: none;" />
+          <% end %>
         </div>
-  
+      </div>
 
-        <%# ボタンエリア %>
-        <div class="form-actions">
-          <%= f.submit submit_text, class: "form-button yellow" %>      
-          <%= link_to "もどる", cancel_path, class: "form-button gray" %>
-       </div>
-    <% end %>   
+      <!-- ✅ 商品名 -->
+      <div class="form-field">
+        <div><strong>商品名:</strong> <span class="indispensable">必須</span></div>
+        <%= f.text_field :name, class: "products-text", id: "products-name", placeholder: "カタカナのみ", maxlength: "30" %>
+      </div>
+
+      <!-- ✅ 価格 -->
+      <div class="form-field">
+        <div><strong>価格:</strong> <span class="indispensable">必須</span></div>
+        <%= f.text_field :price, class: "price-input", id: "products-price", placeholder: "半角数字のみ" %>
+      </div>
+
+      <!-- ✅ ボタン -->
+      <div class="form-actions">
+        <%= f.submit submit_text, class: "form-button yellow" %>      
+        <%= link_to "もどる", cancel_path, class: "form-button gray" %>
+      </div>
+    <% end %>
     
   </div>
 </div>

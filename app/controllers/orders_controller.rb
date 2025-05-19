@@ -3,23 +3,25 @@ class OrdersController < ApplicationController
 
   # レジ画面
   def new
+    # 商品検索（カタカナ）
     @products = if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
                   Product.where("name LIKE ?", "%#{params[:keyword]}%").order(created_at: :desc)
                 else
                   Product.all.order(created_at: :desc)
                 end
 
-    if params[:recognized].present?
-      product = Product.find_by(name: params[:recognized])
+    # 🔍 AI画像認識でヒットした商品名が渡ってきた場合（mode: order → camera から）
+    if params[:recognized_name].present?
+      product = Product.find_by(name: params[:recognized_name])
       if product
-        session[:cart][product.id.to_s] ||= 0
-        session[:cart][product.id.to_s] += 1
+        add_product_to_cart(product.id) 
         flash.now[:notice] = "#{product.name} をカートに追加しました"
       else
         flash.now[:alert] = "商品が見つかりませんでした"
       end
     end
 
+    # カート中身の表示用データ整形
     @cart_items = session[:cart].map do |product_id, quantity|
       product = Product.find_by(id: product_id)
       { product: product, quantity: quantity } if product
@@ -44,7 +46,7 @@ class OrdersController < ApplicationController
     redirect_to new_order_path, notice: "カートをリセットしました"
   end
 
-  # カートの数量を更新# app/controllers/orders_controller.rb
+  # カートの数量を更新
   def update_cart
     updated = params[:quantities] || {}
     updated.each do |product_id, quantity|
@@ -56,9 +58,6 @@ class OrdersController < ApplicationController
     end
     redirect_to new_order_path, notice: "数量を更新しました"
   end
-
-
-
 
   # 注文作成
   def create
@@ -82,6 +81,7 @@ class OrdersController < ApplicationController
     redirect_to root_path, notice: "注文を保存しました！"
   end
 
+  # 商品個別削除
   def remove_item
     product_id = params[:product_id].to_s
     session[:cart].delete(product_id)
@@ -89,12 +89,17 @@ class OrdersController < ApplicationController
     redirect_to new_order_path, notice: "商品をカートから削除しました"
   end
 
-
-
-
   private
 
+  # カート初期化
   def initialize_cart
     session[:cart] ||= {}
+  end
+
+  # 🔁 カートに商品追加（AI認識・通常操作共通）
+  def add_product_to_cart(product_id)
+    product_id = product_id.to_s
+    session[:cart][product_id] ||= 0
+    session[:cart][product_id] += 1
   end
 end

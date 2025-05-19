@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
+
   # トップページ
   root "top#index"
+
+  # 商品登録用：撮影画像を保存して new に渡す
+  post "/camera/capture_product", to: "products#capture_product", as: :capture_product_image
+  
+
 
   # 商品管理（登録・編集・削除・検索）
   resources :products do

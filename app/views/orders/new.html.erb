@@ -4,7 +4,9 @@
   <!-- カメラ起動ボタン -->
   <div class="form-card">
     <p class="form-field">画像認識で商品を選ぶ</p>
-    <%= link_to "カメラで撮影", camera_path, class: "form-button blue" %>
+    <%= link_to "カメラで撮影", camera_path(mode: "order"), class: "form-button blue" %>
+
+
 
     <p class="form-field">商品名から検索</p>
     <%= form_with url: new_order_path, method: :get, local: true do %>
@@ -73,8 +75,7 @@
     <!-- 🔁 カートを空にする -->
     <%= button_to "カゴを空にする", clear_cart_orders_path, method: :post, class: "form-button red" %>
 
-    <!-- 🔙 トップに戻る -->
-    <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
+
   <% else %>
     <p>カートに商品はありません</p>
   <% end %>

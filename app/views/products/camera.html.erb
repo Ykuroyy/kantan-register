@@ -10,62 +10,98 @@
 <!-- 撮影結果表示 -->
 <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
 
-<!-- 認識結果表示用 -->
+<!-- 認識結果表示用（購入時のみ使う） -->
 <p id="result" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
 
 <script>
-  // カメラ起動
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then((stream) => {
-      const video = document.getElementById("video");
-      video.srcObject = stream;
-    })
-    .catch((err) => {
-      alert("カメラが使用できません: " + err);
-    });
-
-  // 撮影ボタン処理
-  document.getElementById("capture").addEventListener("click", () => {
+  document.addEventListener("DOMContentLoaded", () => {
     const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const context = canvas.getContext("2d");
 
-    // Canvasに描画（撮影）
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // CanvasからBlobを作成
-    canvas.toBlob((blob) => {
-      const formData = new FormData();
-      formData.append("image", blob, "photo.png");
-
-  // fetchでRailsに送信
-  fetch("/image_predict", {
-    method: "POST",
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log("📦 受信したJSON:", data);
-
-    const resultElem = document.getElementById("result");
-
-    if (data.name) {
-      resultElem.textContent = `認識された商品名: ${data.name}`;
-      resultElem.style.color = "black";
-      localStorage.setItem("recognizedProductName", data.name);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          video.srcObject = stream;
+        })
+        .catch((err) => {
+          alert("カメラが使用できません: " + err);
+        });
     } else {
-      resultElem.textContent = "認識できませんでした。もう一度お試しください。";
-      resultElem.style.color = "red";
+      alert("このブラウザはカメラに対応していません。");
     }
-  })
-  .catch((error) => {
-    alert("エラーが発生しました: " + error);
-  });
 
+    document.getElementById("capture").addEventListener("click", () => {
+      const canvas = document.getElementById("canvas");
+      const context = canvas.getContext("2d");
 
-    }, "image/png");
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        const formData = new FormData();
+        formData.append("image", blob, "photo.png");
+
+        const mode = "<%= params[:mode] %>";  // "edit", "new", "order"
+        const productId = "<%= params[:product_id] %>";
+
+        let endpoint;
+        if (mode === "order") {
+          endpoint = "/image_predict";
+        } else {
+          endpoint = `/camera/capture_product${mode === "edit" ? `?product_id=${productId}` : ""}`;
+        }
+
+        if (mode === "order") {
+          // 商品認識モード（購入時）
+          fetch(endpoint, {
+            method: "POST",
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            const resultElem = document.getElementById("result");
+
+            if (data.name) {
+              resultElem.textContent = `認識された商品名: ${data.name}`;
+              resultElem.style.color = "black";
+              localStorage.setItem("recognizedProductName", data.name);
+
+              // ✅ カートに追加するためレジ画面に戻る（ここが重要！）
+              window.location.href = "/orders/new?recognized_name=" + encodeURIComponent(data.name);
+            } else {
+              resultElem.textContent = "認識できませんでした。もう一度お試しください。";
+              resultElem.style.color = "red";
+            }
+          })
+          .catch((error) => {
+            alert("エラーが発生しました: " + error);
+          });
+
+        } else {
+          // 商品登録モード（new/edit）
+          fetch(endpoint, {
+            method: "POST",
+            body: formData
+          })
+          .then(() => {
+            if (mode === "edit" && productId) {
+              window.location.href = `/products/${productId}/edit`;
+            } else {
+              window.location.href = "/products/new";
+            }
+          })
+          .catch((error) => {
+            alert("画像の送信に失敗しました: " + error);
+          });
+        }
+      }, "image/png");
+    });
   });
 </script>
 
-<!-- ユーザーが押すまで遷移しない -->
-<%= link_to "レジ画面に戻る", new_order_path, class: "form-button gray" %>
+<!-- モードに応じた戻り先ボタン -->
+<% if params[:mode] == "edit" && params[:product_id].present? %>
+  <%= link_to "商品編集に戻る", edit_product_path(params[:product_id]), class: "form-button gray" %>
+<% elsif params[:mode] == "new" %>
+  <%= link_to "商品登録に戻る", new_product_path, class: "form-button gray" %>
+<% else %>
+  <%= link_to "レジ画面に戻る", new_order_path, class: "form-button gray" %>
+<% end %>

@@ -28,11 +28,13 @@ class ProductsController < ApplicationController
   def create
     @product = Product.new(product_params)
     if @product.save
+      session.delete(:product_image_blob_id)  # ← ★ コレが重要
       redirect_to products_path, notice: "商品を登録しました。"
     else
       render :new, status: :unprocessable_entity
     end
   end
+
 
   # 編集フォーム
   def edit
@@ -83,6 +85,29 @@ class ProductsController < ApplicationController
     end
   end
 
+  
+  # 📸 カメラで撮影した画像を一時保存して商品登録画面へ（登録用）
+  def capture_product
+    uploaded_io = params[:image]
+
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: uploaded_io.tempfile,
+      filename: uploaded_io.original_filename,
+      content_type: uploaded_io.content_type
+    )
+
+    session[:product_image_blob_id] = blob.id
+
+    if params[:product_id].present?
+      redirect_to edit_product_path(params[:product_id])  # ✅ 編集画面に戻す
+    else
+      redirect_to new_product_path                        # 新規登録画面に戻す
+    end
+  end
+
+
+
+
   private
 
   # 商品をIDから取得
@@ -101,4 +126,5 @@ class ProductsController < ApplicationController
     @product.image.purge
     redirect_to edit_product_path(@product), notice: "画像を削除しました"
   end
+
 end
