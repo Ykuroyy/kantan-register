@@ -2,29 +2,26 @@ class OrdersController < ApplicationController
   before_action :initialize_cart, only: [:new, :add_to_cart, :create]
 
   def new
-    @products = Product.all
+    @products = if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
+                  Product.where("name LIKE ?", "%#{params[:keyword]}%")
+                else
+                  Product.all
+                end
 
-    # 1. カート初期化（念のため）
-    session[:cart] ||= []
+    # カート
+    @cart_items = Product.find(session[:cart]) rescue []
 
-    # 2. カメラで認識された商品名がある場合、自動追加
-    if params[:recognized].present?
-      recognized_name = params[:recognized]
-      product = Product.find_by(name: recognized_name)
-
-      if product
-        unless session[:cart].include?(product.id)
-          session[:cart] << product.id
-          flash.now[:notice] = "#{recognized_name} をカートに追加しました"
-        end
-      else
-        flash.now[:alert] = "#{recognized_name} は商品として登録されていません"
+    # カメラ認識商品の自動追加
+    if params[:recognized]
+      product = Product.find_by(name: params[:recognized])
+      if product && !session[:cart].include?(product.id)
+        session[:cart] << product.id
+        @cart_items = Product.find(session[:cart])
+        flash.now[:notice] = "#{product.name} をカートに追加しました"
       end
     end
-
-    # 3. カートに入っている商品を取得（←これが画面に表示される）
-    @cart_items = Product.where(id: session[:cart])
   end
+
 
   def add_to_cart
     product_id = params[:product_id].to_i

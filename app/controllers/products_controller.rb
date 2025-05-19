@@ -1,5 +1,8 @@
 class ProductsController < ApplicationController
-  # CSRFトークンの検証を予測APIでスキップ（fetch対応のため）
+  require 'faraday'
+  require 'json'
+
+  # fetch対応のため、CSRFトークンの検証をスキップ
   skip_before_action :verify_authenticity_token, only: [:predict]
   before_action :set_product, only: [:show, :edit, :update, :destroy]
 
@@ -58,21 +61,27 @@ class ProductsController < ApplicationController
   def camera
   end
 
-  # 画像予測API（仮ロジック）
+  # 🔁 Flask API へ画像送信して推定された商品名を受け取る
   def predict
-    uploaded_file = params[:image]
+    image_file = params[:image]
+    if image_file.blank?
+      return render json: { error: "画像がありません" }, status: :bad_request
+    end
 
-    # 登録済みの中から「メロンパン」「クロワッサン」だけを抽出
-    available_products = Product.where(name: ["メロンパン", "クロワッサン"])
+    begin
+      conn = Faraday.new(url: "http://localhost:5000") # Flask API のURL
+      response = conn.post("/predict", image: image_file)
+      result = JSON.parse(response.body)
 
-    if available_products.any?
-      product = available_products.sample
-      render json: { name: product.name }
-    else
-      render json: { error: "対象商品が登録されていません" }, status: :not_found
+      if result["name"]
+        render json: { name: result["name"] }
+      else
+        render json: { error: "商品名が見つかりませんでした" }, status: :not_found
+      end
+    rescue => e
+      render json: { error: "AIサーバーとの通信に失敗しました: #{e.message}" }, status: :internal_server_error
     end
   end
-
 
   private
 
