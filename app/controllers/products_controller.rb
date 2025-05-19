@@ -24,16 +24,26 @@ class ProductsController < ApplicationController
     @product = Product.new
   end
 
+
+
+
   # 商品登録処理
   def create
     @product = Product.new(product_params)
     if @product.save
-      session.delete(:product_image_blob_id)  # ← ★ コレが重要
+      session.delete(:product_image_blob_id)
+
+      # ✅ Flaskへ画像送信（非同期または同期）
+      send_image_to_flask(@product.image)
+
       redirect_to products_path, notice: "商品を登録しました。"
     else
       render :new, status: :unprocessable_entity
     end
   end
+
+
+
 
 
   # 編集フォーム
@@ -77,7 +87,10 @@ class ProductsController < ApplicationController
     end
 
     begin
-      conn = Faraday.new(url: "http://localhost:5000") # Flask API のURL
+      # 本番と開発でURLを切り替え
+      api_base_url = Rails.env.production? ? "https://your-flask-api.onrender.com" : "http://localhost:5000"
+
+      conn = Faraday.new(url: "https://ai-server-0zw8.onrender.com")
       response = conn.post("/predict", image: image_file)
       result = JSON.parse(response.body)
 
@@ -132,5 +145,28 @@ class ProductsController < ApplicationController
     @product.image.purge
     redirect_to edit_product_path(@product), notice: "画像を削除しました"
   end
+
+  def send_image_to_flask(image)
+    return unless image.attached?
+
+    # 一時ファイルを取得
+    file = image.download
+    tempfile = Tempfile.new(["upload", ".png"])
+    tempfile.binmode
+    tempfile.write(file)
+    tempfile.rewind
+
+    begin
+      conn = Faraday.new(url: "https://ai-server-0zw8.onrender.com") # Flask URL
+      response = conn.post("/register_image", image: Faraday::UploadIO.new(tempfile.path, "image/png"))
+      Rails.logger.info("Flaskへの送信結果: #{response.body}")
+    rescue => e
+      Rails.logger.error("Flaskへの送信に失敗: #{e.message}")
+    ensure
+      tempfile.close
+      tempfile.unlink
+    end
+  end
+
 
 end

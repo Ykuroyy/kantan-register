@@ -56,10 +56,10 @@
           fetch(endpoint, {
             method: "POST",
             body: formData,
-            headers: {
-              "X-CSRF-Token": csrfToken
+            credentials: "same-origin"
             }
           })
+
           .then(response => response.json())
           .then(data => {
             const resultElem = document.getElementById("result");
