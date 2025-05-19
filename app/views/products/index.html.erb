@@ -1,5 +1,16 @@
 <h1 class="form-heading">商品一覧</h1>
 
+<!-- ✅ フラッシュメッセージ表示 -->
+<% if flash[:notice] %>
+  <p class="notice"><%= flash[:notice] %></p>
+<% end %>
+
+<% if flash[:alert] %>
+  <p class="alert"><%= flash[:alert] %></p>
+<% end %>
+
+
+
 <!-- 🔍 検索フォームを追加 -->
 <%= form_with url: products_path, method: :get, local: true do |f| %>
   <%= f.label :keyword, "商品名で検索" %>

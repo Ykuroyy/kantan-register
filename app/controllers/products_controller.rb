@@ -55,9 +55,15 @@ class ProductsController < ApplicationController
 
   # 商品削除
   def destroy
-    @product.destroy
-    redirect_to products_path, notice: "商品を削除しました。"
+    begin
+      @product.destroy
+      redirect_to products_path, notice: "商品を削除しました"
+    rescue ActiveRecord::InvalidForeignKey
+      redirect_to products_path, alert: "この商品は注文に使われているため削除できません"
+    end
   end
+
+
 
   # カメラ起動ページ
   def camera
