@@ -16,4 +16,9 @@ class Product < ApplicationRecord
               greater_than: 0,
               less_than_or_equal_to: 9_999_999
             }
+
+  def resize_image
+    return unless image.attached?
+    image.variant(resize_to_limit: [500, 500]).processed
+  end
 end

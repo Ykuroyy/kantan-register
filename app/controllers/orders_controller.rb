@@ -44,14 +44,21 @@ class OrdersController < ApplicationController
     redirect_to new_order_path, notice: "カートをリセットしました"
   end
 
-  # カートの数量を更新
+  # カートの数量を更新# app/controllers/orders_controller.rb
   def update_cart
     updated = params[:quantities] || {}
     updated.each do |product_id, quantity|
-      session[:cart][product_id] = quantity.to_i if quantity.to_i > 0
+      if quantity.to_i > 0
+        session[:cart][product_id] = quantity.to_i
+      else
+        session[:cart].delete(product_id)
+      end
     end
     redirect_to new_order_path, notice: "数量を更新しました"
   end
+
+
+
 
   # 注文作成
   def create
@@ -74,6 +81,16 @@ class OrdersController < ApplicationController
     session[:cart] = {}
     redirect_to root_path, notice: "注文を保存しました！"
   end
+
+  def remove_item
+    product_id = params[:product_id].to_s
+    session[:cart].delete(product_id)
+
+    redirect_to new_order_path, notice: "商品をカートから削除しました"
+  end
+
+
+
 
   private
 
