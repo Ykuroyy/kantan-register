@@ -7,10 +7,15 @@
 <!-- 撮影ボタン -->
 <button id="capture">撮影する</button>
 
-<!-- 撮影結果表示 -->
+<!-- またはファイル選択 -->
+<h3>または画像ファイルから予測</h3>
+<input type="file" id="upload-file" accept="image/*">
+<button id="predict-button">この画像で予測</button>
+
+<!-- 撮影結果をcanvasに描画（送信に使う） -->
 <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
 
-<!-- 認識結果表示用（購入時のみ使う） -->
+<!-- 結果表示 -->
 <p id="result" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
 
 <script>
@@ -30,30 +35,48 @@
       alert("このブラウザはカメラに対応していません。");
     }
 
-    // 撮影ボタン処理
+    // 📸 撮影ボタン処理
     document.getElementById("capture").addEventListener("click", () => {
       const canvas = document.getElementById("canvas");
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       canvas.toBlob((blob) => {
-        const formData = new FormData();
-        formData.append("image", blob, "photo.png");
+        sendImageToPredict(blob);
+      }, "image/png");
+    });
 
-        const mode = "<%= params[:mode] %>";  // "edit", "new", "order"
-        const productId = "<%= params[:product_id] %>";
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        let endpoint;
-        if (mode === "order") {
-          endpoint = "/image_predict";
-        } else {
-          endpoint = `/camera/capture_product${mode === "edit" ? `?product_id=${productId}` : ""}`;
-        }
 
-    
-    if (mode === "order") {
-    // 商品認識モード（購入時）
+
+    // 📁 ファイルアップロードから送信
+    document.getElementById("predict-button").addEventListener("click", () => {
+      const fileInput = document.getElementById("upload-file");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("画像ファイルを選択してください");
+        return;
+      }
+      sendImageToPredict(file);
+    });
+
+    // 🔁 共通の送信処理
+
+    function sendImageToPredict(blob) {
+      const formData = new FormData();
+      formData.append("image", blob, "photo.png");
+
+      const mode = "<%= params[:mode] %>";
+      const productId = "<%= params[:product_id] %>";
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+      let endpoint = "";
+      if (mode === "order") {
+        endpoint = "/image_predict";
+      } else {
+        endpoint = `/camera/capture_product?mode=${mode}${productId ? `&product_id=${productId}` : ""}`;
+      }
+
       fetch(endpoint, {
         method: "POST",
         body: formData,
@@ -62,62 +85,42 @@
         },
         credentials: "same-origin"
       })
-      .then(response => response.json())
-      .then(data => {
-        const resultElem = document.getElementById("result");
-        resultElem.style.display = "block";
-
-
-        if (data.name) {
-          resultElem.textContent = `認識された商品名: ${data.name}`;
-          resultElem.style.color = "black";
-          localStorage.setItem("recognizedProductName", data.name);
-          window.location.href = "/orders/new?recognized_name=" + encodeURIComponent(data.name);
+      .then(response => {
+        if (mode === "order") {
+          return response.json();
         } else {
-          resultElem.textContent = "認識できませんでした。もう一度お試しください。";
-          resultElem.style.color = "red";
+          // 商品登録が完了したら、登録画面に戻る
+          window.location.href = (
+            mode === "edit" && productId
+              ? `/products/${productId}/edit`
+              : "/products/new"
+          );
+        }
+      })
+      .then(data => {
+        if (mode === "order" && data) {
+          const resultElem = document.getElementById("result");
+          resultElem.style.display = "block";
+          if (data.name) {
+            resultElem.textContent = `認識された商品名: ${data.name}`;
+            resultElem.style.color = "black";
+            window.location.href = "/orders/new?recognized_name=" + encodeURIComponent(data.name);
+          } else {
+            resultElem.textContent = "認識できませんでした。";
+            resultElem.style.color = "red";
+          }
         }
       })
       .catch((error) => {
         alert("エラーが発生しました: " + error);
       });
-
-      } else {
-        // 商品登録モード（new/edit）
-        fetch(endpoint, {
-          method: "POST",
-          body: formData,
-          headers: {
-            "X-CSRF-Token": csrfToken
-          }
-        })
-        .then(() => {
-          if (mode === "edit" && productId) {
-            window.location.href = `/products/${productId}/edit`;
-          } else {
-            window.location.href = "/products/new";
-          }
-        })
-        .catch((error) => {
-          alert("画像の送信に失敗しました: " + error);
-        });
-      }
-
-
-
-      
-  
-      }, "image/png");
-    });
+    }
   });
-
-
-
-
-
 </script>
 
-<!-- モードに応じた戻り先ボタン -->
+
+
+<!-- 戻り先ボタン -->
 <% if params[:mode] == "edit" && params[:product_id].present? %>
   <%= link_to "商品編集に戻る", edit_product_path(params[:product_id]), class: "form-button gray" %>
 <% elsif params[:mode] == "new" %>
@@ -125,4 +128,3 @@
 <% else %>
   <%= link_to "レジ画面に戻る", new_order_path, class: "form-button gray" %>
 <% end %>
-

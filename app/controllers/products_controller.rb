@@ -24,6 +24,7 @@ class ProductsController < ApplicationController
   # 商品新規登録フォーム
   def new
     @product = Product.new
+
   end
 
   # 商品登録処理
@@ -98,10 +99,14 @@ class ProductsController < ApplicationController
     tempfile = image_file.tempfile
 
     begin
-      conn = Faraday.new(url: "http://localhost:5000") do |f|
+      conn = Faraday.new(
+        url: "http://127.0.0.1:5000",
+        headers: { "Content-Type" => "multipart/form-data" }
+      ) do |f|
         f.request :multipart
         f.adapter Faraday.default_adapter
       end
+
 
       payload = {
         image: Faraday::Multipart::FilePart.new(tempfile.path, "image/png")

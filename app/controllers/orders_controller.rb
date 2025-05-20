@@ -11,15 +11,22 @@ class OrdersController < ApplicationController
                 end
 
     # 🔍 AI画像認識でヒットした商品名が渡ってきた場合（mode: order → camera から）
-    if params[:recognized_name].present?
-      product = Product.find_by(name: params[:recognized_name])
-      if product
-        add_product_to_cart(product.id) 
-        flash.now[:notice] = "#{product.name} をカートに追加しました"
-      else
-        flash.now[:alert] = "商品が見つかりませんでした"
-      end
+  if params[:recognized_name].present?
+    product = Product.find_by(name: params[:recognized_name])
+    if product
+      add_product_to_cart(product.id)
+      @products = [product]  # ← これを追加
+      flash.now[:notice] = "#{product.name} をカートに追加しました"
+    else
+      flash.now[:alert] = "商品が見つかりませんでした"
+      @products = Product.all  # fallback
     end
+  else
+    @products = Product.all
+  end
+  
+
+
 
     
     # カート中身の表示用データ整形
