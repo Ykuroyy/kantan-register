@@ -86,3 +86,5 @@ gem 'faraday'
 gem 'ruby-vips'
 
 gem 'faraday-multipart'
+
+gem 'httparty'
