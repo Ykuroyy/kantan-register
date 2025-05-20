@@ -1,7 +1,7 @@
 class ProductsController < ApplicationController
-  require 'faraday'
-  require 'faraday/multipart'
+  require 'httparty'
   require 'json'
+
 
 
   # fetch対応のため、CSRFトークンの検証をスキップ
@@ -99,23 +99,27 @@ class ProductsController < ApplicationController
     tempfile = image_file.tempfile
 
     begin
-      conn = Faraday.new(
-        url: "http://127.0.0.1:5000",
-        headers: { "Content-Type" => "multipart/form-data" }
-      ) do |f|
-        f.request :multipart
-        f.adapter Faraday.default_adapter
-      end
+      response = HTTParty.post(
+        "http://127.0.0.1:5000/predict",
+        body: {
+          image: File.open(tempfile.path)
+        },
+        headers: { 'Content-Type' => 'multipart/form-data' }
+      )
 
 
-      payload = {
-        image: Faraday::Multipart::FilePart.new(tempfile.path, "image/png")
-      }
+      Rails.logger.info("Flaskからの生レスポンス: #{response.body}")
+      result = JSON.parse(response.body)
+
+
+
 
       response = conn.post("/predict", payload)
       Rails.logger.info("Flaskからの生レスポンス: #{response.body}")
 
-      result = JSON.parse(response.body)
+
+
+
       if result["name"]
         render json: { name: result["name"] }
       else
@@ -128,6 +132,8 @@ class ProductsController < ApplicationController
       render json: { error: "predictアクションでエラー: #{e.message}" }, status: :internal_server_error
     end
   end
+
+
 
     private
 
@@ -150,18 +156,15 @@ class ProductsController < ApplicationController
     tempfile.rewind
     
     begin
-      conn = Faraday.new(url: "http://localhost:5000") do |f|
-        f.request :multipart
-        f.adapter Faraday.default_adapter
-      end
-
-      payload = {
-        image: Faraday::Multipart::FilePart.new(tempfile.path, "image/png"),
-        name: name
-      }
-
-      response = conn.post("/register_image", payload)
-      Rails.logger.info("Flaskへの送信結果: #{response.status} #{response.body}")
+      response = HTTParty.post(
+        "http://127.0.0.1:5000/register_image",
+        body: {
+          image: File.open(tempfile.path),
+          name: name
+        },
+        headers: { 'Content-Type' => 'multipart/form-data' }
+      )
+      Rails.logger.info("Flaskへの送信結果: #{response.code} #{response.body}")
     rescue => e
       Rails.logger.error("Flaskへの送信失敗: #{e.message}")
     ensure
@@ -169,4 +172,7 @@ class ProductsController < ApplicationController
       tempfile.unlink
     end
   end
+
+
+  
 end
