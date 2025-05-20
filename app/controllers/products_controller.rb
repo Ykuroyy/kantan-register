@@ -91,12 +91,14 @@ class ProductsController < ApplicationController
 
 
 
-  # 🔁 Flask API へ画像送信して推定された商品名を受け取る
+    # 🔁 Flask API へ画像送信して推定された商品名を受け取る
   def predict
     image_file = params[:image]
     return render json: { error: "画像がありません" }, status: :bad_request if image_file.blank?
 
     tempfile = image_file.tempfile
+
+
 
     begin
       response = HTTParty.post(
@@ -108,28 +110,30 @@ class ProductsController < ApplicationController
       )
 
 
+
+
       Rails.logger.info("Flaskからの生レスポンス: #{response.body}")
+
+
+
+      if response.code != 200
+        raise "Flaskの返答コードが異常: #{response.code}"
+      end
+
       result = JSON.parse(response.body)
 
-
-
-
-      response = conn.post("/predict", payload)
-      Rails.logger.info("Flaskからの生レスポンス: #{response.body}")
-
-
-
-
-      if result["name"]
-        render json: { name: result["name"] }
+     if result["name"]
+        @predicted_name = result["name"]
+        @score = result["score"]
+        render :predict_result
       else
-        render json: { error: "商品名が見つかりませんでした" }, status: :not_found
+        @error = "商品を認識できませんでした"
+        render :camera
       end
-    rescue JSON::ParserError => e
-      Rails.logger.error("JSONパースエラー: #{e.message}")
-      render json: { error: "Flaskからのレスポンスが不正です" }, status: :bad_gateway
     rescue => e
-      render json: { error: "predictアクションでエラー: #{e.message}" }, status: :internal_server_error
+      Rails.logger.error("predictアクションでエラー: #{e.message}")
+      @error = "画像認識中にエラーが発生しました"
+      render :camera
     end
   end
 
@@ -174,5 +178,5 @@ class ProductsController < ApplicationController
   end
 
 
-  
+
 end
