@@ -21,6 +21,7 @@ class OrdersController < ApplicationController
       end
     end
 
+    
     # カート中身の表示用データ整形
     @cart_items = session[:cart].map do |product_id, quantity|
       product = Product.find_by(id: product_id)

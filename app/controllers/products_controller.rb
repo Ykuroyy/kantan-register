@@ -1,6 +1,8 @@
 class ProductsController < ApplicationController
   require 'faraday'
+  require 'faraday/multipart'
   require 'json'
+
 
   # fetch対応のため、CSRFトークンの検証をスキップ
   skip_before_action :verify_authenticity_token, only: [:predict]
@@ -24,27 +26,20 @@ class ProductsController < ApplicationController
     @product = Product.new
   end
 
-
-
-
   # 商品登録処理
   def create
     @product = Product.new(product_params)
     if @product.save
       session.delete(:product_image_blob_id)
 
-      # ✅ Flaskへ画像送信（非同期または同期）
-      send_image_to_flask(@product.image)
+      # ここでFlaskに画像を送信（商品名付き）
+      send_image_to_flask(@product.image, @product.name)
 
       redirect_to products_path, notice: "商品を登録しました。"
     else
       render :new, status: :unprocessable_entity
     end
   end
-
-
-
-
 
   # 編集フォーム
   def edit
@@ -73,39 +68,11 @@ class ProductsController < ApplicationController
     end
   end
 
-
-
   # カメラ起動ページ
   def camera
   end
 
-  # 🔁 Flask API へ画像送信して推定された商品名を受け取る
-  def predict
-    image_file = params[:image]
-    if image_file.blank?
-      return render json: { error: "画像がありません" }, status: :bad_request
-    end
-
-    begin
-      # 本番と開発でURLを切り替え
-      api_base_url = Rails.env.production? ? "https://your-flask-api.onrender.com" : "http://localhost:5000"
-
-      conn = Faraday.new(url: "https://ai-server-0zw8.onrender.com")
-      response = conn.post("/predict", image: image_file)
-      result = JSON.parse(response.body)
-
-      if result["name"]
-        render json: { name: result["name"] }
-      else
-        render json: { error: "商品名が見つかりませんでした" }, status: :not_found
-      end
-    rescue => e
-      render json: { error: "AIサーバーとの通信に失敗しました: #{e.message}" }, status: :internal_server_error
-    end
-  end
-
-  
-  # 📸 カメラで撮影した画像を一時保存して商品登録画面へ（登録用）
+  # 📸 カメラで撮影した画像を一時保存して商品登録画面へ
   def capture_product
     uploaded_io = params[:image]
 
@@ -117,56 +84,84 @@ class ProductsController < ApplicationController
 
     session[:product_image_blob_id] = blob.id
 
-    if params[:product_id].present?
-      redirect_to edit_product_path(params[:product_id])  # ✅ 編集画面に戻す
-    else
-      redirect_to new_product_path                        # 新規登録画面に戻す
-    end
+    redirect_to params[:product_id].present? ? edit_product_path(params[:product_id]) : new_product_path
   end
 
 
 
 
-  private
+  # 🔁 Flask API へ画像送信して推定された商品名を受け取る
+  def predict
+    image_file = params[:image]
+    return render json: { error: "画像がありません" }, status: :bad_request if image_file.blank?
 
-  # 商品をIDから取得
+    tempfile = image_file.tempfile
+
+    begin
+      conn = Faraday.new(url: "http://localhost:5000") do |f|
+        f.request :multipart
+        f.adapter Faraday.default_adapter
+      end
+
+      payload = {
+        image: Faraday::Multipart::FilePart.new(tempfile.path, "image/png")
+      }
+
+      response = conn.post("/predict", payload)
+      Rails.logger.info("Flaskからの生レスポンス: #{response.body}")
+
+      result = JSON.parse(response.body)
+      if result["name"]
+        render json: { name: result["name"] }
+      else
+        render json: { error: "商品名が見つかりませんでした" }, status: :not_found
+      end
+    rescue JSON::ParserError => e
+      Rails.logger.error("JSONパースエラー: #{e.message}")
+      render json: { error: "Flaskからのレスポンスが不正です" }, status: :bad_gateway
+    rescue => e
+      render json: { error: "predictアクションでエラー: #{e.message}" }, status: :internal_server_error
+    end
+  end
+
+    private
+
   def set_product
     @product = Product.find(params[:id])
   end
 
-  # パラメータ許可
   def product_params
     params.require(:product).permit(:name, :price, :image)
   end
 
-  # 画像削除アクション（使っている場合）
-  def remove_image
-    @product = Product.find(params[:id])
-    @product.image.purge
-    redirect_to edit_product_path(@product), notice: "画像を削除しました"
-  end
-
-  def send_image_to_flask(image)
+    # Flaskに画像と名前を送信（/register_image）
+  def send_image_to_flask(image, name)
     return unless image.attached?
 
-    # 一時ファイルを取得
     file = image.download
     tempfile = Tempfile.new(["upload", ".png"])
     tempfile.binmode
     tempfile.write(file)
     tempfile.rewind
-
+    
     begin
-      conn = Faraday.new(url: "https://ai-server-0zw8.onrender.com") # Flask URL
-      response = conn.post("/register_image", image: Faraday::UploadIO.new(tempfile.path, "image/png"))
-      Rails.logger.info("Flaskへの送信結果: #{response.body}")
+      conn = Faraday.new(url: "http://localhost:5000") do |f|
+        f.request :multipart
+        f.adapter Faraday.default_adapter
+      end
+
+      payload = {
+        image: Faraday::Multipart::FilePart.new(tempfile.path, "image/png"),
+        name: name
+      }
+
+      response = conn.post("/register_image", payload)
+      Rails.logger.info("Flaskへの送信結果: #{response.status} #{response.body}")
     rescue => e
-      Rails.logger.error("Flaskへの送信に失敗: #{e.message}")
+      Rails.logger.error("Flaskへの送信失敗: #{e.message}")
     ensure
       tempfile.close
       tempfile.unlink
     end
   end
-
-
 end

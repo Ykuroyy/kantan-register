@@ -29,6 +29,10 @@ Rails.application.routes.draw do
   # 撮影画像をサーバーに送信してAI予測
   post "/image_predict", to: "products#predict", as: :image_predict
 
+
+
+
+
   # 売上分析ページ（Chart.js対応）
   get "/reports", to: "reports#index", as: :reports
 
