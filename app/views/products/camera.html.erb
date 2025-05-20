@@ -1,26 +1,42 @@
-<h2>カメラを起動して商品を撮影</h2>
+<h2 class="form-heading">📷 カメラで撮影</h2>
 
-<!-- 映像表示 -->
-<video id="video" width="320" height="240" autoplay></video>
-<br>
+<!-- コンテナに mode と product_id を埋め込む -->
+<div id="camera-container" data-mode="<%= params[:mode] %>" data-product-id="<%= params[:product_id] %>">
 
-<!-- 撮影ボタン -->
-<button id="capture">撮影する</button>
+  <!-- 映像表示 -->
+  <video id="video" width="320" height="240" autoplay></video>
+  <br>
 
-<!-- またはファイル選択 -->
-<h3>または画像ファイルから予測</h3>
-<input type="file" id="upload-file" accept="image/*">
-<button id="predict-button">この画像で予測</button>
+  <!-- 撮影ボタン -->
+  <button id="capture">撮影する</button>
 
-<!-- 撮影結果をcanvasに描画（送信に使う） -->
-<canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+  <!-- またはファイル選択 -->
+  <h3>または画像ファイルから予測</h3>
+  <input type="file" id="upload-file" accept="image/*">
+  <button id="predict-button">この画像で予測</button>
 
-<!-- 結果表示 -->
-<p id="result" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
+  <!-- 撮影結果をcanvasに描画（送信に使う） -->
+  <canvas id="canvas" width="320" height="240" style="visibility:hidden;"></canvas>
+
+
+  <!-- 結果表示 -->
+  <p id="result" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
+</div>
+
+
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
+    const resultElem = document.getElementById("result");
+    const container = document.getElementById("camera-container");
+
+    // 安全にmodeとproductIdを取得
+    const mode = container.dataset.mode;
+    const productId = container.dataset.productId;
+
 
     // カメラ起動
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -35,12 +51,12 @@
       alert("このブラウザはカメラに対応していません。");
     }
 
-    // 📸 撮影ボタン処理
-    document.getElementById("capture").addEventListener("click", () => {
-      const canvas = document.getElementById("canvas");
-      const context = canvas.getContext("2d");
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+
+
+    // 撮影して送信
+    document.getElementById("capture").addEventListener("click", () => {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => {
         sendImageToPredict(blob);
       }, "image/png");
@@ -49,10 +65,9 @@
 
 
 
-    // 📁 ファイルアップロードから送信
+    // ファイルアップロードして送信
     document.getElementById("predict-button").addEventListener("click", () => {
-      const fileInput = document.getElementById("upload-file");
-      const file = fileInput.files[0];
+      const file = document.getElementById("upload-file").files[0];
       if (!file) {
         alert("画像ファイルを選択してください");
         return;
@@ -60,14 +75,17 @@
       sendImageToPredict(file);
     });
 
-    // 🔁 共通の送信処理
 
+
+
+    // 画像送信共通処理
     function sendImageToPredict(blob) {
+      resultElem.textContent = "画像を認識中です...";
+      resultElem.style.color = "gray";
+
       const formData = new FormData();
       formData.append("image", blob, "photo.png");
 
-      const mode = "<%= params[:mode] %>";
-      const productId = "<%= params[:product_id] %>";
       const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
       let endpoint = "";
@@ -76,6 +94,7 @@
       } else {
         endpoint = `/camera/capture_product?mode=${mode}${productId ? `&product_id=${productId}` : ""}`;
       }
+
 
       fetch(endpoint, {
         method: "POST",
@@ -87,19 +106,18 @@
       })
       .then(response => {
         if (mode === "order") {
+          if (!response.ok) throw new Error("サーバーエラー：" + response.status);
           return response.json();
         } else {
-          // 商品登録が完了したら、登録画面に戻る
-          window.location.href = (
-            mode === "edit" && productId
-              ? `/products/${productId}/edit`
-              : "/products/new"
-          );
+          window.location.href = (mode === "edit" && productId
+            ? `/products/${productId}/edit`
+            : "/products/new");
         }
       })
+
+
       .then(data => {
         if (mode === "order" && data) {
-          const resultElem = document.getElementById("result");
           resultElem.style.display = "block";
           if (data.name) {
             resultElem.textContent = `認識された商品名: ${data.name}`;
@@ -112,7 +130,8 @@
         }
       })
       .catch((error) => {
-        alert("エラーが発生しました: " + error);
+        resultElem.textContent = "エラーが発生しました: " + error.message;
+        resultElem.style.color = "red";
       });
     }
   });

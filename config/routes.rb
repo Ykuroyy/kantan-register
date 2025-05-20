@@ -5,7 +5,8 @@ Rails.application.routes.draw do
 
   # 商品登録用：撮影画像を保存して new に渡す
   post "/camera/capture_product", to: "products#capture_product", as: :capture_product_image
-  
+    # カメラ画面（撮影ボタンでpredictへ）
+  get "/camera", to: "products#camera", as: :camera
 
 
   # 商品管理（登録・編集・削除・検索）
@@ -23,8 +24,7 @@ Rails.application.routes.draw do
     end
   end
 
-  # カメラ画面（撮影ボタンでpredictへ）
-  get "/camera", to: "products#camera", as: :camera
+
 
   # 撮影画像をサーバーに送信してAI予測
   post "/image_predict", to: "products#predict", as: :image_predict
