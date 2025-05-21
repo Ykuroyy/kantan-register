@@ -36,16 +36,21 @@
     const mode = container.dataset.mode;
     const productId = container.dataset.productId;
 
+
+
+    // カメラ起動
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ video: true })
         .then((stream) => {
           video.srcObject = stream;
         })
         .catch((err) => {
-          alert("カメラが使用できません: " + err);
+          alert("カメラが使用できません: " + err.message);
+          console.error(err);
         });
     }
 
+    // 撮影ボタンでカメラ画像送信
     document.getElementById("capture").addEventListener("click", () => {
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => {
@@ -53,6 +58,7 @@
       }, "image/png");
     });
 
+    // ファイル選択から画像送信
     document.getElementById("predict-button").addEventListener("click", () => {
       const file = document.getElementById("upload-file").files[0];
       if (!file) {
@@ -64,49 +70,47 @@
 
 
 
+    // 画像送信処理（Railsの /image_predict にPOST）
+    function sendImageToPredict(blob) {
+      resultElem.textContent = "画像を認識中です...";
+      resultElem.style.color = "gray";
 
-  function sendImageToPredict(blob) {
-    resultElem.textContent = "画像を認識中です...";
-    resultElem.style.color = "gray";
+      const formData = new FormData();
+      formData.append("image", blob, "photo.png");
 
-    const formData = new FormData();
-    formData.append("image", blob, "photo.png");
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
-    // Flask予測APIのエンドポイント（Railsの/predictアクション）
-    const endpoint = "/image_predict";
+ 
 
-    fetch(endpoint, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "X-CSRF-Token": csrfToken
-      },
-      credentials: "same-origin"
-    })
-    .then(response => {
-      if (!response.ok) throw new Error("サーバーエラー：" + response.status);
-      return response.text(); // ★ HTMLとして受け取る（predict_result.html.erb）
-    })
-    .then(html => {
-      document.open();
-      document.write(html);
-      document.close();
-    })
-    .catch(error => {
-      resultElem.textContent = "エラーが発生しました: " + error.message;
-      resultElem.style.color = "red";
-    });
-  }
-
-      
+      fetch("/image_predict", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRF-Token": csrfToken
+        },
+        credentials: "same-origin"
+      })
+      .then(response => {
+        if (!response.ok) throw new Error("サーバーエラー：" + response.status);
+        return response.text();
+      })
+      .then(html => {
+        document.open();
+        document.write(html);
+        document.close();
+      })
+      .catch(error => {
+        resultElem.textContent = "エラーが発生しました: " + error.message;
+        resultElem.style.color = "red";
+      });
+    }
+  });
 </script>
+  
 
 
 
-
-   
 
 
       
