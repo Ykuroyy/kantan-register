@@ -15,8 +15,12 @@
   <input type="file" id="upload-file" accept="image/*">
   <button id="predict-button">この画像で予測</button>
 
+
   <!-- 撮影結果をcanvasに描画（送信に使う） -->
   <canvas id="canvas" width="320" height="240" style="visibility:hidden;"></canvas>
+  
+  <!-- プレビュー画像表示エリアを追加 -->
+  <img id="preview" style="margin-top:10px; max-width: 320px; display:none;" alt="撮影プレビュー">
 
 
   <!-- 結果表示 -->
@@ -53,11 +57,16 @@
     // 撮影ボタンでカメラ画像送信
     document.getElementById("capture").addEventListener("click", () => {
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // プレビュー表示
+      const preview = document.getElementById("preview");
+      preview.src = canvas.toDataURL("image/png");
+      preview.style.display = "block";
+
+      // Blob化して送信
       canvas.toBlob((blob) => {
-        sendImageToPredict(blob);
+        sendImageToPredict(blob); // ← もともとの関数を使う
       }, "image/png");
     });
-
     // ファイル選択から画像送信
     document.getElementById("predict-button").addEventListener("click", () => {
       const file = document.getElementById("upload-file").files[0];
