@@ -10,31 +10,31 @@ class OrdersController < ApplicationController
                   Product.all.order(created_at: :desc)
                 end
 
-    # 🔍 AI画像認識でヒットした商品名が渡ってきた場合（mode: order → camera から）
-  if params[:recognized_name].present?
-    product = Product.find_by(name: params[:recognized_name])
-    if product
-      add_product_to_cart(product.id)
-      @products = [product]  # ← これを追加
-      flash.now[:notice] = "#{product.name} をカートに追加しました"
-    else
-      flash.now[:alert] = "商品が見つかりませんでした"
-      @products = Product.all  # fallback
+    # 🔍 AI画像認識でヒットした商品があればカートに追加
+    if params[:recognized_name].present?
+      @recognized_name = params[:recognized_name]
+      product = Product.find_by(name: @recognized_name)
+
+      if product
+        add_product_to_cart(product.id)
+        flash.now[:notice] = "#{product.name} をカートに追加しました"
+      else
+        @similar_products = Product.where("name LIKE ?", "%#{@recognized_name}%")
+        flash.now[:alert] = "認識された商品「#{@recognized_name}」は登録されていません"
+      end
     end
-  else
-    @products = Product.all
-  end
-  
 
-
-
-    
-    # カート中身の表示用データ整形
+    # 🛒 カート表示
     @cart_items = session[:cart].map do |product_id, quantity|
       product = Product.find_by(id: product_id)
       { product: product, quantity: quantity } if product
     end.compact
   end
+
+
+
+
+
 
   # カートに追加
   def add_to_cart

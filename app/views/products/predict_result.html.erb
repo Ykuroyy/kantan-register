@@ -1,11 +1,14 @@
-<h2>認識結果の確認</h2>
+<h2 class="form-heading">画像認識の結果</h2>
 
-<p>認識された商品名：<strong><%= @predicted_name %></strong></p>
-<p>スコア：<%= (@score.to_f * 100).round(1) %>% の確信度</p>
+<div class="form-container">
+  <div class="form-card">
+    <p>認識された商品名：</p>
+    <h3><%= @predicted_name %></h3>
+    <p>類似度スコア：<%= (@score * 100).round(2) %>%</p>
 
-<%= form_with url: new_order_path, method: :get, local: true do %>
-  <%= hidden_field_tag :recognized_name, @predicted_name %>
-  <%= submit_tag "はい、カートに追加する", class: "form-button blue" %>
-<% end %>
-
-<%= link_to "いいえ、撮り直す", camera_path(mode: "order"), class: "form-button gray" %>
+    <%= form_with url: new_order_path, method: :get, local: true do %>
+      <%= hidden_field_tag :recognized_name, @predicted_name %>
+      <%= submit_tag "この商品でレジへ進む", class: "form-button blue" %>
+    <% end %>
+  </div>
+</div>

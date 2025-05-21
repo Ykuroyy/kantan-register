@@ -15,6 +15,17 @@
     <% end %>
   </div>
 
+  
+    <% if flash[:notice] %>
+      <p style="color: green; font-weight: bold;"><%= flash[:notice] %></p>
+    <% elsif flash[:alert] %>
+      <p style="color: red; font-weight: bold;"><%= flash[:alert] %></p>
+    <% end %>
+
+
+
+
+
   <!-- 手動選択 -->
   <% @products.each do |product| %>
     <div class="form-card">
@@ -88,5 +99,10 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const productName = localStorage.getItem
+    const productName = localStorage.getItem("recognized_name");
+    if (productName) {
+      alert("前回認識された商品: " + productName);
+      localStorage.removeItem("recognized_name"); // 1回で消す場合
+    }
+  });
 </script>

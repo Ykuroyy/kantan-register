@@ -62,59 +62,47 @@
       sendImageToPredict(file);
     });
 
-    function sendImageToPredict(blob) {
-      resultElem.textContent = "画像を認識中です...";
-      resultElem.style.color = "gray";
 
-      const formData = new FormData();
-      formData.append("image", blob, "photo.png");
 
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
-      let endpoint = "";
-      if (mode === "order") {
-        endpoint = "/image_predict";
-      } else {
-        endpoint = `/camera/capture_product?mode=${mode}${productId ? `&product_id=${productId}` : ""}`;
-      }
+  function sendImageToPredict(blob) {
+    resultElem.textContent = "画像を認識中です...";
+    resultElem.style.color = "gray";
 
-      fetch(endpoint, {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-CSRF-Token": csrfToken
-        },
-        credentials: "same-origin"
-      })
-      .then(response => {
-        if (!response.ok) throw new Error("サーバーエラー：" + response.status);
-        // レジ画面（mode === "order"）だけJSON、それ以外はHTML
-        return mode === "order" ? response.json() : response.text();
-      })
-      .then(data => {
-        if (mode === "order") {
-          if (data.name) {
-            resultElem.textContent = `認識された商品名: ${data.name}`;
-            resultElem.style.color = "black";
-            window.location.href = "/orders/new?recognized_name=" + encodeURIComponent(data.name);
-          } else {
-            resultElem.textContent = "認識できませんでした。";
-            resultElem.style.color = "red";
-          }
-        } else {
-          // HTMLを表示
-          document.open();
-          document.write(data);
-          document.close();
-        }
-      })
-      .catch(error => {
-        resultElem.textContent = "エラーが発生しました: " + error.message;
-        resultElem.style.color = "red";
-      });
-    }
-  });
+    const formData = new FormData();
+    formData.append("image", blob, "photo.png");
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+    // Flask予測APIのエンドポイント（Railsの/predictアクション）
+    const endpoint = "/image_predict";
+
+    fetch(endpoint, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "X-CSRF-Token": csrfToken
+      },
+      credentials: "same-origin"
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("サーバーエラー：" + response.status);
+      return response.text(); // ★ HTMLとして受け取る（predict_result.html.erb）
+    })
+    .then(html => {
+      document.open();
+      document.write(html);
+      document.close();
+    })
+    .catch(error => {
+      resultElem.textContent = "エラーが発生しました: " + error.message;
+      resultElem.style.color = "red";
+    });
+  }
+
+      
 </script>
+
 
 
 
