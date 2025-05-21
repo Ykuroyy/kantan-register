@@ -34,6 +34,7 @@
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("2d");
+    const preview = document.getElementById("preview");
     const resultElem = document.getElementById("result");
     const container = document.getElementById("camera-container");
 
@@ -43,30 +44,47 @@
 
 
     // カメラ起動
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then((stream) => {
-          video.srcObject = stream;
-        })
-        .catch((err) => {
-          alert("カメラが使用できません: " + err.message);
-          console.error(err);
-        });
-    }
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      })
+      .catch((err) => {
+        alert("カメラが使用できません: " + err.message);
+        console.error(err);
+      });
 
-    // 撮影ボタンでカメラ画像送信
+    // 撮影
     document.getElementById("capture").addEventListener("click", () => {
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      // プレビュー表示
-      const preview = document.getElementById("preview");
-      preview.src = canvas.toDataURL("image/png");
+      const imageDataUrl = canvas.toDataURL("image/png");
+      preview.src = imageDataUrl;
       preview.style.display = "block";
 
-      // Blob化して送信
+      // 商品登録用：sessionStorageに保存してnewに戻る
+      if (mode === "new" || mode === "edit") {
+        sessionStorage.setItem("capturedImage", imageDataUrl);
+        if (mode === "new") {
+          window.location.href = "/products/new";
+        } else {
+          window.location.href = `/products/${productId}/edit`;
+        }
+        return;
+      }
+
+      // レジ用：Flaskに送信して予測へ
       canvas.toBlob((blob) => {
-        sendImageToPredict(blob); // ← もともとの関数を使う
+        sendImageToPredict(blob);
       }, "image/png");
     });
+
+
+
+
+
+
+
+
+
     // ファイル選択から画像送信
     document.getElementById("predict-button").addEventListener("click", () => {
       const file = document.getElementById("upload-file").files[0];
@@ -79,44 +97,30 @@
 
 
 
-    // 画像送信処理（Railsの /image_predict にPOST）
     function sendImageToPredict(blob) {
-      resultElem.textContent = "画像を認識中です...";
-      resultElem.style.color = "gray";
-
       const formData = new FormData();
       formData.append("image", blob, "photo.png");
 
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
-
-
- 
-
-      fetch("/image_predict", {
+      fetch("https://your-flask-app.onrender.com/predict", {
         method: "POST",
         body: formData,
-        headers: {
-          "X-CSRF-Token": csrfToken
-        },
-        credentials: "same-origin"
       })
-      .then(response => {
-        if (!response.ok) throw new Error("サーバーエラー：" + response.status);
-        return response.text();
-      })
-      .then(html => {
-        document.open();
-        document.write(html);
-        document.close();
-      })
-      .catch(error => {
-        resultElem.textContent = "エラーが発生しました: " + error.message;
-        resultElem.style.color = "red";
-      });
+        .then((response) => response.json())
+        .then((json) => {
+          if (json.name) {
+            const url = `/predict_result?predicted_name=${encodeURIComponent(json.name)}&score=${json.score}`;
+            window.location.href = url;
+          } else {
+            resultElem.textContent = "一致する商品が見つかりませんでした";
+            resultElem.style.color = "red";
+          }
+        })
+        .catch((error) => {
+          resultElem.textContent = "エラーが発生しました: " + error.message;
+          resultElem.style.color = "red";
+        });
     }
-  });
 </script>
-  
 
 
 

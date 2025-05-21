@@ -30,6 +30,8 @@ Rails.application.routes.draw do
   post "/image_predict", to: "products#predict", as: :image_predict
 
 
+  get "/predict_result", to: "products#predict_result"
+
 
 
 
