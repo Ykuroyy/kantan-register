@@ -102,7 +102,7 @@ class ProductsController < ApplicationController
 
     begin
       response = HTTParty.post(
-        "http://127.0.0.1:5000/predict",
+        "https://ai-server-f6si.onrender.com/predict", 
         body: {
           image: File.open(tempfile.path)
         },
@@ -161,7 +161,7 @@ class ProductsController < ApplicationController
     
     begin
       response = HTTParty.post(
-        "http://127.0.0.1:5000/register_image",
+        "https://ai-server-f6si.onrender.com/predict",  
         body: {
           image: File.open(tempfile.path),
           name: name
