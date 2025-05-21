@@ -88,3 +88,6 @@ gem 'ruby-vips'
 
 
 gem 'httparty'
+
+
+gem 'rubocop', require: false
