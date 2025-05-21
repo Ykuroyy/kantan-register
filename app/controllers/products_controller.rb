@@ -235,7 +235,8 @@ end
 
   def predict_result
     @predicted_name = params[:predicted_name]
-    @score = params[:score].to_f
+    @score = params[:score]&.to_f || 0.0
+    @product = Product.find_by(name: @predicted_name)
   end
 
 

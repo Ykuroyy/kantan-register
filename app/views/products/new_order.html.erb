@@ -48,7 +48,7 @@
         <% @cart_items.each do |item| %>
           <% product = item[:product] %>
           <% next unless product %> <!-- ここでnilをスキップ -->
-          
+
           <% quantity = item[:quantity].to_i %>
           <li style="margin-bottom: 1em;">
             <%= product.name %> - ¥<%= number_with_delimiter(product.price) %>
@@ -86,7 +86,7 @@
 
     const base64Image = sessionStorage.getItem("capturedImage");
     if (base64Image) {
-      fetchBase64AndUpload(base64Image);
+      fetchBase64AndUpload(base64Image);// ❌ これが動くと商品登録に戻ってしまう
       sessionStorage.removeItem("capturedImage");
     }
 
