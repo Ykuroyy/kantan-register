@@ -6,8 +6,6 @@
     <p class="form-field">画像認識で商品を選ぶ</p>
     <%= link_to "カメラで撮影", camera_path(mode: "order"), class: "form-button blue" %>
 
-
-
     <p class="form-field">商品名から検索</p>
     <%= form_with url: new_order_path, method: :get, local: true do %>
       <%= text_field_tag :keyword, params[:keyword], placeholder: "カタカナで商品名を入力", class: "form-field" %>
@@ -15,16 +13,11 @@
     <% end %>
   </div>
 
-  
-    <% if flash[:notice] %>
-      <p style="color: green; font-weight: bold;"><%= flash[:notice] %></p>
-    <% elsif flash[:alert] %>
-      <p style="color: red; font-weight: bold;"><%= flash[:alert] %></p>
-    <% end %>
-
-
-
-
+  <% if flash[:notice] %>
+    <p style="color: green; font-weight: bold;"><%= flash[:notice] %></p>
+  <% elsif flash[:alert] %>
+    <p style="color: red; font-weight: bold;"><%= flash[:alert] %></p>
+  <% end %>
 
   <!-- 手動選択 -->
   <% @products.each do |product| %>
@@ -35,30 +28,24 @@
         <div class="preview-image no-image">画像なし</div>
       <% end %>
 
-      <div class="form-field">
-        <strong>商品名:</strong> <%= product.name %>
-      </div>
+      <div class="form-field"><strong>商品名:</strong> <%= product.name %></div>
+      <div class="form-field"><strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %></div>
 
-      <div class="form-field">
-        <strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %>
-      </div>
-
-      <%= form_with url: add_to_cart_orders_path, method: :post, local: true do %>
-        <%= hidden_field_tag :product_id, product.id %>
+      <%= form_with url: new_order_path, method: :get, local: true do %>
+        <%= hidden_field_tag :recognized_name, product.name %>
         <%= submit_tag "カートに追加", class: "form-button yellow" %>
       <% end %>
     </div>
   <% end %>
 </div>
 
-<!-- 🧺 カートの中身 -->
+<!-- カートの中身 -->
 <div class="form-card">
   <p class="form-field">カートの中身</p>
 
   <% if @cart_items.present? %>
     <%= form_with url: update_cart_orders_path, method: :patch, local: true do %>
       <ul>
-        <% total = 0 %>
         <% @cart_items.each do |item| %>
           <% product = item[:product] %>
           <% quantity = item[:quantity].to_i %>
@@ -66,43 +53,28 @@
             <%= product.name %> - ¥<%= number_with_delimiter(product.price) %>
             ×
             <%= number_field_tag "quantities[#{product.id}]", quantity, min: 0, class: "quantity-field", style: "width: 60px;" %>
-
-            <!-- 🔁 数量更新 -->
-            <%= submit_tag "数量を更新", class: "form-button yellow", name: "commit_#{product.id}" %>
-
-  
-            <% total += product.price * quantity %>
           </li>
         <% end %>
       </ul>
-
-      <!-- 合計金額 -->
-      <p><strong>合計金額:</strong> ¥<%= number_with_delimiter(total) %></p>
+      <p><strong>合計金額:</strong> ¥<%= number_with_delimiter(@total) %></p>
+      <%= submit_tag "数量を更新", class: "form-button yellow" %>
     <% end %>
 
-    <!-- ✅ 支払いボタン -->
     <%= button_to "支払い", orders_path, method: :post, class: "form-button blue" %>
-
-    <!-- 🔁 カートを空にする -->
     <%= button_to "カゴを空にする", clear_cart_orders_path, method: :post, class: "form-button red" %>
-
-
   <% else %>
     <p>カートに商品はありません</p>
   <% end %>
 </div>
 
-
-<!-- 🔙 トップに戻る -->
 <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
-
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const productName = localStorage.getItem("recognized_name");
     if (productName) {
       alert("前回認識された商品: " + productName);
-      localStorage.removeItem("recognized_name"); // 1回で消す場合
+      localStorage.removeItem("recognized_name");
     }
   });
 </script>

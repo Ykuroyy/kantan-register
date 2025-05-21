@@ -2,32 +2,13 @@
 
 <!-- コンテナに mode と product_id を埋め込む -->
 <div id="camera-container" data-mode="<%= params[:mode] %>" data-product-id="<%= params[:product_id] %>">
-
   <!-- 映像表示 -->
-  <video id="video" width="320" height="240" autoplay></video>
-  <br>
-
-  <!-- 撮影ボタン -->
+  <video id="video" width="320" height="240" autoplay></video><br>
   <button id="capture">撮影する</button>
-
-  <!-- またはファイル選択 -->
-  <h3>または画像ファイルから予測</h3>
-  <input type="file" id="upload-file" accept="image/*">
-  <button id="predict-button">この画像で予測</button>
-
-
-  <!-- 撮影結果をcanvasに描画（送信に使う） -->
   <canvas id="canvas" width="320" height="240" style="visibility:hidden;"></canvas>
-  
-  <!-- プレビュー画像表示エリアを追加 -->
   <img id="preview" style="margin-top:10px; max-width: 320px; display:none;" alt="撮影プレビュー">
-
-
-  <!-- 結果表示 -->
   <p id="result" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
 </div>
-
-
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -41,26 +22,20 @@
     const mode = container.dataset.mode;
     const productId = container.dataset.productId;
 
-
-
-    // カメラ起動
     navigator.mediaDevices.getUserMedia({ video: true })
       .then((stream) => {
         video.srcObject = stream;
       })
       .catch((err) => {
         alert("カメラが使用できません: " + err.message);
-        console.error(err);
       });
 
-    // 撮影
     document.getElementById("capture").addEventListener("click", () => {
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageDataUrl = canvas.toDataURL("image/png");
       preview.src = imageDataUrl;
       preview.style.display = "block";
 
-      // 商品登録用：sessionStorageに保存してnewに戻る
       if (mode === "new" || mode === "edit") {
         sessionStorage.setItem("capturedImage", imageDataUrl);
         if (mode === "new") {
@@ -71,31 +46,10 @@
         return;
       }
 
-      // レジ用：Flaskに送信して予測へ
       canvas.toBlob((blob) => {
         sendImageToPredict(blob);
       }, "image/png");
     });
-
-
-
-
-
-
-
-
-
-    // ファイル選択から画像送信
-    document.getElementById("predict-button").addEventListener("click", () => {
-      const file = document.getElementById("upload-file").files[0];
-      if (!file) {
-        alert("画像ファイルを選択してください");
-        return;
-      }
-      sendImageToPredict(file);
-    });
-
-
 
     function sendImageToPredict(blob) {
       const formData = new FormData();
@@ -120,16 +74,8 @@
           resultElem.style.color = "red";
         });
     }
+  });
 </script>
-
-
-
-
-
-      
-  
-
-
 
 <!-- 戻り先ボタン -->
 <% if params[:mode] == "edit" && params[:product_id].present? %>
@@ -138,4 +84,15 @@
   <%= link_to "商品登録に戻る", new_product_path, class: "form-button gray" %>
 <% else %>
   <%= link_to "レジ画面に戻る", new_order_path, class: "form-button gray" %>
+<% end %>
+
+<!-- 手入力での検索フォームも追加（レジ用） -->
+<% if params[:mode] == "order" %>
+  <div class="form-container" style="margin-top: 30px;">
+    <h3>商品名から検索</h3>
+    <%= form_with url: new_order_path, method: :get, local: true do %>
+      <%= text_field_tag :keyword, params[:keyword], placeholder: "カタカナで商品名を入力", class: "form-input" %>
+      <%= submit_tag "検索", class: "form-button blue" %>
+    <% end %>
+  </div>
 <% end %>

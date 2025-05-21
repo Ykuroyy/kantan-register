@@ -1,43 +1,32 @@
 Rails.application.routes.draw do
-
   # トップページ
   root "top#index"
 
-  # 商品登録用：撮影画像を保存して new に渡す
+  # カメラ関連（撮影と認識）
+  get  "/camera",              to: "products#camera",           as: :camera
   post "/camera/capture_product", to: "products#capture_product", as: :capture_product_image
-    # カメラ画面（撮影ボタンでpredictへ）
-  get "/camera", to: "products#camera", as: :camera
-
+  post "/image_predict",       to: "products#predict",          as: :image_predict
+  get  "/predict_result",      to: "products#predict_result"
 
   # 商品管理（登録・編集・削除・検索）
   resources :products do
-    patch :remove_image, on: :member  # 画像削除用のルート
+    patch :remove_image, on: :member
   end
 
-  # 注文管理（レジ画面、カート追加、注文保存）
-  resources :orders, only: [:new, :create] do
+  # 注文・カート・支払い処理
+  resources :orders, only: [:create] do
     collection do
-      post :add_to_cart
-      patch :update_cart
-      post :clear_cart
-      delete :remove_item  # 商品個別削除に必要
+      get    :new,          to: "products#new_order",       as: :new
+      patch  :update_cart,  to: "products#update_cart"
+      post   :clear_cart,   to: "products#clear_cart"
+      post   :create_order, to: "products#create_order"      # 支払い確定
+      delete :remove_item   # ← 今後商品個別削除するなら必要
     end
   end
 
-
-
-  # 撮影画像をサーバーに送信してAI予測
-  post "/image_predict", to: "products#predict", as: :image_predict
-
-
-  get "/predict_result", to: "products#predict_result"
-
-
-
-
-  # 売上分析ページ（Chart.js対応）
+  # 売上分析ページ（Chart.js対応など）
   get "/reports", to: "reports#index", as: :reports
 
-  # ヘルスチェック（Renderや監視サービス用）
-  get "up" => "rails/health#show", as: :rails_health_check
+  # Render用ヘルスチェック
+  get "up", to: "rails/health#show", as: :rails_health_check
 end

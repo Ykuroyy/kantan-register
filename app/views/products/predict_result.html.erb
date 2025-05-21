@@ -3,16 +3,21 @@
 <div class="form-container">
   <div class="form-card">
 
-    <%# ✅ プレビュー画像を表示（sessionStorage からの画像は JS でセット） %>
+    <%# プレビュー画像を表示 (camera.html.erbからのデータ) %>
     <img id="recognized-preview" style="max-width: 320px; margin-bottom: 1em; display: none;" alt="撮影プレビュー">
 
-    <p>認識された商品名：</p>
-    <h3><%= @predicted_name %></h3>
-    <p>類似度スコア：<%= (@score * 100).round(2) %>%</p>
+    <% if @product %>
+      <p>認識された商品名：</p>
+      <h3><%= @product.name %></h3>
+      <p>類似度スコア：<%= (@score * 100).round(2) %>%</p>
 
-    <%= form_with url: new_order_path, method: :get, local: true do %>
-      <%= hidden_field_tag :recognized_name, @predicted_name %>
-      <%= submit_tag "この商品でレジへ進む", class: "form-button blue" %>
+      <%= form_with url: new_order_path, method: :get, local: true do %>
+        <%= hidden_field_tag :recognized_name, @product.name %>
+        <%= submit_tag "この商品でレジへ進む", class: "form-button blue" %>
+      <% end %>
+    <% else %>
+      <p style="color:red;">一致する商品が見つかりませんでした</p>
+      <%= link_to "手動で商品を選ぶ", new_order_path, class: "form-button blue" %>
     <% end %>
 
     <%= link_to "撮影に戻る", camera_path(mode: "order"), class: "form-button gray", style: "margin-top: 1em;" %>
@@ -20,7 +25,6 @@
 </div>
 
 <script>
-  // JSでsessionStorageからプレビュー画像を取得して表示
   document.addEventListener("DOMContentLoaded", () => {
     const img = document.getElementById("recognized-preview");
     const imageData = sessionStorage.getItem("capturedImage");
