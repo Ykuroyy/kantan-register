@@ -1,98 +1,129 @@
 <h2 class="form-heading">📷 カメラで撮影</h2>
 
-<!-- コンテナに mode と product_id を埋め込む -->
 <div id="camera-container" data-mode="<%= params[:mode] %>" data-product-id="<%= params[:product_id] %>">
-  <!-- 映像表示 -->
-  <video id="video" width="320" height="240" autoplay></video><br>
+  <!-- カメラ映像 -->
+  <video id="video" width="320" height="240" autoplay></video>
+  <br>
+
+  <!-- 撮影ボタン -->
   <button id="capture">撮影する</button>
+
+  <!-- または画像ファイルで予測 -->
+  <% if params[:mode] == "order" %>
+    <h3>または画像ファイルから予測</h3>
+    <input type="file" id="upload-file" accept="image/*">
+    <button id="predict-button">この画像で予測</button>
+  <% end %>
+
+  <!-- Canvasとプレビュー -->
   <canvas id="canvas" width="320" height="240" style="visibility:hidden;"></canvas>
-  <img id="preview" style="margin-top:10px; max-width: 320px; display:none;" alt="撮影プレビュー">
+  <img id="preview" style="margin-top:10px; max-width:320px; display:none;" alt="撮影プレビュー">
+
+  <!-- 結果表示 -->
   <p id="result" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const context = canvas.getContext("2d");
-    const preview = document.getElementById("preview");
-    const resultElem = document.getElementById("result");
-    const container = document.getElementById("camera-container");
-
-    const mode = container.dataset.mode;
-    const productId = container.dataset.productId;
-
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then((stream) => {
-        video.srcObject = stream;
-      })
-      .catch((err) => {
-        alert("カメラが使用できません: " + err.message);
-      });
-
-    document.getElementById("capture").addEventListener("click", () => {
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageDataUrl = canvas.toDataURL("image/png");
-      preview.src = imageDataUrl;
-      preview.style.display = "block";
-
-      if (mode === "new" || mode === "edit") {
-        sessionStorage.setItem("capturedImage", imageDataUrl);
-        if (mode === "new") {
-          window.location.href = "/products/new";
-        } else {
-          window.location.href = `/products/${productId}/edit`;
-        }
-        return;
-      }
-
-      canvas.toBlob((blob) => {
-        sendImageToPredict(blob);
-      }, "image/png");
-    });
-
-    function sendImageToPredict(blob) {
-      const formData = new FormData();
-      formData.append("image", blob, "photo.png");
-
-      fetch("https://your-flask-app.onrender.com/predict", {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((json) => {
-          if (json.name) {
-            const url = `/predict_result?predicted_name=${encodeURIComponent(json.name)}&score=${json.score}`;
-            window.location.href = url;
-          } else {
-            resultElem.textContent = "一致する商品が見つかりませんでした";
-            resultElem.style.color = "red";
-          }
-        })
-        .catch((error) => {
-          resultElem.textContent = "エラーが発生しました: " + error.message;
-          resultElem.style.color = "red";
-        });
-    }
-  });
-</script>
-
-<!-- 戻り先ボタン -->
+<!-- 戻りボタン -->
 <% if params[:mode] == "edit" && params[:product_id].present? %>
   <%= link_to "商品編集に戻る", edit_product_path(params[:product_id]), class: "form-button gray" %>
 <% elsif params[:mode] == "new" %>
   <%= link_to "商品登録に戻る", new_product_path, class: "form-button gray" %>
 <% else %>
-  <%= link_to "レジ画面に戻る", new_order_path, class: "form-button gray" %>
+  <%= link_to "レジ画面に戻る", new_order_orders_path, class: "form-button gray" %>
 <% end %>
 
-<!-- 手入力での検索フォームも追加（レジ用） -->
-<% if params[:mode] == "order" %>
-  <div class="form-container" style="margin-top: 30px;">
-    <h3>商品名から検索</h3>
-    <%= form_with url: new_order_path, method: :get, local: true do %>
-      <%= text_field_tag :keyword, params[:keyword], placeholder: "カタカナで商品名を入力", class: "form-input" %>
-      <%= submit_tag "検索", class: "form-button blue" %>
-    <% end %>
-  </div>
-<% end %>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const context = canvas.getContext("2d");
+  const preview = document.getElementById("preview");
+  const resultElem = document.getElementById("result");
+
+  const container = document.getElementById("camera-container");
+  const mode = container.dataset.mode;
+  const productId = container.dataset.productId;
+
+  // カメラ起動
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) => {
+      video.srcObject = stream;
+    })
+    .catch((err) => {
+      alert("カメラが使用できません: " + err.message);
+      console.error(err);
+    });
+
+  // 撮影処理
+  document.getElementById("capture").addEventListener("click", () => {
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageDataUrl = canvas.toDataURL("image/png");
+    preview.src = imageDataUrl;
+    preview.style.display = "block";
+
+    canvas.toBlob((blob) => {
+      if (mode === "new" || mode === "edit") {
+        sendImageToRails(blob);
+      } else {
+        sendImageToPredict(blob);
+      }
+    }, "image/png");
+  });
+
+  // レジ用：画像ファイルから送信
+  const predictBtn = document.getElementById("predict-button");
+  if (predictBtn) {
+    predictBtn.addEventListener("click", () => {
+      const file = document.getElementById("upload-file").files[0];
+      if (!file) {
+        alert("画像ファイルを選択してください");
+        return;
+      }
+      sendImageToPredict(file);
+    });
+  }
+
+  // Railsへ画像を送信（登録用）
+  function sendImageToRails(blob) {
+    const formData = new FormData();
+    formData.append("image", blob, "photo.png");
+
+    fetch("/camera/capture_product", {
+      method: "POST",
+      body: formData,
+    }).then(() => {
+      if (mode === "new") {
+        window.location.href = "/products/new";
+      } else {
+        window.location.href = `/products/${productId}/edit`;
+      }
+    });
+  }
+
+  // Flaskへ画像を送信（レジ用）
+  function sendImageToPredict(blob) {
+    const formData = new FormData();
+    formData.append("image", blob, "photo.png");
+
+    fetch("https://your-flask-app.onrender.com/predict", {
+      method: "POST",
+      body: formData,
+    })
+    .then((response) => response.json())
+    .then((json) => {
+      if (json.name) {
+        const url = `/predict_result?predicted_name=${encodeURIComponent(json.name)}&score=${json.score}`;
+        window.location.href = url;
+      } else {
+        resultElem.textContent = "一致する商品が見つかりませんでした";
+        resultElem.style.color = "red";
+      }
+    })
+    .catch((error) => {
+      resultElem.textContent = "エラーが発生しました: " + error.message;
+      resultElem.style.color = "red";
+    });
+  }
+});
+</script>
+

@@ -1,7 +1,6 @@
 <div class="form-container">
   <div class="form-card">
-
-    <%= form_with model: @product, local: true do |f| %>
+    <%= form_with model: @product, local: true, html: { multipart: true } do |f| %>
       <% if @product.errors.any? %>
         <div class="alert">
           <ul>
@@ -12,20 +11,36 @@
         </div>
       <% end %>
 
-
       <!-- ✅ カメラで撮影された画像がセッションにある場合 -->
       <% if session[:product_image_blob_id].present? %>
         <% blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id]) %>
         <% if blob %>
           <div class="form-card">
             <p class="form-field">カメラで撮影した画像:</p>
-            <%= image_tag url_for(blob), class: "preview-image" %>
-            <%= f.hidden_field :image, value: blob.signed_id %>
+            <!-- JSで差し替えるpreview -->
+            <img id="camera-preview-image" class="preview-image" style="display:none;" />
+            <!-- Rails側にサーバー保存された画像表示（JSで隠す） -->
+            <img src="<%= url_for(blob) %>" id="server-image" class="preview-image" />
+            <%= hidden_field_tag "product[image]", blob.signed_id %>
           </div>
         <% end %>
       <% end %>
 
-
+      <!-- ✅ 通常の画像アップロード -->
+      <div class="img-upload">
+        <strong>商品画像:</strong>
+        <span class="optional">任意</span>
+        <div class="click-upload">
+          <%= f.file_field :image, id: "product_image" %>
+        </div>
+        <div class="preview">
+          <% if @product.image.attached? %>
+            <%= image_tag @product.resize_image, id: "preview-image", class: "preview-image" %>
+          <% else %>
+            <img id="preview-image" class="preview-image" style="display: none;" />
+          <% end %>
+        </div>
+      </div>
 
       <!-- ✅ カメラで撮影ボタン -->
       <div class="form-card">
@@ -35,27 +50,6 @@
         <% else %>
           <%= link_to "カメラで撮影", camera_path(mode: "new"), class: "form-button blue" %>
         <% end %>
-      </div>
-
- 
-
-      <!-- ✅ 通常の画像アップロード -->
-      <div class="img-upload">
-        <strong>商品画像:</strong>
-        <span class="optional">任意</span>
-
-        <div class="click-upload">
-          <%= f.file_field :image, id: "product_image" %>
-        </div>
-
-        <!-- プレビュー -->
-        <div class="preview">
-          <% if @product.persisted? && @product.image.attached? %>
-            <%= image_tag @product.resize_image, id: "preview-image", class: "preview-image" %>
-          <% else %>
-            <img id="preview-image" class="preview-image" style="display: none;" />
-          <% end %>
-        </div>
       </div>
 
       <!-- ✅ 商品名 -->
@@ -72,12 +66,28 @@
 
       <!-- ✅ ボタン -->
       <div class="form-actions">
-        <%= f.submit submit_text, class: "form-button yellow" %>      
+        <%= f.submit submit_text, class: "form-button yellow" %>
         <%= link_to "もどる", cancel_path, class: "form-button gray" %>
       </div>
     <% end %>
-    
   </div>
 </div>
-    
 
+<!-- プレビュー表示（JSでsrcを設定） -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const imageData = sessionStorage.getItem("capturedImage");
+    if (imageData) {
+      const previewImg = document.getElementById("camera-preview-image");
+      const serverImg = document.getElementById("server-image");
+      if (previewImg) {
+        previewImg.src = imageData;
+        previewImg.style.display = "block";
+      }
+      if (serverImg) {
+        serverImg.style.display = "none";
+      }
+      sessionStorage.removeItem("capturedImage");
+    }
+  });
+</script>

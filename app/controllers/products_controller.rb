@@ -2,8 +2,11 @@ class ProductsController < ApplicationController
   require 'httparty'
   require 'json'
 
-  skip_before_action :verify_authenticity_token, only: [:predict]
+  skip_before_action :verify_authenticity_token, only: [:predict, :capture_product]
+
   before_action :set_product, only: [:show, :edit, :update, :destroy]
+
+  
 
   def index
     if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
@@ -21,14 +24,24 @@ class ProductsController < ApplicationController
 
   def create
     @product = Product.new(product_params)
+
+    # ✅ セッションに画像があれば ActiveStorage にアタッチ
+    if session[:product_image_blob_id].present?
+      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
+      @product.image.attach(blob) if blob
+    end
+
     if @product.save
-      session.delete(:product_image_blob_id)
+      session.delete(:product_image_blob_id) # 登録後に削除
       send_image_to_flask(@product.image, @product.name)
       redirect_to products_path, notice: "商品を登録しました。"
     else
       render :new, status: :unprocessable_entity
     end
   end
+
+
+
 
   def edit; end
 
@@ -57,14 +70,18 @@ class ProductsController < ApplicationController
 
   def capture_product
     uploaded_io = params[:image]
+    return head :bad_request unless uploaded_io
+
     blob = ActiveStorage::Blob.create_and_upload!(
       io: uploaded_io.tempfile,
       filename: uploaded_io.original_filename,
       content_type: uploaded_io.content_type
     )
     session[:product_image_blob_id] = blob.id
+
     redirect_to params[:product_id].present? ? edit_product_path(params[:product_id]) : new_product_path
   end
+
 
   def predict
     image_file = params[:image]
@@ -95,38 +112,45 @@ class ProductsController < ApplicationController
     end
   end
 
-  def new_order
-    @cart = session[:cart] ||= []
-    if params[:recognized_name].present?
-      product = Product.find_by(name: params[:recognized_name])
-      if product
-        existing = @cart.find { |item| item["product_id"] == product.id }
-        if existing
-          existing["quantity"] += 1
-        else
-          @cart << { "product_id" => product.id, "quantity" => 1 }
-        end
-        flash[:notice] = "#{product.name} をカートに追加しました"
+def new_order
+  @cart = session[:cart].is_a?(Array) ? session[:cart] : []
+
+  # 商品名で追加処理（AIや検索から）
+  if params[:recognized_name].present?
+    product = Product.find_by(name: params[:recognized_name])
+    if product
+      existing = @cart.find { |item| item["product_id"] == product.id }
+      if existing
+        existing["quantity"] += 1
       else
-        flash[:alert] = "商品が見つかりませんでした"
+        @cart << { "product_id" => product.id, "quantity" => 1 }
       end
-    end
-    if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
-      @products = Product.where("name LIKE ?", "%#{params[:keyword]}%")
+      session[:cart] = @cart
+      flash.now[:notice] = "#{product.name} をカートに追加しました"
     else
-      @products = Product.all
+      flash.now[:alert] = "商品が見つかりませんでした"
     end
-    @cart_items = @cart.map do |item|
-      product = Product.find_by(id: item["product_id"])
-      quantity = item["quantity"]
-      subtotal = product && quantity ? product.price.to_i * quantity : 0
-      { product: product, quantity: quantity, subtotal: subtotal }
-    end
-    @total = @cart_items.sum { |item| item[:subtotal] }
   end
+
+  # カート内容の再計算
+  @cart_items = @cart.map do |item|
+    next unless item.is_a?(Hash)
+    product = Product.find_by(id: item["product_id"])
+    quantity = item["quantity"].to_i
+    subtotal = product ? product.price.to_i * quantity : 0
+    { product: product, quantity: quantity, subtotal: subtotal }
+  end.compact
+
+  @total = @cart_items.sum { |item| item[:subtotal] }
+  @products = Product.all.order(created_at: :desc)
+end
+
+
 
   def update_cart
     @cart = session[:cart] ||= []
+    @cart.select! { |item| item.is_a?(Hash) && item.key?("product_id") && item.key?("quantity") }
+
     params[:quantities].each do |product_id, quantity|
       item = @cart.find { |i| i["product_id"] == product_id.to_i }
       if item
@@ -137,18 +161,18 @@ class ProductsController < ApplicationController
         end
       end
     end
-    redirect_to new_order_path
+    redirect_to new_order_orders_path
   end
 
   def clear_cart
     session[:cart] = []
-    redirect_to new_order_path, notice: "カートを空にしました"
+    redirect_to new_order_orders_path, notice: "カートを空にしました"
   end
 
   def create_order
     @cart = session[:cart] || []
     if @cart.empty?
-      redirect_to new_order_path, alert: "カートが空です"
+      redirect_to new_order_orders_path, alert: "カートが空です"
       return
     end
 
@@ -164,8 +188,15 @@ class ProductsController < ApplicationController
 
     Rails.logger.info("注文内容: #{order_summary.join(", ")}, 合計: ¥#{total_amount}")
     session[:cart] = []
-    redirect_to new_order_path, notice: "注文を確定しました（合計: ¥#{total_amount}）"
+    redirect_to new_order_orders_path, notice: "注文を確定しました（合計: ¥#{total_amount}）"
   end
+
+
+  def predict_result
+    @predicted_name = params[:predicted_name]
+    @score = params[:score].to_f
+  end
+
 
   private
 

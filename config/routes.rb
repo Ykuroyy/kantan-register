@@ -16,14 +16,15 @@ Rails.application.routes.draw do
   # 注文・カート・支払い処理
   resources :orders, only: [:create] do
     collection do
-      get    :new,          to: "products#new_order",       as: :new
-      patch  :update_cart,  to: "products#update_cart"
-      post   :clear_cart,   to: "products#clear_cart"
-      post   :create_order, to: "products#create_order"      # 支払い確定
-      delete :remove_item   # ← 今後商品個別削除するなら必要
+      get   :new_order,    to: "products#new_order"
+      patch :update_cart,  to: "products#update_cart"
+      post  :clear_cart,   to: "products#clear_cart"
+      post  :create_order, to: "products#create_order"
+      # delete :remove_item ← 必要になった時に追加でOK
     end
   end
 
+  
   # 売上分析ページ（Chart.js対応など）
   get "/reports", to: "reports#index", as: :reports
 
