@@ -6,7 +6,7 @@ class ProductsController < ApplicationController
 
   before_action :set_product, only: [:show, :edit, :update, :destroy]
 
-  
+
 
   def index
     if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
@@ -18,22 +18,25 @@ class ProductsController < ApplicationController
 
   def show; end
 
+
   def new
     @product = Product.new
+
+    # 撮影画面から戻ってきたときだけセッション画像を保持
+    session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
   end
+
 
   def create
     @product = Product.new(product_params)
 
-    # ✅ セッションに画像があれば ActiveStorage にアタッチ
     if session[:product_image_blob_id].present?
       blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
       @product.image.attach(blob) if blob
     end
 
     if @product.save
-      session.delete(:product_image_blob_id) # 登録後に削除
-      send_image_to_flask(@product.image, @product.name)
+      session.delete(:product_image_blob_id)
       redirect_to products_path, notice: "商品を登録しました。"
     else
       render :new, status: :unprocessable_entity
@@ -43,19 +46,41 @@ class ProductsController < ApplicationController
 
 
 
-  def edit; end
+
+
+
+  def edit
+    # 撮影画面から戻ってきたときだけセッション画像を保持
+    session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
+  end
+
+
 
   def update
-    if params[:remove_image] == "1"
-      @product.image.purge if @product.image.attached?
+    # 新しい画像がセッションにあれば、既存の画像を削除してからアタッチ
+    if session[:product_image_blob_id].present?
+      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
+      if blob
+        @product.image.purge if @product.image.attached?  # ⭐️←これを忘れると前の画像が残る！
+        @product.image.attach(blob)
+      end
+      session.delete(:product_image_blob_id)
     end
 
-    if @product.update(product_params)
+    # imageを除いて更新（paramsのimageがnilなら上書きされるのを防ぐ）
+    update_params = product_params
+    update_params = update_params.except(:image) unless params[:product][:image].present?
+
+    if @product.update(update_params)
       redirect_to products_path, notice: "商品情報を更新しました。"
     else
       render :edit, status: :unprocessable_entity
     end
   end
+
+
+
+
 
   def destroy
     begin
@@ -77,10 +102,15 @@ class ProductsController < ApplicationController
       filename: uploaded_io.original_filename,
       content_type: uploaded_io.content_type
     )
+
     session[:product_image_blob_id] = blob.id
 
-    redirect_to params[:product_id].present? ? edit_product_path(params[:product_id]) : new_product_path
+    # ✅ 消さないで！
+    # redirect_to params[:product_id].present? ? edit_product_path(params[:product_id]) : new_product_path
+    redirect_to params[:product_id].present? ? edit_product_path(params[:product_id], from_camera: 1) : new_product_path(from_camera: 1)
+
   end
+
 
 
   def predict

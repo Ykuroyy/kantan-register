@@ -1,6 +1,8 @@
 <div class="form-container">
   <div class="form-card">
     <%= form_with model: @product, local: true, html: { multipart: true } do |f| %>
+    <%# <%= form_with model: @product, local: true, html: { multipart: true } do |form| %> 
+
       <% if @product.errors.any? %>
         <div class="alert">
           <ul>
@@ -11,20 +13,25 @@
         </div>
       <% end %>
 
-      <!-- ✅ カメラで撮影された画像がセッションにある場合 -->
-      <% if session[:product_image_blob_id].present? %>
-        <% blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id]) %>
-        <% if blob %>
-          <div class="form-card">
-            <p class="form-field">カメラで撮影した画像:</p>
-            <!-- JSで差し替えるpreview -->
-            <img id="camera-preview-image" class="preview-image" style="display:none;" />
-            <!-- Rails側にサーバー保存された画像表示（JSで隠す） -->
-            <img src="<%= url_for(blob) %>" id="server-image" class="preview-image" />
-            <%= hidden_field_tag "product[image]", blob.signed_id %>
-          </div>
-        <% end %>
-      <% end %>
+
+
+      <!-- ✅ プレビュー画像（1個のimgタグだけ使う） -->
+      <div class="form-card">
+        <p>商品画像プレビュー:</p>
+        <img id="camera-preview-image"
+             src="<%=
+               if session[:product_image_blob_id].present?
+                 blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
+                 blob ? url_for(blob) : ''
+               elsif @product.image.attached?
+                  url_for(@product.image)
+               else
+                ''
+                end
+             %>"
+             style="max-width: 100%; height: auto;"
+          />
+      </div>
 
       <!-- ✅ 通常の画像アップロード -->
       <div class="img-upload">
@@ -33,20 +40,15 @@
         <div class="click-upload">
           <%= f.file_field :image, id: "product_image" %>
         </div>
-        <div class="preview">
-          <% if @product.image.attached? %>
-            <%= image_tag @product.resize_image, id: "preview-image", class: "preview-image" %>
-          <% else %>
-            <img id="preview-image" class="preview-image" style="display: none;" />
-          <% end %>
-        </div>
       </div>
 
       <!-- ✅ カメラで撮影ボタン -->
       <div class="form-card">
         <p class="form-field">カメラで商品を撮影</p>
         <% if action_name == "edit" %>
-          <%= link_to "カメラで撮影", camera_path(mode: "edit", product_id: @product.id), class: "form-button blue" %>
+          <%# <%= link_to "カメラで撮影", camera_path(mode: "edit", product_id: @product.id), class: "form-button blue" %> 
+          <%= link_to "カメラで撮影", camera_path(mode: "edit", product_id: @product.id, from_camera: 1), class: "form-button blue" %>
+
         <% else %>
           <%= link_to "カメラで撮影", camera_path(mode: "new"), class: "form-button blue" %>
         <% end %>

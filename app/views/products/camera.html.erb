@@ -88,14 +88,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData();
     formData.append("image", blob, "photo.png");
 
-    fetch("/camera/capture_product", {
+    fetch("/products/capture_product", {
       method: "POST",
       body: formData,
     }).then(() => {
       if (mode === "new") {
-        window.location.href = "/products/new";
+        window.location.href = "/products/new?from_camera=1";
       } else {
-        window.location.href = `/products/${productId}/edit`;
+        window.location.href = `/products/${productId}/edit?from_camera=1`;
       }
     });
   }

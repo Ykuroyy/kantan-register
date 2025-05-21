@@ -10,9 +10,12 @@ Rails.application.routes.draw do
 
   # 商品管理（登録・編集・削除・検索）
   resources :products do
-    patch :remove_image, on: :member
+    collection do
+      post 'capture_product'
+    end
   end
 
+  
   # 注文・カート・支払い処理
   resources :orders, only: [:create] do
     collection do
@@ -24,7 +27,7 @@ Rails.application.routes.draw do
     end
   end
 
-  
+
   # 売上分析ページ（Chart.js対応など）
   get "/reports", to: "reports#index", as: :reports
 
