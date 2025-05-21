@@ -161,7 +161,7 @@ class ProductsController < ApplicationController
     
     begin
       response = HTTParty.post(
-        "https://ai-server-f6si.onrender.com/predict",  
+        "https://ai-server-f6si.onrender.com/register_image",    
         body: {
           image: File.open(tempfile.path),
           name: name
