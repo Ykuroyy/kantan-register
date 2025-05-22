@@ -19,7 +19,7 @@ Rails.application.routes.draw do
   # 注文・カート・支払い処理
   resources :orders, only: [:create] do
     collection do
-      get   :new_order,    to: "products#new_order"
+      get   :new_order,    to: "products#new_order", as: :new_order
       patch :update_cart,  to: "products#update_cart"
       post  :clear_cart,   to: "products#clear_cart"
       post  :create_order, to: "products#create_order"
