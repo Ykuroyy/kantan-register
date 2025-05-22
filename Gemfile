@@ -91,3 +91,5 @@ gem 'httparty'
 
 
 gem 'rubocop', require: false
+
+gem "aws-sdk-s3", require: false
