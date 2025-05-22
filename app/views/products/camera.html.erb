@@ -108,34 +108,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData();
     formData.append("image", blob, "photo.png");
 
-
     // ✅ FlaskのURLを自動で切り替える
     const isLocalhost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-    const flaskUrl = isLocalhost
-      ? "http://localhost:10000/predict"
-      : "https://ai-server-f6si.onrender.com/predict";
+    const baseFlaskUrl = isLocalhost
+      ? "http://localhost:10000"
+      : "https://ai-server-f6si.onrender.com";
 
+    const pingUrl = `${baseFlaskUrl}/ping`;
+    const predictUrl = `${baseFlaskUrl}/predict`;
 
-
-    fetch(flaskUrl, {
-      method: "POST",
-      body: formData,
-    })
-    .then((response) => response.json())
-    .then((json) => {
-      if (json.name) {
-        const url = `/predict_result?predicted_name=${encodeURIComponent(json.name)}&score=${json.score}`;
-        window.location.href = url;
-      } else {
-        resultElem.textContent = "一致する商品が見つかりませんでした";
-        resultElem.style.color = "red";
-      }
-    })
-    .catch((error) => {
-      resultElem.textContent = "エラーが発生しました: " + error.message;
-      resultElem.style.color = "red";
-    });
+    // 🔁 スリープ対策：まずping
+    fetch(pingUrl)
+      .finally(() => {
+        // ping完了後に予測処理
+        fetch(predictUrl, {
+          method: "POST",
+          body: formData,
+        })
+        .then((response) => response.json())
+        .then((json) => {
+          if (json.name) {
+            const url = `/predict_result?predicted_name=${encodeURIComponent(json.name)}&score=${json.score}`;
+            window.location.href = url;
+          } else {
+            resultElem.textContent = "一致する商品が見つかりませんでした";
+            resultElem.style.color = "red";
+          }
+        })
+        .catch((error) => {
+          resultElem.textContent = "エラーが発生しました: " + error.message;
+          resultElem.style.color = "red";
+        });
+      });
   }
-});
 </script>
-
