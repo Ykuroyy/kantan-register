@@ -27,29 +27,24 @@ class ProductsController < ApplicationController
   end
 
 
-  def create
-    @product = Product.new(product_params)
+def create
+  @product = Product.new(product_params)
 
-    if session[:product_image_blob_id].present?
-      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
-      @product.image.attach(blob) if blob
+  if @product.save
+    if @product.image.attached?
+      image_url = url_for(@product.image)
+      HTTParty.post("https://ai-server-f6si.onrender.com/register_image", body: {
+                      name: @product.name,
+                      image_url: image_url
+                    })
     end
 
-    if @product.save
-      session.delete(:product_image_blob_id)
-
-      # 登録後にFlaskへ画像送信
-      send_image_to_flask(@product.image, @product.name)
-
-
-      redirect_to products_path, notice: "商品を登録しました。"
-    else
-      render :new, status: :unprocessable_entity
-    end
-
-
-
+    redirect_to products_path, notice: "登録完了"
+  else
+    render :new
   end
+end
+
 
 
 
@@ -250,16 +245,13 @@ end
     params.require(:product).permit(:name, :price, :image)
   end
 
+
+  
   def send_image_to_flask(image, name)
     return unless image.attached?
 
-    file = image.download
-    tempfile = Tempfile.new(["upload", ".png"])
-    tempfile.binmode
-    tempfile.write(file)
-    tempfile.rewind
+    image_url = url_for(image)  # ← これを忘れず定義
 
-    # ✅ Rails環境に応じてURLを自動で切り替える
     flask_base_url =
       if Rails.env.production?
         "https://ai-server-f6si.onrender.com"
@@ -267,22 +259,17 @@ end
         "http://localhost:10000"
       end
 
-
     begin
       response = HTTParty.post(
         "#{flask_base_url}/register_image",
         body: {
-          image: File.open(tempfile.path),
-          name: name
-        },
-        headers: { 'Content-Type' => 'multipart/form-data' }
+          name: name,
+          image_url: image_url
+        }
       )
       Rails.logger.info("Flaskへの送信成功: #{response.code} #{response.body}")
     rescue => e
       Rails.logger.error("Flaskへの送信失敗: #{e.message}")
-    ensure
-      tempfile.close
-      tempfile.unlink
     end
   end
 end
