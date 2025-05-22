@@ -118,7 +118,7 @@ class ProductsController < ApplicationController
 
     # ✅ 消さないで！
     # redirect_to params[:product_id].present? ? edit_product_path(params[:product_id]) : new_product_path
-    redirect_to params[:product_id].present? ? edit_product_path(params[:product_id], from_camera: 1) : new_product_path(from_camera: 1)
+    redirect_to params[:product_id].present? ? edit_product_path(params[:product_id], from_camera: 1) : new_order_path(from_camera: 1)
 
   end
 
