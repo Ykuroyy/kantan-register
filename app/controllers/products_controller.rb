@@ -27,23 +27,16 @@ class ProductsController < ApplicationController
   end
 
 
-def create
-  @product = Product.new(product_params)
+  def create
+    @product = Product.new(product_params)
 
-  if @product.save
-    if @product.image.attached?
-      image_url = url_for(@product.image)
-      HTTParty.post("https://ai-server-f6si.onrender.com/register_image", body: {
-                      name: @product.name,
-                      image_url: image_url
-                    })
+    if @product.save
+      send_image_to_flask(@product.image, @product.name)
+      redirect_to products_path, notice: "登録完了"
+    else
+      render :new
     end
-
-    redirect_to products_path, notice: "登録完了"
-  else
-    render :new
   end
-end
 
 
 
@@ -251,17 +244,20 @@ end
     return unless image.attached?
 
     # ✅ 本番／開発でホストを自動切り替え
-    host = Rails.env.production? ? "https://your-production-domain.com" : "http://localhost:3000"
+    host = Rails.env.production? ? "https://kantan-register.onrender.com" : "http://localhost:3000"
 
     # ✅ 画像URLを取得
     image_url = Rails.application.routes.url_helpers.rails_blob_url(image, host: host)
 
+    flask_url = Rails.env.production? ? "https://ai-server-f6si.onrender.com" : "http://localhost:10000"
+
     # ✅ Flaskへ送信
     begin
-      response = HTTParty.post("https://ai-server-f6si.onrender.com/register_image", body: {
+      response = HTTParty.post("#{flask_url}/register_image", body: {
                                  name: name,
                                  image_url: image_url
                                })
+                               
       Rails.logger.info("Flaskへ画像URL送信成功: #{response.code} #{response.body}")
     rescue => e
       Rails.logger.error("Flaskへの送信失敗: #{e.message}")
