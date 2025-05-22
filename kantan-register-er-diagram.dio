@@ -1,19 +1,19 @@
 <mxfile host="65bd71144e">
     <diagram id="f-jGgy0yTgpzPBi2VDyG" name="ページ1">
-        <mxGraphModel dx="591" dy="452" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="402" dy="318" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="45" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="20" y="40" width="770" height="1120" as="geometry"/>
+                    <mxGeometry x="20" y="10" width="800" height="1150" as="geometry"/>
                 </mxCell>
-                <mxCell id="4" value="&lt;b&gt;&lt;font style=&quot;font-size: 21px;&quot;&gt;オリジナルアプリ 「かんたんレジ」 kantan-registerのER図&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="40" y="60" width="580" height="60" as="geometry"/>
+                <mxCell id="4" value="&lt;b&gt;&lt;font&gt;データベース設計&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fontSize=24;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="60" width="230" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="145" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="280" y="490" width="40" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="151" value="Product" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1" parent="1" vertex="1">
+                <mxCell id="151" value="products" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="270" y="130" width="230" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="152" value="id" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
@@ -61,58 +61,13 @@
                 <mxCell id="166" value="name" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="270" y="190" width="110" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="167" value="ActiveStorageAttachment" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1" parent="1" vertex="1">
-                    <mxGeometry x="490" y="370" width="230" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="168" value="id" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="490" y="400" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="169" value="integer" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="600" y="400" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="170" value="PK" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="680" y="400" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="171" value="string" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="600" y="430" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="172" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="680" y="430" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="173" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="680" y="460" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="174" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="680" y="490" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="175" value="integer" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="600" y="520" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="176" value="integer" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="600" y="490" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="177" value="string" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="600" y="460" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="179" value="blob_id" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="490" y="520" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="180" value="record_id&amp;nbsp;" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="490" y="490" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="181" value="record_type" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="490" y="460" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="182" value="name" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="490" y="430" width="110" height="30" as="geometry"/>
-                </mxCell>
                 <mxCell id="183" value="integer" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="200" y="400" width="80" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="184" value="id" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="90" y="400" width="110" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="185" value="OrderItem" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1" parent="1" vertex="1">
+                <mxCell id="185" value="order_item" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="90" y="370" width="230" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="186" value="FK" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
@@ -127,7 +82,7 @@
                 <mxCell id="189" value="order_id" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="90" y="430" width="110" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="190" value="product_id" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
+                <mxCell id="190" value="product_id&amp;nbsp;" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="90" y="460" width="110" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="191" value="quantity" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
@@ -148,7 +103,7 @@
                 <mxCell id="196" value="FK" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="280" y="460" width="40" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="197" value="Order&amp;nbsp;" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1" parent="1" vertex="1">
+                <mxCell id="197" value="orders" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="90" y="690" width="230" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="198" value="id&amp;nbsp;" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
@@ -187,57 +142,6 @@
                 <mxCell id="211" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="280" y="810" width="40" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="224" value="FK" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="680" y="520" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="233" value="ActiveStorageBlob" style="whiteSpace=wrap;html=1;align=center;direction=south;fontStyle=1" parent="1" vertex="1">
-                    <mxGeometry x="500" y="690" width="230" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="234" value="id" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="720" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="235" value="integer" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="610" y="720" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="236" value="PK" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="690" y="720" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="237" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="690" y="750" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="238" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="690" y="780" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="239" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="690" y="810" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="240" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="690" y="840" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="241" value="string" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="610" y="750" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="242" value="string" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="610" y="780" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="243" value="string" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="610" y="810" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="244" value="text" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="610" y="840" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="245" value="filename" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="780" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="246" value="key" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="750" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="247" value="content_type" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="810" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="248" value="metadata" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="840" width="110" height="30" as="geometry"/>
-                </mxCell>
                 <mxCell id="249" value="integer" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="200" y="460" width="80" height="30" as="geometry"/>
                 </mxCell>
@@ -250,39 +154,22 @@
                 <mxCell id="252" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
                     <mxGeometry x="280" y="550" width="40" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="254" value="byte_size" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="870" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="255" value="checksum" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="900" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="256" value="bigint" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="610" y="870" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="257" value="string" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="610" y="900" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="258" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="690" y="870" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="259" value="" style="whiteSpace=wrap;html=1;align=center;direction=south;" parent="1" vertex="1">
-                    <mxGeometry x="690" y="900" width="40" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="260" value="&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;### ER 図の説明&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;**Product (商品)**&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&amp;nbsp; &amp;nbsp; 1. 商品の基本情報（名前、価格）を保存&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp; &amp;nbsp; 2. ActiveStorage を通じて画像を 1 つ持つことができる&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp; &amp;nbsp; 3. 複数の OrderItem と関連付けられる&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;**Order (注文)**&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&amp;nbsp; &amp;nbsp;1. 注文の合計金額と作成日時を保存&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp; &amp;nbsp;2. 複数の OrderItem を持つ&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;**OrderItem (注文商品)**&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&amp;nbsp; &amp;nbsp;1. Order と Product を関連付ける中間テーブル&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp; &amp;nbsp;2. 注文された商品の数量を保存&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;**ActiveStorage 関連テーブル**&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&amp;nbsp; &amp;nbsp;1. 商品画像を保存するための ActiveStorage のテーブル&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp; &amp;nbsp;2. ActiveStorageAttachment: レコードと Blob を関連付ける&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp; &amp;nbsp;3. ActiveStorageBlob: 実際のファイルデータを参照する&lt;/font&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=0;align=left;strokeColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="30" y="880" width="430" height="270" as="geometry"/>
-                </mxCell>
-                <mxCell id="264" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;startArrow=ERmandOne;entryX=0.234;entryY=0.286;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;" parent="1" source="166" target="45" edge="1">
-                    <mxGeometry width="100" height="100" relative="1" as="geometry">
+                <mxCell id="264" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;startArrow=ERmandOne;entryX=0.042;entryY=0.515;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;" parent="1" source="166" target="185" edge="1">
+                    <mxGeometry x="-0.0004" width="100" height="100" relative="1" as="geometry">
                         <mxPoint x="70" y="240" as="sourcePoint"/>
                         <mxPoint x="150" y="130" as="targetPoint"/>
                         <Array as="points">
                             <mxPoint y="190"/>
+                            <mxPoint x="220" y="370"/>
+                            <mxPoint x="220" y="370"/>
+                            <mxPoint x="220" y="380"/>
                         </Array>
+                        <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="267" value="has_many" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="264" vertex="1" connectable="0">
+                <mxCell id="267" value="has_many" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;" parent="264" vertex="1" connectable="0">
                     <mxGeometry x="0.1223" y="1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
+                        <mxPoint x="-6" y="-10" as="offset"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="265" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;startArrow=ERmandOne;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" target="251" edge="1">
@@ -295,37 +182,9 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="270" value="has_many" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="265" vertex="1" connectable="0">
+                <mxCell id="270" value="has_many" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;" parent="265" vertex="1" connectable="0">
                     <mxGeometry x="-0.0066" y="-3" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="268" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERmandOne;startArrow=ERmandOne;exitX=0.051;exitY=0.605;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="233" edge="1">
-                    <mxGeometry width="100" height="100" relative="1" as="geometry">
-                        <mxPoint x="520" y="650" as="sourcePoint"/>
-                        <mxPoint x="620" y="550" as="targetPoint"/>
-                        <Array as="points">
-                            <mxPoint x="660" y="650"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="269" value="belongs_to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="268" vertex="1" connectable="0">
-                    <mxGeometry x="0.0262" y="1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="271" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERmandOne;startArrow=ERmandOne;exitX=0.051;exitY=0.605;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0;entryDx=0;entryDy=0;" parent="1" target="157" edge="1">
-                    <mxGeometry width="100" height="100" relative="1" as="geometry">
-                        <mxPoint x="611" y="370" as="sourcePoint"/>
-                        <mxPoint x="640" y="228" as="targetPoint"/>
-                        <Array as="points">
-                            <mxPoint x="680" y="328"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="272" value="has_one(image)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="271" vertex="1" connectable="0">
-                    <mxGeometry x="0.0262" y="1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
+                        <mxPoint x="5" y="11" as="offset"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="273" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERmandOne;startArrow=ERmandOne;exitX=0.019;exitY=0.781;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.098;entryY=0.636;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="197" target="250" edge="1">
@@ -338,7 +197,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="274" value="belongs_to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="273" vertex="1" connectable="0">
+                <mxCell id="274" value="belongs_to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;" parent="273" vertex="1" connectable="0">
                     <mxGeometry x="0.0262" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
@@ -357,9 +216,9 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="277" value="belongs_to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="276" vertex="1" connectable="0">
+                <mxCell id="277" value="belongs_to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;" parent="276" vertex="1" connectable="0">
                     <mxGeometry x="0.0262" y="1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
+                        <mxPoint x="11" y="-3" as="offset"/>
                     </mxGeometry>
                 </mxCell>
             </root>

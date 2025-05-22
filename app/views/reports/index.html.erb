@@ -1,4 +1,98 @@
-<div>
-  <h1 class="font-bold text-4xl">Reports#index</h1>
-  <p>Find me in app/views/reports/index.html.erb</p>
+<h1 class="form-heading">📊 売上分析</h1>
+
+<!-- ① 売上サマリー -->
+<div class="summary-cards">
+  <div class="card">
+    <h2>本日売上</h2>
+    <p>¥<%= number_with_delimiter(@today_sales) %></p>
+  </div>
+  <div class="card">
+    <h2>総売上高</h2>
+    <p>¥<%= number_with_delimiter(@total_sales) %></p>
+  </div>
+  <div class="card">
+    <h2>注文数</h2>
+    <p><%= @total_orders %> 件</p>
+  </div>
+  <div class="card">
+    <h2>平均注文単価</h2>
+    <p>¥<%= number_with_precision(@average_order_value, precision: 0) %></p>
+  </div>
+  <div class="card">
+    <h2>日別平均売上</h2>
+    <p>¥<%= number_with_precision(@daily_average_sales, precision: 0) %></p>
+  </div>
+  <div class="card">
+    <h2>最高売上日</h2>
+    <p><%= @max_sales_day %>：¥<%= number_with_delimiter(@max_sales_value) %></p>
+  </div>
+  <div class="card">
+    <h2>最低売上日</h2>
+    <p><%= @min_sales_day %>：¥<%= number_with_delimiter(@min_sales_value) %></p>
+  </div>
 </div>
+
+<!-- ② 当月／本日の販売実績 をサマリーの下に表示 -->
+<div class="text-center" style="margin-top: 32px;">
+  <h2 class="form-heading">当月の販売実績</h2>
+</div>
+<table class="report-table">
+  <thead>
+    <tr>
+      <th>商品名</th>
+      <th style="text-align:right;">販売数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @monthly_product_sales.each do |name, qty| %>
+      <tr>
+        <td><%= name %></td>
+        <td style="text-align:right;"><%= qty %> 個</td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="text-center" style="margin-top: 32px;">
+  <h2 class="form-heading">本日の販売実績</h2>
+</div>
+<table class="report-table">
+  <thead>
+    <tr>
+      <th>商品名</th>
+      <th style="text-align:right;">販売数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @today_product_sales.each do |name, qty| %>
+      <tr>
+        <td><%= name %></td>
+        <td style="text-align:right;"><%= qty %> 個</td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<!-- ③ グラフ描画用キャンバス -->
+<div class="chart-container" style="margin-top: 48px;">
+  <canvas id="daily-sales-chart" width="400" height="200"></canvas>
+</div>
+<div class="chart-container" style="margin-top: 24px;">
+  <canvas id="product-sales-chart" width="400" height="200"></canvas>
+</div>
+
+<!-- ④ 戻るボタン -->
+<div class="text-center" style="margin-top: 32px;">
+  <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
+</div>
+
+<%# ⑤ JSON を JavaScript 変数に埋め込む %>
+<script>
+  const dailyLabels   = <%= raw @daily_sales.keys.map { |d| d.strftime("%-m/%-d") }.to_json %>;
+  const dailyData     = <%= raw @daily_sales.values.to_json %>;
+  const productLabels = <%= raw @product_sales.keys.to_json %>;
+  const productData   = <%= raw @product_sales.values.to_json %>;
+</script>
+
+<%= javascript_include_tag "https://cdn.jsdelivr.net/npm/chart.js", defer: true %>
+<%= javascript_include_tag "sales_analytics", defer: true %>

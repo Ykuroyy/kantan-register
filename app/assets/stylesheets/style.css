@@ -144,26 +144,53 @@
 
 
 
-/* app/assets/stylesheets/style.css に追加 */
-.inline-block {
-  display: inline-block;
+/* 売上サマリー用 */
+.summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.inline-form {
-  display: inline;
+.summary-cards .card {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 16px;
+  width: 180px;
+  text-align: center;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+}
+
+/* チャートコンテナ用 */
+.chart-container {
+  max-width: 600px;
+  margin: 0 auto 24px;
+}
+
+/* もしボタンと同じグレイ系を使うなら */
+.form-button.gray {
+  /* すでに定義済みですが、ここで幅や余白を微調整してもOK */
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
 
 
-
-.notice {
-  color: green;
-  font-weight: bold;
-  margin: 10px 0;
+.report-table {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  border-collapse: collapse;
+}
+.report-table th,
+.report-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+.report-table th {
+  border-bottom: 2px solid #ccc;
+  text-align: left;
 }
 
-.alert {
-  color: red;
-  font-weight: bold;
-  margin: 10px 0;
-}
