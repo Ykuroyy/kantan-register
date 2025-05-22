@@ -94,6 +94,9 @@ class ProductsController < ApplicationController
 
   def capture_product
     uploaded_io = params[:image]
+
+    Rails.logger.debug("📷 受信した画像: #{uploaded_io.inspect}")  # ここ追加！
+
     return head :bad_request unless uploaded_io
 
     blob = ActiveStorage::Blob.create_and_upload!(
