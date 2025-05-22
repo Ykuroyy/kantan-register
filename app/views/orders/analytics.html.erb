@@ -1,0 +1,38 @@
+<h1 class="form-heading">📈 売上分析ダッシュボード</h1>
+
+<!-- 日別売上グラフ -->
+<div class="chart-card">
+  <h2 class="chart-heading">🗓 日別売上グラフ</h2>
+  <canvas id="daily-sales-chart" width="600" height="300"></canvas>
+</div>
+
+<!-- 商品別売上グラフ -->
+<div class="chart-card">
+  <h2 class="chart-heading">🍞 商品別売上グラフ</h2>
+  <canvas id="product-sales-chart" width="600" height="300"></canvas>
+</div>
+
+<!-- 売上サマリー -->
+<div class="chart-card">
+  <h2 class="chart-heading">📋 売上サマリー</h2>
+  <ul class="sales-summary">
+    <li>総売上金額：<%= number_to_currency(@total_sales) %></li>
+    <li>販売総数：<%= @total_items %>個</li>
+    <li>人気商品：<%= @top_product || "データなし" %></li>
+    <li>平均購入額：<%= number_to_currency(@average_purchase) %></li>
+  </ul>
+</div>
+
+<!-- Chart.js 読み込み -->
+<%= javascript_include_tag "https://cdn.jsdelivr.net/npm/chart.js", defer: true %>
+<%= javascript_include_tag "sales_analytics", defer: true %>
+
+<!-- データ埋め込み -->
+<script>
+  window.dailySalesData = <%= raw @daily_sales.to_json %>;
+  window.productSalesData = <%= raw @product_sales.to_json %>;
+</script>
+
+
+<%= link_to "ホームに戻る", root_path, class: "form-button gray" %>
+

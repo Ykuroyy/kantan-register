@@ -194,3 +194,39 @@
   text-align: left;
 }
 
+
+
+/* 売上分析ページ用 */
+
+/* グラフセクション：form-cardスタイルをベースに */
+.chart-card {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px auto;
+  width: 90%;
+  max-width: 700px;
+  text-align: center;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* グラフの見出し：form-heading風に */
+.chart-heading {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+/* 売上サマリーリスト */
+.sales-summary {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+}
+
+.sales-summary li {
+  margin-bottom: 8px;
+}
+
