@@ -4,10 +4,11 @@
   <!-- カメラ起動ボタン -->
   <div class="form-card">
     <p class="form-field">画像認識で商品を選ぶ</p>
-    <%= link_to "カメラで撮影", camera_path(mode: "order"), class: "form-button blue" %>
+    <%= link_to "カメラで撮影", camera_products_path(mode: "order"), class: "form-button blue" %>
+
 
     <p class="form-field">商品名から検索</p>
-    <%= form_with url: new_order_orders_path, method: :get, local: true do %>
+    <%= form_with url: new_order_products_path, method: :get, local: true do %>
       <%= text_field_tag :keyword, params[:keyword], placeholder: "カタカナで商品名を入力", class: "form-field" %>
       <%= submit_tag "検索", class: "form-button blue" %>
     <% end %>
@@ -30,7 +31,7 @@
       <div class="form-field"><strong>商品名:</strong> <%= product.name %></div>
       <div class="form-field"><strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %></div>
 
-      <%= form_with url: new_order_orders_path, method: :get, local: true do %>
+      <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
         <%= hidden_field_tag :recognized_name, product.name %>
         <%= submit_tag "カートに追加", class: "form-button yellow" %>
       <% end %>
@@ -43,7 +44,7 @@
   <p class="form-field">カートの中身</p>
 
   <% if @cart_items.present? %>
-    <%= form_with url: update_cart_orders_path, method: :patch, local: true do %>
+    <%= form_with url: update_cart_products_path, method: :patch, local: true do %>
       <ul>
         <% @cart_items.each do |item| %>
           <% product = item[:product] %>
@@ -61,8 +62,9 @@
       <%= submit_tag "数量を更新", class: "form-button yellow" %>
     <% end %>
 
-    <%= button_to "支払い", orders_path, method: :post, class: "form-button blue" %>
-    <%= button_to "カゴを空にする", clear_cart_orders_path, method: :post, class: "form-button red" %>
+    <%= button_to "支払い", create_order_products_path, method: :post, class: "form-button blue" %>
+    <%= button_to "カゴを空にする", clear_cart_products_path, method: :delete, class: "form-button red" %>
+
   <% else %>
     <p>カートに商品はありません</p>
   <% end %>
