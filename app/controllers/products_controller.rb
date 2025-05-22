@@ -243,6 +243,7 @@ end
   def send_image_to_flask(image, name)
     return unless image.attached?
 
+
     # ✅ 本番／開発でホストを自動切り替え
     host = Rails.env.production? ? "https://kantan-register.onrender.com" : "http://localhost:3000"
 
@@ -257,7 +258,7 @@ end
                                  name: name,
                                  image_url: image_url
                                })
-                               
+
       Rails.logger.info("Flaskへ画像URL送信成功: #{response.code} #{response.body}")
     rescue => e
       Rails.logger.error("Flaskへの送信失敗: #{e.message}")
