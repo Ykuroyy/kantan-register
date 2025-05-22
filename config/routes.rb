@@ -26,7 +26,8 @@ Rails.application.routes.draw do
   end
 
   # 売上分析ページ
-  get "/reports", to: "reports#index", as: :reports
+  get 'orders/analytics', to: 'orders#analytics'
+
 
   # Render用ヘルスチェック
   get "up", to: "rails/health#show", as: :rails_health_check
