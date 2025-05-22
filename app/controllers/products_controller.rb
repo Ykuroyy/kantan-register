@@ -24,13 +24,19 @@ class ProductsController < ApplicationController
   def create
     @product = Product.new(product_params)
 
+    if session[:product_image_blob_id].present?
+      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
+      @product.image.attach(blob) if blob
+    end
+
     if @product.save
-      send_image_to_flask(@product.image, @product.name)
+      session.delete(:product_image_blob_id)
       redirect_to products_path, notice: "登録完了"
     else
       render :new
     end
   end
+
 
   def edit
     session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
