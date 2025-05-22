@@ -246,28 +246,23 @@ end
   end
 
 
-  
+
   def send_image_to_flask(image, name)
     return unless image.attached?
 
-    image_url = url_for(image)  # ← これを忘れず定義
+    # ✅ 本番／開発でホストを自動切り替え
+    host = Rails.env.production? ? "https://your-production-domain.com" : "http://localhost:3000"
 
-    flask_base_url =
-      if Rails.env.production?
-        "https://ai-server-f6si.onrender.com"
-      else
-        "http://localhost:10000"
-      end
+    # ✅ 画像URLを取得
+    image_url = Rails.application.routes.url_helpers.rails_blob_url(image, host: host)
 
+    # ✅ Flaskへ送信
     begin
-      response = HTTParty.post(
-        "#{flask_base_url}/register_image",
-        body: {
-          name: name,
-          image_url: image_url
-        }
-      )
-      Rails.logger.info("Flaskへの送信成功: #{response.code} #{response.body}")
+      response = HTTParty.post("https://ai-server-f6si.onrender.com/register_image", body: {
+                                 name: name,
+                                 image_url: image_url
+                               })
+      Rails.logger.info("Flaskへ画像URL送信成功: #{response.code} #{response.body}")
     rescue => e
       Rails.logger.error("Flaskへの送信失敗: #{e.message}")
     end
