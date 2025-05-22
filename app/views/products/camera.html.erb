@@ -39,10 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const context = canvas.getContext("2d");
   const preview = document.getElementById("preview");
   const resultElem = document.getElementById("result");
-
   const container = document.getElementById("camera-container");
+
+  if (!video || !canvas || !container) return;
+
   const mode = container.dataset.mode;
   const productId = container.dataset.productId;
+
+
+
 
   // カメラ起動
   navigator.mediaDevices.getUserMedia({ video: true })
@@ -55,7 +60,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   // 撮影処理
-  document.getElementById("capture").addEventListener("click", () => {
+  // document.getElementById("capture").addEventListener("click", () => {
+      
+  const captureButton = document.getElementById("capture");
+  captureButton.addEventListener("click", () => {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const imageDataUrl = canvas.toDataURL("image/png");
     preview.src = imageDataUrl;
@@ -73,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, "image/png");
   });
 
-  // レジ用：画像ファイルから送信
+  // ファイルアップロード → Flaskへ送信
   const predictBtn = document.getElementById("predict-button");
   if (predictBtn) {
     predictBtn.addEventListener("click", () => {
@@ -86,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Railsへ画像を送信（登録用）
+  // Railsへ送信（登録）
   function sendImageToRails(blob) {
     const formData = new FormData();
     formData.append("image", blob, "photo.png");
@@ -103,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Flaskへ画像を送信（レジ用）
+  // Flaskへ画像を送信（予測）
   function sendImageToPredict(blob) {
     const formData = new FormData();
     formData.append("image", blob, "photo.png");
@@ -140,5 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
           resultElem.style.color = "red";
         });
       });
-  }
+ }
+}); 
 </script>
