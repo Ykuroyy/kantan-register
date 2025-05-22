@@ -68,13 +68,19 @@ class ProductsController < ApplicationController
     end
   end
 
-  def destroy
-    if @product.destroy
-      redirect_to products_path, notice: "商品を削除しました"
-    else
-      redirect_to products_path, alert: "この商品は削除できません"
-    end
+def destroy
+  name = @product.name
+  begin
+    @product.destroy!
+    redirect_to products_path, notice: "#{name} を削除しました"
+  rescue ActiveRecord::InvalidForeignKey
+    redirect_to products_path, alert: "#{name} は注文履歴があるため削除できません"
+  rescue => e
+    logger.error "削除エラー: #{e.message}"
+    redirect_to products_path, alert: "削除中にエラーが発生しました"
   end
+end
+
 
   def camera; end
 
