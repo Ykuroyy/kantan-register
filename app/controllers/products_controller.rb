@@ -31,11 +31,16 @@ class ProductsController < ApplicationController
 
     if @product.save
       session.delete(:product_image_blob_id)
+
+      # ✅ Flaskへ画像送信を追加！
+      send_image_to_flask(@product.image, @product.name)
+
       redirect_to products_path, notice: "登録完了"
     else
       render :new
     end
   end
+
 
 
   def edit
@@ -199,8 +204,11 @@ class ProductsController < ApplicationController
 
     host = Rails.env.production? ? "https://kantan-register.onrender.com" : "http://localhost:3000"
     image_url = Rails.application.routes.url_helpers.rails_blob_url(image, host: host)
+   
     flask_url = Rails.env.production? ? "https://ai-server-f6si.onrender.com" : "http://localhost:10000"
 
+    puts "✅ Flaskへ送信準備: #{image_url}"
+   
     HTTParty.post("#{flask_url}/register_image", body: {
                     name: name,
                     image_url: image_url
