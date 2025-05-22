@@ -119,7 +119,7 @@ end
         @error = "商品を認識できませんでした"
         render :camera
       end
-    rescue => e
+    rescue
       @error = "画像認識中にエラーが発生しました"
       render :camera
     end
