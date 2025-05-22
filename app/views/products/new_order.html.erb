@@ -6,8 +6,9 @@
     <p class="form-field">画像認識で商品を選ぶ</p>
     <%= link_to "カメラで撮影", camera_products_path(mode: "order"), class: "form-button blue" %>
 
+
     <p class="form-field">商品名から検索</p>
-    <%= form_with url: new_order_path, method: :get, local: true do %>
+    <%= form_with url: new_order_products_path, method: :get, local: true do %>
       <%= text_field_tag :keyword, params[:keyword], placeholder: "カタカナで商品名を入力", class: "form-field" %>
       <%= submit_tag "検索", class: "form-button blue" %>
     <% end %>
@@ -19,7 +20,6 @@
     <p style="color: red; font-weight: bold;"><%= flash[:alert] %></p>
   <% end %>
 
-  <!-- 手動選択 -->
   <% @products.each do |product| %>
     <div class="form-card">
       <% if product.image.attached? %>
@@ -31,7 +31,7 @@
       <div class="form-field"><strong>商品名:</strong> <%= product.name %></div>
       <div class="form-field"><strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %></div>
 
-      <%= form_with url: new_order_path, method: :get, local: true do %>
+      <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
         <%= hidden_field_tag :recognized_name, product.name %>
         <%= submit_tag "カートに追加", class: "form-button yellow" %>
       <% end %>
@@ -44,10 +44,12 @@
   <p class="form-field">カートの中身</p>
 
   <% if @cart_items.present? %>
-    <%= form_with url: update_cart_orders_path, method: :patch, local: true do %>
+    <%= form_with url: update_cart_products_path, method: :patch, local: true do %>
       <ul>
         <% @cart_items.each do |item| %>
           <% product = item[:product] %>
+          <% next unless product %> <!-- ここでnilをスキップ -->
+
           <% quantity = item[:quantity].to_i %>
           <li style="margin-bottom: 1em;">
             <%= product.name %> - ¥<%= number_with_delimiter(product.price) %>
@@ -60,8 +62,9 @@
       <%= submit_tag "数量を更新", class: "form-button yellow" %>
     <% end %>
 
-    <%= button_to "支払い", orders_path, method: :post, class: "form-button blue" %>
-    <%= button_to "カゴを空にする", clear_cart_orders_path, method: :post, class: "form-button red" %>
+    <%= button_to "支払い", create_order_products_path, method: :post, class: "form-button blue" %>
+    <%= button_to "カゴを空にする", clear_cart_products_path, method: :delete, class: "form-button red" %>
+
   <% else %>
     <p>カートに商品はありません</p>
   <% end %>
@@ -69,12 +72,37 @@
 
 <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
 
+<!-- Hidden image upload form for fetch + base64 upload -->
+<form id="camera-upload-form" action="/camera/capture_product" method="POST" enctype="multipart/form-data" style="display: none;">
+  <input type="file" id="image-blob-upload" name="image">
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+</form>
+
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const productName = localStorage.getItem("recognized_name");
     if (productName) {
       alert("前回認識された商品: " + productName);
       localStorage.removeItem("recognized_name");
+    }
+
+    const base64Image = sessionStorage.getItem("capturedImage");
+    if (base64Image) {
+      fetchBase64AndUpload(base64Image);// ❌ これが動くと商品登録に戻ってしまう
+      sessionStorage.removeItem("capturedImage");
+    }
+
+    function fetchBase64AndUpload(base64) {
+      fetch(base64)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], "photo.png", { type: "image/png" });
+          const input = document.getElementById("image-blob-upload");
+          const container = new DataTransfer();
+          container.items.add(file);
+          input.files = container.files;
+          document.getElementById("camera-upload-form").submit();
+        });
     }
   });
 </script>

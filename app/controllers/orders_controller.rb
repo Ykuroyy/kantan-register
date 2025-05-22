@@ -1,7 +1,5 @@
 class OrdersController < ApplicationController
-  def new
-  end
-
-  def create
+  def complete
+    @order = Order.find(params[:id])
   end
 end

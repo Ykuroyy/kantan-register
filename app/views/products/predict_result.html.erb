@@ -1,0 +1,78 @@
+<h2 class="form-heading">画像認識の結果</h2>
+
+<div class="form-container">
+  <div class="form-card">
+
+    <!-- ✅ 撮影画像のプレビュー -->
+    <p><strong>📷 撮影した画像：</strong></p>
+    <img id="recognized-preview" style="max-width: 320px; margin-bottom: 1em; display: none;" alt="撮影プレビュー">
+
+
+
+
+
+    <!-- ✅ 登録済みの商品が見つかった場合 -->
+    <% if @product %>
+      <% if @product.image.attached? %>
+        <p><strong>🖼 登録されている商品画像：</strong></p>
+        <%= image_tag @product.image, style: "max-width: 320px; margin-bottom: 1em;" %>
+      <% end %>
+
+
+      <% if @score.present? %>
+        <p><strong>類似度スコア：</strong> <%= (@score * 100).round(2) %>%</p>
+        <p style="font-size: 0.9em; color: gray;">※スコアは0〜100%で、登録画像とどれくらい似ているかを表します。</p>
+      <% else %>
+        <p style="color: gray;">※スコア情報は取得できませんでした</p>
+      <% end %>
+
+
+      <%= form_with url: new_order_products_path, method: :get, local: true do %>
+        <%= hidden_field_tag :recognized_name, @product.name %>
+        <%= submit_tag "この商品でレジへ進む", class: "form-button blue" %>
+      <% end %>
+
+
+    <!-- ✅ 名前はあるが登録商品がなかった場合 -->
+    <% elsif @predicted_name.present? %>
+      <p><strong>認識された商品名（未登録）：</strong></p>
+      <h3><%= @predicted_name %></h3>
+
+       <% if @score.present? %>
+        <p>類似度スコア：<%= (@score * 100).round(2) %>%</p>
+      <% else %>
+        <p style="color: gray;">※スコア情報は取得できませんでした</p>
+      <% end %>
+  
+
+      <p style="color:red;">この商品はまだ登録されていません。</p>
+      <%= link_to "手動で商品を選ぶ", new_order_orders_path, class: "form-button blue" %>
+
+   
+    <!-- ✅ それ以外（認識できなかった場合） -->
+    <% else %>
+      <p style="color:red;">一致する商品が見つかりませんでした</p>
+      <%= link_to "手動で商品を選ぶ", new_order_products_path, class: "form-button blue" %>
+    <% end %>
+
+
+    <!-- ✅ 撮影に戻るボタン -->
+    <%= link_to "撮影に戻る", camera_products_path(mode: "order"), class: "form-button gray", style: "margin-top: 1em;" %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // プレビュー表示
+    const img = document.getElementById("recognized-preview");
+    const imageData = sessionStorage.getItem("capturedImage");
+    if (img && imageData) {
+      img.src = imageData;
+      img.style.display = "block";
+    }
+
+
+    // ✅ レジ画面で勝手に送られないように、ここで削除しておく
+    sessionStorage.removeItem("capturedImage");
+  });
+</script>

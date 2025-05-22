@@ -118,6 +118,7 @@
 
 
 
+
 /* 共通 */
 .indispensable {
   background: #ea352d;
@@ -146,4 +147,23 @@
 /* app/assets/stylesheets/style.css に追加 */
 .inline-block {
   display: inline-block;
+}
+
+.inline-form {
+  display: inline;
+}
+
+
+
+
+.notice {
+  color: green;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.alert {
+  color: red;
+  font-weight: bold;
+  margin: 10px 0;
 }

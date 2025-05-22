@@ -80,3 +80,16 @@ end
 
 
 gem "image_processing", "~> 1.2"
+
+
+
+gem 'ruby-vips'
+
+
+
+gem 'httparty'
+
+
+gem 'rubocop', require: false
+
+gem "aws-sdk-s3", require: false

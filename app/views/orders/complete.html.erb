@@ -1,0 +1,9 @@
+<h2>✅ ご注文ありがとうございます</h2>
+<p>注文ID: <%= @order.id %></p>
+<p>合計金額: ¥<%= number_with_delimiter(@order.total_price) %></p>
+
+<% @order.order_items.each do |item| %>
+  <p><%= item.product.name %> × <%= item.quantity %></p>
+<% end %>
+
+<%= link_to "トップに戻る", root_path, class: "form-button gray" %>
