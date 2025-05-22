@@ -1,6 +1,7 @@
 class Product < ApplicationRecord
   has_one_attached :image
   has_many :order_items
+  has_many :order_items, dependent: :restrict_with_error
 
   VALID_KATAKANA_REGEX = /\A[ァ-ヶー－]+\z/
 

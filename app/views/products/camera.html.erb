@@ -29,8 +29,22 @@
 <% elsif params[:mode] == "new" %>
   <%= link_to "商品登録に戻る", new_product_path, class: "form-button gray" %>
 <% else %>
-  <%= link_to "レジ画面に戻る", nnew_order_products_path, class: "form-button gray" %>
+  <%= link_to "レジ画面に戻る", new_order_products_path, class: "form-button gray" %>
 <% end %>
+
+
+<!-- ✅ 画像アップロード用の隠しフォーム（Railsのパスを使う） -->
+
+<%# <form id="camera-upload-form" action="<%= capture_product_products_path %>" method="POST" enctype="multipart/form-data"> 
+<form id="camera-upload-form" action="<%= capture_product_products_path %>" method="POST" enctype="multipart/form-data">
+
+
+  <input type="file" id="image-blob-upload" name="image">
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+</form>
+
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -136,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((response) => response.json())
         .then((json) => {
           if (json.name) {
-            const url = `/predict_result?predicted_name=${encodeURIComponent(json.name)}&score=${json.score}`;
+            const url = `/products/predict_result?predicted_name=${encodeURIComponent(json.name)}&score=${json.score}`;
             window.location.href = url;
           } else {
             resultElem.textContent = "一致する商品が見つかりませんでした";

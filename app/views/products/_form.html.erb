@@ -46,11 +46,9 @@
       <div class="form-card">
         <p class="form-field">カメラで商品を撮影</p>
         <% if action_name == "edit" %>
-          <%# <%= link_to "カメラで撮影", camera_path(mode: "edit", product_id: @product.id), class: "form-button blue" %> 
-          <%= link_to "カメラで撮影", camera_path(mode: "edit", product_id: @product.id, from_camera: 1), class: "form-button blue" %>
-
+          <%= link_to "カメラで撮影", camera_products_path(mode: "edit", product_id: @product.id, from_camera: 1), class: "form-button blue" %>
         <% else %>
-          <%= link_to "カメラで撮影", camera_path(mode: "new"), class: "form-button blue" %>
+          <%= link_to "カメラで撮影", camera_products_path(mode: "new"), class: "form-button blue" %>
         <% end %>
       </div>
 
@@ -68,8 +66,8 @@
 
       <!-- ✅ ボタン -->
       <div class="form-actions">
-        <%= f.submit submit_text, class: "form-button yellow" %>
-        <%= link_to "もどる", cancel_path, class: "form-button gray" %>
+        <%= f.submit (local_assigns[:submit_text] || "保存"), class: "form-button yellow" %>
+        <%= link_to "もどる", (local_assigns[:cancel_path] || products_path), class: "form-button gray" %>
       </div>
     <% end %>
   </div>
