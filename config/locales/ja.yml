@@ -1,0 +1,22 @@
+ja:
+  # Rails 全体の日本語化
+  hello: "こんにちは"
+
+  activerecord:
+    # モデル名の日本語化（必要なら）
+    models:
+      product: "商品"
+
+    # 属性名の日本語化
+    attributes:
+      product:
+        name: "商品名"
+        price: "金額"
+
+    # ▼ エラーメッセージの上書き（presence: { message: "を入力してください" } と組み合わせる場合）
+    errors:
+      models:
+        product:
+          attributes:
+            price:
+              blank: "を入力してください"

@@ -1,3 +1,8 @@
+<div class="text-center" style="margin-top: 20px;">
+  <%= link_to "新規商品登録", new_product_path, class: "form-button blue" %>
+  <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
+</div>
+
 <h1 class="form-heading">商品一覧</h1>
 
 <!-- ✅ フラッシュメッセージ表示 -->
@@ -9,18 +14,12 @@
   <p class="alert"><%= flash[:alert] %></p>
 <% end %>
 
-
-
 <!-- 🔍 検索フォームを追加 -->
 <%= form_with url: products_path, method: :get, local: true do |f| %>
   <%= f.label :keyword, "商品名で検索" %>
-  <%= f.text_field :keyword, value: params[:keyword], placeholder: "例）メロンパン" %>
+  <%= f.text_field :keyword, value: params[:keyword], placeholder: "カタカナで商品名を入力" %>
   <%= f.submit "検索", class: "form-button blue" %>
 <% end %>
-
-
-
-
 
 <div class="form-container">
   <% @products.each do |product| %>
@@ -47,7 +46,3 @@
 </div>
 
 
-<div class="text-center" style="margin-top: 20px;">
-  <%= link_to "新規商品登録", new_product_path, class: "form-button blue" %>
-  <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
-</div>

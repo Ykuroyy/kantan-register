@@ -8,8 +8,8 @@
       <p>画像なし</p>
     <% end %>
 
-    <h2 class="form-field"><%= @product.name %></h2>
-    <p class="form-field">¥<%= number_with_delimiter(@product.price) %></p>
+    <h2 class="form-field"><strong>商品名:</strong><%= @product.name %></h2>
+    <p class="form-field"><strong>価格:¥</strong><%= number_with_delimiter(@product.price) %></p>
 
     <div class="form-actions">
       <%= link_to "編集", edit_product_path(@product), class: "form-button yellow" %>

@@ -1,78 +1,61 @@
-<h2 class="form-heading">画像認識の結果</h2>
+<%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
+<h2 class="form-heading">🔍 認識結果</h2>
 
 <div class="form-container">
   <div class="form-card">
+    <div class="image-group predict-images">
+      <!-- 撮影した画像 -->
+      <div class="image-block">
+        <p class="preview-label">撮影した画像</p>
+        <img id="recognized-preview-image"
+             class="preview-image"
+             style="display:none; max-width:100%;"
+             alt="撮影画像プレビュー" />
+      </div>
+      <!-- 登録済み商品画像 -->
+      <div class="image-block">
+        <p class="preview-label">登録されている商品画像</p>
+        <% if @product&.image&.attached? %>
+          <%= image_tag(@product.image.variant(resize_to_limit: [320, 320]), class: "preview-image") %>
+        <% else %>
+          <div class="preview-image no-image">画像なし</div>
+        <% end %>
+      </div>
+    </div>
 
-    <!-- ✅ 撮影画像のプレビュー -->
-    <p><strong>📷 撮影した画像：</strong></p>
-    <img id="recognized-preview" style="max-width: 320px; margin-bottom: 1em; display: none;" alt="撮影プレビュー">
-
-
-
-
-
-    <!-- ✅ 登録済みの商品が見つかった場合 -->
-    <% if @product %>
-      <% if @product.image.attached? %>
-        <p><strong>🖼 登録されている商品画像：</strong></p>
-        <%= image_tag @product.image, style: "max-width: 320px; margin-bottom: 1em;" %>
-      <% end %>
-
-
+    <% if @product.present? %>
+      <!-- 商品ヒット時 -->
+      <p>商品名：<strong><%= @product.name %></strong></p>
+      <p>価格：¥<%= number_with_delimiter(@product.price) %></p>
       <% if @score.present? %>
-        <p><strong>類似度スコア：</strong> <%= (@score * 100).round(2) %>%</p>
-        <p style="font-size: 0.9em; color: gray;">※スコアは0〜100%で、登録画像とどれくらい似ているかを表します。</p>
-      <% else %>
-        <p style="color: gray;">※スコア情報は取得できませんでした</p>
+        <p>類似度スコア：<%= (@score * 100).round(1) %>%</p>
+        <p style="font-size:0.9em; color:gray;">※0〜100%で類似度を表示</p>
       <% end %>
-
-
-      <%= form_with url: new_order_products_path, method: :get, local: true do %>
+      <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
         <%= hidden_field_tag :recognized_name, @product.name %>
-        <%= submit_tag "この商品でレジへ進む", class: "form-button blue" %>
+        <%= submit_tag "カートに追加", class: "form-button yellow" %>
       <% end %>
-
-
-    <!-- ✅ 名前はあるが登録商品がなかった場合 -->
-    <% elsif @predicted_name.present? %>
-      <p><strong>認識された商品名（未登録）：</strong></p>
-      <h3><%= @predicted_name %></h3>
-
-       <% if @score.present? %>
-        <p>類似度スコア：<%= (@score * 100).round(2) %>%</p>
-      <% else %>
-        <p style="color: gray;">※スコア情報は取得できませんでした</p>
-      <% end %>
-  
-
-      <p style="color:red;">この商品はまだ登録されていません。</p>
-      <%= link_to "手動で商品を選ぶ", new_order_orders_path, class: "form-button blue" %>
-
-   
-    <!-- ✅ それ以外（認識できなかった場合） -->
     <% else %>
-      <p style="color:red;">一致する商品が見つかりませんでした</p>
-      <%= link_to "手動で商品を選ぶ", new_order_products_path, class: "form-button blue" %>
+      <!-- ヒットなし: 再撮影のみ -->
+      <p style="text-align:center; color:#666;">一致する商品がありませんでした</p>
     <% end %>
 
+    <!-- 撮影をやり直す -->
+    <%= link_to "撮影をやり直す", camera_products_path(mode: "order"), class: "form-button blue", style: "margin-top:16px;" %>
 
-    <!-- ✅ 撮影に戻るボタン -->
-    <%= link_to "撮影に戻る", camera_products_path(mode: "order"), class: "form-button gray", style: "margin-top: 1em;" %>
+    <!-- レジに戻るボタン -->
+    <%= link_to "レジに戻る", new_order_products_path, class: "form-button gray", style: "margin-top:8px;" %>
   </div>
 </div>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // プレビュー表示
-    const img = document.getElementById("recognized-preview");
-    const imageData = sessionStorage.getItem("capturedImage");
-    if (img && imageData) {
-      img.src = imageData;
-      img.style.display = "block";
+    const imgData = sessionStorage.getItem("capturedImage");
+    const imgEl = document.getElementById("recognized-preview-image");
+    if (imgData && imgEl) {
+      imgEl.src = imgData;
+      imgEl.style.display = "block";
+      sessionStorage.removeItem("capturedImage");
     }
-
-
-    // ✅ レジ画面で勝手に送られないように、ここで削除しておく
-    sessionStorage.removeItem("capturedImage");
   });
 </script>

@@ -1,93 +1,122 @@
 <div class="form-container">
   <div class="form-card">
     <%= form_with model: @product, local: true, html: { multipart: true } do |f| %>
-    <%# <%= form_with model: @product, local: true, html: { multipart: true } do |form| %> 
 
+      <!-- 共通エラー -->
       <% if @product.errors.any? %>
         <div class="alert">
           <ul>
-            <% @product.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
+            <% @product.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
             <% end %>
           </ul>
         </div>
       <% end %>
 
+      <!-- 画像セクション -->
+      <div class="form-field">
+        <strong>商品画像：<span class="optional">任意</span></strong>
 
+        <div class="image-group">
+          <!-- 現在の画像 -->
+          <div class="image-block">
+            <p class="preview-label">現在の画像</p>
+            <% if @product.image.attached? %>
+              <%= image_tag @product.image, id: "server-preview-image", class: "preview-image" %>
+            <% end %>
+          </div>
 
-      <!-- ✅ プレビュー画像（1個のimgタグだけ使う） -->
-      <div class="form-card">
-        <p>商品画像プレビュー:</p>
-        <img id="camera-preview-image"
-             src="<%=
-               if session[:product_image_blob_id].present?
-                 blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
-                 blob ? url_for(blob) : ''
-               elsif @product.image.attached?
-                  url_for(@product.image)
-               else
-                ''
-                end
-             %>"
-             style="max-width: 100%; height: auto;"
-          />
-      </div>
+          <!-- 新しい画像（ファイル or カメラ） -->
+          <div class="image-block">
+            <p class="preview-label">新しい画像</p>
+            <%= tag.img "", id: "camera-preview-image", class: "preview-image", style: "display:none;" %>
+            <%= tag.img "", id: "upload-preview-image", class: "preview-image", style: "display:none;" %>
+          </div>
+        </div>
 
-      <!-- ✅ 通常の画像アップロード -->
-      <div class="img-upload">
-        <strong>商品画像:</strong>
-        <span class="optional">任意</span>
-        <div class="click-upload">
-          <%= f.file_field :image, id: "product_image" %>
+        <div class="form-actions">
+          <!-- ファイル選択 -->
+          <label for="product_image" class="form-button yellow file-button">
+            ファイルから選択
+          </label>
+          <%= f.file_field :image,
+                          id: "product_image",
+                          style: "display:none;" %>
+
+          <!-- カメラ撮影 -->
+          <% if action_name == "edit" %>
+            <%= link_to "カメラで撮影",
+                        camera_products_path(mode: "edit",
+                                              product_id: @product.id,
+                                              from_camera: 1),
+                        class: "form-button blue" %>
+          <% else %>
+            <%= link_to "カメラで撮影",
+                        camera_products_path(mode: "new"),
+                        class: "form-button blue" %>
+          <% end %>
         </div>
       </div>
 
-      <!-- ✅ カメラで撮影ボタン -->
-      <div class="form-card">
-        <p class="form-field">カメラで商品を撮影</p>
-        <% if action_name == "edit" %>
-          <%= link_to "カメラで撮影", camera_products_path(mode: "edit", product_id: @product.id, from_camera: 1), class: "form-button blue" %>
-        <% else %>
-          <%= link_to "カメラで撮影", camera_products_path(mode: "new"), class: "form-button blue" %>
+      <!-- 商品名 -->
+      <div class="form-field">
+        <%= f.label :name, "商品名" %> <span class="indispensable">必須</span><br>
+        <%= f.text_field :name, class: "products-text" %>
+        <% if @product.errors[:name].present? %>
+          <div class="error-text"><%= @product.errors[:name].first %></div>
         <% end %>
       </div>
 
-      <!-- ✅ 商品名 -->
+      <!-- 価格 -->
       <div class="form-field">
-        <div><strong>商品名:</strong> <span class="indispensable">必須</span></div>
-        <%= f.text_field :name, class: "products-text", id: "products-name", placeholder: "カタカナのみ", maxlength: "30" %>
+        <%= f.label :price, "価格" %> <span class="indispensable">必須</span><br>
+        <%= f.text_field :price, class: "price-input" %>
+        <% if @product.errors[:price].present? %>
+          <div class="error-text"><%= @product.errors[:price].first %></div>
+        <% end %>
       </div>
 
-      <!-- ✅ 価格 -->
-      <div class="form-field">
-        <div><strong>価格:</strong> <span class="indispensable">必須</span></div>
-        <%= f.text_field :price, class: "price-input", id: "products-price", placeholder: "半角数字のみ" %>
-      </div>
-
-      <!-- ✅ ボタン -->
+      <!-- ボタン -->
       <div class="form-actions">
         <%= f.submit (local_assigns[:submit_text] || "保存"), class: "form-button yellow" %>
-        <%= link_to "もどる", (local_assigns[:cancel_path] || products_path), class: "form-button gray" %>
+        <%= link_to "商品詳細に戻る",
+                    (local_assigns[:cancel_path] || products_path),
+                    class: "form-button gray" %>
       </div>
+
     <% end %>
   </div>
 </div>
 
-<!-- プレビュー表示（JSでsrcを設定） -->
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const imageData = sessionStorage.getItem("capturedImage");
-    if (imageData) {
-      const previewImg = document.getElementById("camera-preview-image");
-      const serverImg = document.getElementById("server-image");
-      if (previewImg) {
-        previewImg.src = imageData;
-        previewImg.style.display = "block";
-      }
-      if (serverImg) {
-        serverImg.style.display = "none";
-      }
-      sessionStorage.removeItem("capturedImage");
-    }
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  // カメラ撮影プレビュー
+  const imageData = sessionStorage.getItem("capturedImage");
+  const cameraEl  = document.getElementById("camera-preview-image");
+  const serverEl  = document.getElementById("server-preview-image");
+  const uploadEl  = document.getElementById("upload-preview-image");
+  if (imageData && cameraEl) {
+    cameraEl.src = imageData;
+    cameraEl.style.display = "block";
+    if (serverEl) serverEl.style.display = "none";
+    sessionStorage.removeItem("capturedImage");
+  }
+
+  // ファイル選択プレビュー
+  const fileInput = document.getElementById("product_image");
+  if (fileInput && uploadEl) {
+    fileInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        uploadEl.src = evt.target.result;
+        uploadEl.style.display = "block";
+        if (serverEl) serverEl.style.display = "none";
+        if (cameraEl) cameraEl.style.display = "none";
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+});
 </script>

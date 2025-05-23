@@ -1,31 +1,108 @@
-
-
-
-
-
-.preview-image {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  display: block;            /* 画像をブロック要素に */
-  margin: 0 auto;            /* 中央寄せ */
-}
-
-
-
-
-
-.preview-image.no-image {
+/* 画像プレビュー周りをまとめて一律管理 */
+.image-group {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100px;
-  background-color: #eee;
-  color: #666;
-  margin: 0 auto 10px;
-  font-size: 12px;
+  gap: 16px;
+  margin: 8px 0 16px;
 }
+
+.image-block {
+  text-align: center;
+}
+
+/* ラベルが必要なら .preview-label を使う */
+.preview-label {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.image-block .preview-image {
+  display: block;
+  margin: 0 auto;
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: cover;
+}
+
+/* ボタン間の余白 */
+.form-actions .form-button {
+  margin-right: 8px;
+}
+
+/* ファイル選択用ラベルをボタン風に */
+.file-button {
+  cursor: pointer;
+}
+
+
+
+
+.preview-label {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+
+/* 検索結果用コンテナの余白調整 */
+.search-results-container {
+  margin-top: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* 左詰め */
+}
+
+/* .form-container のデフォルトでは中央寄せなので、検索結果は左詰めにしたいとき */
+.search-results-container .form-card {
+  max-width: 200px;  /* カード幅を固定 */
+}
+
+
+
+
+
+
+
+/* 元の画像 */
+.original-preview {
+  border: 2px solid #6b7280;     /* グレーの枠 */
+  background-color: #f3f4f6;      /* 薄いグレー背景 */
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* 新しい画像 */
+.new-preview {
+  border: 2px solid #3b82f6;     /* 青い枠 */
+  background-color: #eff6ff;      /* 薄い青背景 */
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* 画像自体は中央寄せ */
+.preview-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -143,6 +220,16 @@
 
 
 
+.error-text {
+  color: #dc2626;   /* 赤字 */
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+
+
+
+
 
 /* 売上サマリー用 */
 .summary-cards {
@@ -175,6 +262,7 @@
   padding: 8px 16px;
   font-size: 14px;
 }
+
 
 
 

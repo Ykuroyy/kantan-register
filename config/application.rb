@@ -15,9 +15,11 @@ module KantanRegister
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
 
-
-
-
+    # ...
+    # デフォルト言語を日本語に
+    config.i18n.default_locale = :ja
+    # ロケールファイルを自動で読み込む
+    config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.

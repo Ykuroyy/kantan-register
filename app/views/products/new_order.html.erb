@@ -1,108 +1,99 @@
+<%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
+
 <h2 class="form-heading">レジ画面</h2>
 
+<!-- ① カートの中身 を一番上へ -->
 <div class="form-container">
-  <!-- カメラ起動ボタン -->
+  <div class="form-card">
+    <p class="form-field">カートの中身</p>
+
+    <% if @cart_items.present? %>
+      <%= form_with url: update_cart_products_path, method: :patch, local: true do |f| %>
+        <ul>
+          <% @cart_items.each do |item| %>
+            <% prod = item[:product] %>
+            <li style="margin-bottom:1em;">
+              <%= prod.name %> -
+              ¥<%= number_with_delimiter(prod.price) %>
+              ×
+              <%= number_field_tag "quantities[#{prod.id}]",
+                                  item[:quantity],
+                                  min: 0,
+                                  class: "quantity-field",
+                                  style: "width:60px;" %>
+            </li>
+          <% end %>
+        </ul>
+        <p><strong>合計:</strong> ¥<%= number_with_delimiter(@total) %></p>
+        <%= f.submit "数量を更新", class: "form-button yellow" %>
+      <% end %>
+
+      <div style="margin-top:12px;">
+        <%= button_to "支払い",
+                      create_order_products_path,
+                      method: :post,
+                      class: "form-button blue" %>
+        <%= button_to "カゴを空にする",
+                      clear_cart_products_path,
+                      method: :delete,
+                      class: "form-button red" %>
+      </div>
+    <% else %>
+      <p>カートに商品はありません。</p>
+    <% end %>
+  </div>
+</div>
+
+<!-- ② カメラ＆検索フォーム -->
+<div class="form-container">
   <div class="form-card">
     <p class="form-field">画像認識で商品を選ぶ</p>
     <%= link_to "カメラで撮影", camera_products_path(mode: "order"), class: "form-button blue" %>
-
-
+  </div>
+  <div class="form-card">
     <p class="form-field">商品名から検索</p>
-    <%= form_with url: new_order_products_path, method: :get, local: true do %>
-      <%= text_field_tag :keyword, params[:keyword], placeholder: "カタカナで商品名を入力", class: "form-field" %>
-      <%= submit_tag "検索", class: "form-button blue" %>
+    <%= form_with url: new_order_products_path, method: :get, local: true do |f| %>
+      <%= f.text_field :keyword, value: params[:keyword],
+                       placeholder: "カタカナで商品名を入力", class: "form-field" %>
+      <%= f.submit "検索", class: "form-button blue" %>
     <% end %>
   </div>
-
-  <% if flash[:notice] %>
-    <p style="color: green; font-weight: bold;"><%= flash[:notice] %></p>
-  <% elsif flash[:alert] %>
-    <p style="color: red; font-weight: bold;"><%= flash[:alert] %></p>
-  <% end %>
-
-  <% @products.each do |product| %>
-    <div class="form-card">
-      <% if product.image.attached? %>
-        <%= image_tag product.image.variant(resize_to_limit: [500, 500]).processed, class: "preview-image" %>
-      <% else %>
-        <div class="preview-image no-image">画像なし</div>
-      <% end %>
-
-      <div class="form-field"><strong>商品名:</strong> <%= product.name %></div>
-      <div class="form-field"><strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %></div>
-
-      <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
-        <%= hidden_field_tag :recognized_name, product.name %>
-        <%= submit_tag "カートに追加", class: "form-button yellow" %>
-      <% end %>
-    </div>
-  <% end %>
 </div>
 
-<!-- カートの中身 -->
-<div class="form-card">
-  <p class="form-field">カートの中身</p>
-
-  <% if @cart_items.present? %>
-    <%= form_with url: update_cart_products_path, method: :patch, local: true do %>
-      <ul>
-        <% @cart_items.each do |item| %>
-          <% product = item[:product] %>
-          <% next unless product %> <!-- ここでnilをスキップ -->
-
-          <% quantity = item[:quantity].to_i %>
-          <li style="margin-bottom: 1em;">
-            <%= product.name %> - ¥<%= number_with_delimiter(product.price) %>
-            ×
-            <%= number_field_tag "quantities[#{product.id}]", quantity, min: 0, class: "quantity-field", style: "width: 60px;" %>
-          </li>
-        <% end %>
-      </ul>
-      <p><strong>合計金額:</strong> ¥<%= number_with_delimiter(@total) %></p>
-      <%= submit_tag "数量を更新", class: "form-button yellow" %>
+<!-- ③ 検索結果 -->
+<% if defined?(@search_results) %>
+  <div class="form-container search-results-container">
+    <% if @search_results.any? %>
+      <% @search_results.each do |product| %>
+        <div class="form-card">
+          <% if product.image.attached? %>
+            <%= image_tag product.image.variant(resize_to_limit: [200,200]), class: "preview-image" %>
+          <% else %>
+            <div class="preview-image no-image">画像なし</div>
+          <% end %>
+          <div class="form-field"><strong><%= product.name %></strong></div>
+          <div class="form-field">¥<%= number_with_delimiter(product.price) %></div>
+          <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
+            <%= hidden_field_tag :recognized_name, product.name %>
+            <%= submit_tag "カートに追加", class: "form-button yellow" %>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="form-card">
+        <p>該当する商品が見つかりませんでした。</p>
+      </div>
     <% end %>
+  </div>
+<% end %>
 
-    <%= button_to "支払い", create_order_products_path, method: :post, class: "form-button blue" %>
-    <%= button_to "カゴを空にする", clear_cart_products_path, method: :delete, class: "form-button red" %>
-
-  <% else %>
-    <p>カートに商品はありません</p>
-  <% end %>
-</div>
-
-<%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
-
-<!-- Hidden image upload form for fetch + base64 upload -->
-<form id="camera-upload-form" action="/camera/capture_product" method="POST" enctype="multipart/form-data" style="display: none;">
-  <input type="file" id="image-blob-upload" name="image">
-  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-</form>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const productName = localStorage.getItem("recognized_name");
-    if (productName) {
-      alert("前回認識された商品: " + productName);
+    const name = localStorage.getItem("recognized_name");
+    if (name) {
+      alert("前回認識された商品: " + name);
       localStorage.removeItem("recognized_name");
-    }
-
-    const base64Image = sessionStorage.getItem("capturedImage");
-    if (base64Image) {
-      fetchBase64AndUpload(base64Image);// ❌ これが動くと商品登録に戻ってしまう
-      sessionStorage.removeItem("capturedImage");
-    }
-
-    function fetchBase64AndUpload(base64) {
-      fetch(base64)
-        .then(res => res.blob())
-        .then(blob => {
-          const file = new File([blob], "photo.png", { type: "image/png" });
-          const input = document.getElementById("image-blob-upload");
-          const container = new DataTransfer();
-          container.items.add(file);
-          input.files = container.files;
-          document.getElementById("camera-upload-form").submit();
-        });
     }
   });
 </script>

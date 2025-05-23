@@ -131,7 +131,10 @@ end
     @product = Product.find_by(name: @predicted_name)
   end
 
+
+  # レジ画面
   def new_order
+    # — AI で認識されたらカートに追加 —
     if params[:recognized_name].present?
       product = Product.find_by(name: params[:recognized_name])
       if product
@@ -142,11 +145,19 @@ end
       end
     end
 
+    # — カート内容 —
     @cart_items = cart_items
     @total = calculate_total_price
     @products = Product.all.order(created_at: :desc)
+  
+    # — 商品名検索（キーワードがあれば）—
+    return unless params[:keyword].present?
+      # カタカナのみ & 完全一致 or LIKE 検索お好みで調整
+      @search_results = Product.where("name LIKE ?", "%#{params[:keyword]}%")
+    
   end
 
+  # 検索結果／AI 認識結果からの追加共通
   def add_to_cart
     product = Product.find_by(name: params[:recognized_name])
     if product
