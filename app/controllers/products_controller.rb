@@ -40,18 +40,29 @@ class ProductsController < ApplicationController
   end
 
   def update
-    attach_blob_image
+    # セッションに保存された ActiveStorage::Blob があれば画像を差し替え
+    if session[:product_image_blob_id].present?
+      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
+      if blob
+        # 既存の画像を削除してから新しい Blob を attach
+        @product.image.purge if @product.image.attached?
+        @product.image.attach(blob)
+      end
+      session.delete(:product_image_blob_id)
+    end
+
+    # パラメータから image を取り除くかどうか
     update_params = product_params
     update_params = update_params.except(:image) unless params[:product][:image].present?
 
-     if @product.update(update_params)
+    if @product.update(update_params)
+      # Flask サーバーへも画像更新を通知
       send_image_to_flask(@product.image, @product.name)
       redirect_to products_path, notice: '商品情報を更新しました。'
-     else
+    else
       render :edit, status: :unprocessable_entity
-     end
+    end
   end
-
 
 
   def destroy
