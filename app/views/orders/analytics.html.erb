@@ -1,27 +1,45 @@
 <%= link_to "トップ画面に戻る", root_path, class: "form-button gray" %>
 <h1 class="form-heading">📈 売上分析ダッシュボード</h1>
+<div class="form-container">
+ 
+  
+  <!-- 期間切り替えタブ -->
+  <div class="chart-card">
+    <div class="form-actions" style="justify-content:center; margin-bottom:24px;">
+      <% { "annual" => "年間", "monthly" => "月間", "daily" => "日別" }.each do |key, label| %>
+        <%= link_to label,
+                    orders_analytics_path(period: key),
+                    class: ["form-button", (@period == key ? "blue" : "gray")].join(" "),
+                    style: "margin:0 4px;" %>
+      <% end %>
+    </div>
+  </div>
 
-<!-- 日別売上グラフ -->
-<div class="chart-card">
-  <h2 class="chart-heading">🗓 日別売上グラフ</h2>
-  <canvas id="daily-sales-chart" width="600" height="300"></canvas>
-</div>
 
-<!-- 商品別売上グラフ -->
-<div class="chart-card">
-  <h2 class="chart-heading">🍞 商品別売上グラフ</h2>
-  <canvas id="product-sales-chart" width="600" height="300"></canvas>
-</div>
 
-<!-- 売上サマリー -->
-<div class="chart-card">
-  <h2 class="chart-heading">📋 売上サマリー</h2>
-  <ul class="sales-summary">
-    <li>総売上金額：<%= number_to_currency(@total_sales) %></li>
-    <li>販売総数：<%= @total_items %>個</li>
-    <li>人気商品：<%= @top_product || "データなし" %></li>
-    <li>平均購入額：<%= number_to_currency(@average_purchase) %></li>
-  </ul>
+  <!-- 1. 期間別売上グラフ -->
+  <div class="chart-card">
+    <h2 class="chart-heading"><%= { "annual" => "年度別", "monthly" => "月別", "daily" => "日別" }[@period] %>売上グラフ</h2>
+    <canvas id="period-sales-chart" width="600" height="300"></canvas>
+  </div>
+
+  <!-- 2. 商品別販売数グラフ -->
+  <div class="chart-card">
+    <h2 class="chart-heading">🍞 商品別販売数グラフ</h2>
+    <canvas id="product-sales-chart" width="600" height="300"></canvas>
+  </div>
+
+  <!-- 3. 売上サマリー -->
+  <div class="chart-card">
+    <h2 class="chart-heading">📋 売上サマリー（<%= { "annual" => "年間", "monthly" => "月間", "daily" => "日別" }[@period] %>）</h2>
+    <ul class="sales-summary">
+      <li>売上金額：<%= number_to_currency(@total_sales) %></li>
+      <li>注文数：<%= @total_orders %> 件</li>
+      <li>販売総数：<%= @total_items %> 個</li>
+      <li>平均購入額：<%= number_to_currency(@average_purchase) %></li>
+    </ul>
+  </div>
+
 </div>
 
 <!-- Chart.js 読み込み -->
@@ -30,10 +48,10 @@
 
 <!-- データ埋め込み -->
 <script>
-  window.dailySalesData = <%= raw @daily_sales.to_json %>;
-  window.productSalesData = <%= raw @product_sales.to_json %>;
+  window.periodLabels  = <%= raw @period_labels.to_json  %>;
+  window.periodData    = <%= raw @period_data.to_json    %>;
+  window.productLabels = <%= raw @product_sales.keys.to_json   %>;
+  window.productData   = <%= raw @product_sales.values.to_json %>;
 </script>
-
-
 
 

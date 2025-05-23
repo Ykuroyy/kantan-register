@@ -23,24 +23,16 @@ class ProductsController < ApplicationController
 
   def create
     @product = Product.new(product_params)
-
-    if session[:product_image_blob_id].present?
-      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
-      @product.image.attach(blob) if blob
-    end
+    attach_blob_image
 
     if @product.save
       session.delete(:product_image_blob_id)
-
-      # ✅ Flaskへ画像送信を追加！
       send_image_to_flask(@product.image, @product.name)
-
-      redirect_to products_path, notice: "登録完了"
+      redirect_to products_path, notice: '登録完了'
     else
       render :new
     end
   end
-
 
 
   def edit
@@ -48,38 +40,30 @@ class ProductsController < ApplicationController
   end
 
   def update
-    if session[:product_image_blob_id].present?
-      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
-      if blob
-        @product.image.purge if @product.image.attached?
-        @product.image.attach(blob)
-      end
-      session.delete(:product_image_blob_id)
-    end
-
+    attach_blob_image
     update_params = product_params
     update_params = update_params.except(:image) unless params[:product][:image].present?
 
-    if @product.update(update_params)
+     if @product.update(update_params)
       send_image_to_flask(@product.image, @product.name)
-      redirect_to products_path, notice: "商品情報を更新しました。"
-    else
+      redirect_to products_path, notice: '商品情報を更新しました。'
+     else
       render :edit, status: :unprocessable_entity
-    end
+     end
   end
 
-def destroy
-  name = @product.name
-  begin
+
+
+  def destroy
+    name = @product.name
     @product.destroy!
     redirect_to products_path, notice: "#{name} を削除しました"
   rescue ActiveRecord::InvalidForeignKey
     redirect_to products_path, alert: "#{name} は注文履歴があるため削除できません"
   rescue => e
     logger.error "削除エラー: #{e.message}"
-    redirect_to products_path, alert: "削除中にエラーが発生しました"
+    redirect_to products_path, alert: '削除中にエラーが発生しました'
   end
-end
 
 
   def camera; end
@@ -93,9 +77,20 @@ end
       filename: uploaded_io.original_filename,
       content_type: uploaded_io.content_type
     )
-
     session[:product_image_blob_id] = blob.id
-    redirect_to params[:product_id].present? ? edit_product_path(params[:product_id], from_camera: 1) : new_order_products_path(from_camera: 1)
+    mode = params[:mode]
+    product_id = params[:product_id]
+    # 遷移先をmodeで選択
+    case mode
+    when 'edit'
+      redirect_to edit_product_path(product_id, from_camera: 1)
+    when 'new'
+      redirect_to new_product_path(from_camera: 1)
+    when 'order'
+      redirect_to camera_products_path(mode: 'order')
+    else
+      redirect_to new_order_products_path(from_camera: 1)
+    end
   end
 
   def predict
@@ -157,7 +152,7 @@ end
     
   end
 
-  # 検索結果／AI 認識結果からの追加共通
+# 検索結果／AI 認識結果からの追加共通
   def add_to_cart
     product = Product.find_by(name: params[:recognized_name])
     if product
@@ -244,3 +239,4 @@ end
     end
   end
 end
+#
