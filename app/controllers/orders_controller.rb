@@ -46,10 +46,10 @@ class OrdersController < ApplicationController
       key_proc   = ->(d) { d }
 
       raw_sales = Order
-                  .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-                  .to_a
-                  .group_by { |o| o.created_at.in_time_zone.to_date }
-                  .transform_values { |orders| orders.sum(&:total_price) }
+                  .where(created_at: start_date..end_date)
+                  # PostgreSQL 用に to_char() で「YYYY-MM」形式をキーに
+                  .group("to_char(created_at, 'YYYY-MM')")
+                  .sum(:total_price)
     end
 
     # 2) ラベル／データをゼロ埋め
