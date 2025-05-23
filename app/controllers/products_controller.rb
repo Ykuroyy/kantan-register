@@ -142,17 +142,19 @@ class ProductsController < ApplicationController
 
     # — カート内容 —
     @cart_items = cart_items
-    @total = calculate_total_price
-    @products = Product.all.order(created_at: :desc)
+    @total      = calculate_total_price
   
-    # — 商品名検索（キーワードがあれば）—
-    return unless params[:keyword].present?
-      # カタカナのみ & 完全一致 or LIKE 検索お好みで調整
-      @search_results = Product.where("name LIKE ?", "%#{params[:keyword]}%")
-    
+  
+    # — 検索結果 or 全商品を @products にセット —
+    base_products = Product.all.order(created_at: :desc)
+    if params[:keyword].present?
+      @products = base_products.where("name LIKE ?", "%#{params[:keyword]}%")
+    else
+      @products = base_products
+    end
   end
 
-# 検索結果／AI 認識結果からの追加共通
+ # 検索結果／AI 認識結果からの追加共通
   def add_to_cart
     product = Product.find_by(name: params[:recognized_name])
     if product

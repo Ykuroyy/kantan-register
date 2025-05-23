@@ -61,18 +61,22 @@
 </div>
 
 <!-- ③ 検索結果 -->
-<% if defined?(@search_results) %>
+<!-- ③ 検索結果 -->
+<% if params[:keyword].present? %>
   <div class="form-container search-results-container">
-    <% if @search_results.any? %>
-      <% @search_results.each do |product| %>
+    <% if @products.any? %>
+      <% @products.each do |product| %>
         <div class="form-card">
+          <!-- 画像表示 -->
           <% if product.image.attached? %>
             <%= image_tag product.image.variant(resize_to_limit: [200,200]), class: "preview-image" %>
           <% else %>
             <div class="preview-image no-image">画像なし</div>
           <% end %>
+          <!-- 商品名・価格 -->
           <div class="form-field"><strong><%= product.name %></strong></div>
           <div class="form-field">¥<%= number_with_delimiter(product.price) %></div>
+          <!-- カート追加フォーム -->
           <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
             <%= hidden_field_tag :recognized_name, product.name %>
             <%= submit_tag "カートに追加", class: "form-button yellow" %>
@@ -86,6 +90,7 @@
     <% end %>
   </div>
 <% end %>
+
 
 
 <script>

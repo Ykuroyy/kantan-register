@@ -11,14 +11,6 @@
       <button id="capture" class="form-button blue" type="button" style="margin-right:8px;">撮影する</button>
     </div>
 
-    <!-- プレビューエリア -->
-    <div class="image-group">
-      <div class="image-block">
-        <p class="preview-label">プレビュー</p>
-        <img id="camera-preview-image" class="preview-image" style="display:none; max-width:100%;" />
-      </div>
-    </div>
-
     <!-- 戻るリンク -->
     <div style="text-align:center; margin-top:16px;">
       <% if params[:mode] == "edit" && params[:product_id].present? %>
@@ -83,26 +75,16 @@
       canvas.width  = video.videoWidth;
       canvas.height = video.videoHeight;
       canvas.getContext("2d").drawImage(video, 0, 0);
-      canvas.toBlob(blob => {
-        preview.src           = URL.createObjectURL(blob);
-        preview.style.display = "block";
-        sendCapture(blob);
-      }, "image/png");
-    });
+      
+    // Base64 データ URL を取得して保存
+    const dataUrl = canvas.toDataURL("image/png");
+    sessionStorage.setItem("capturedImage", dataUrl);
 
-    // ファイル選択イベント
-    if (fileInput) {
-      fileInput.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = evt => {
-          preview.src           = evt.target.result;
-          preview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-        sendCapture(file);
-      });
-    }
+
+    // Blob 変換して送信
+    canvas.toBlob(blob => sendCapture(blob), "image/png");
   });
+
+ 
+});
 </script>
