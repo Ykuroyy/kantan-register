@@ -1,9 +1,16 @@
-<h2>✅ ご注文ありがとうございます</h2>
-<p>注文ID: <%= @order.id %></p>
-<p>合計金額: ¥<%= number_with_delimiter(@order.total_price) %></p>
+<div class="container">
+  <div class="card" style="text-align:center;">
+    <h2 class="form-heading">✅ ご注文ありがとうございます</h2>
 
-<% @order.order_items.each do |item| %>
-  <p><%= item.product.name %> × <%= item.quantity %></p>
-<% end %>
+    <p>注文ID: <%= @order.id %></p>
+    <p>合計金額: ¥<%= number_with_delimiter(@order.total_price) %></p>
 
-<%= link_to "トップに戻る", root_path, class: "form-button gray" %>
+    <ul style="margin-top:1rem; text-align:left; display:inline-block;">
+      <% @order.order_items.each do |item| %>
+        <li><%= item.product.name %> × <%= item.quantity %></li>
+      <% end %>
+    </ul>
+
+    <%= link_to "トップに戻る", root_path, class: "btn btn-gray", style: "margin-top:1.2rem;" %>
+  </div>
+</div>

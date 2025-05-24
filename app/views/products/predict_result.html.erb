@@ -1,22 +1,25 @@
-<%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
-<h2 class="form-heading">🔍 認識結果</h2>
+<div class="container">
+  <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
 
-<div class="form-container">
-  <div class="form-card">
-    <div class="image-group predict-images">
+  <h2 class="form-heading">🔍 認識結果</h2>
+
+  <div class="card">
+    <!-- 画像 2 枚を並べる -->
+    <div class="grid">
       <!-- 撮影した画像 -->
-      <div class="image-block">
+      <div class="card">
         <p class="preview-label">撮影した画像</p>
         <img id="recognized-preview-image"
              class="preview-image"
-             style="display:none; max-width:100%;"
+             style="display:none; max-width:100%;" 
              alt="撮影画像プレビュー" />
       </div>
+
       <!-- 登録済み商品画像 -->
-      <div class="image-block">
+      <div class="card">
         <p class="preview-label">登録されている商品画像</p>
         <% if @product&.image&.attached? %>
-          <%= image_tag(@product.image.variant(resize_to_limit: [320, 320]), class: "preview-image") %>
+          <%= image_tag @product.image.variant(resize_to_limit: [320, 320]), class: "preview-image" %>
         <% else %>
           <div class="preview-image no-image">画像なし</div>
         <% end %>
@@ -25,35 +28,44 @@
 
     <% if @product.present? %>
       <!-- 商品ヒット時 -->
-      <p>商品名：<strong><%= @product.name %></strong></p>
+      <p style="margin-top:1rem;">商品名：<strong><%= @product.name %></strong></p>
       <p>価格：¥<%= number_with_delimiter(@product.price) %></p>
       <% if @score.present? %>
         <p>類似度スコア：<%= (@score * 100).round(1) %>%</p>
         <p style="font-size:0.9em; color:gray;">※0〜100%で類似度を表示</p>
       <% end %>
+
       <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
         <%= hidden_field_tag :recognized_name, @product.name %>
-        <%= submit_tag "カートに追加", class: "form-button yellow" %>
+        <%= submit_tag "カートに追加", class: "btn btn-yellow", style: "margin-top:.8rem;" %>
       <% end %>
     <% else %>
-      <!-- ヒットなし: 再撮影のみ -->
-      <p style="text-align:center; color:#666;">一致する商品がありませんでした</p>
+      <!-- ヒットなし -->
+      <p style="text-align:center; color:#666; margin-top:.8rem;">
+        一致する商品がありませんでした
+      </p>
     <% end %>
 
     <!-- 撮影をやり直す -->
-    <%= link_to "撮影をやり直す", camera_products_path(mode: "order"), class: "form-button blue", style: "margin-top:16px;" %>
+    <%= link_to "撮影をやり直す",
+        camera_products_path(mode: "order"),
+        class: "btn btn-blue",
+        style: "margin-top:1.2rem;" %>
 
-    <!-- レジに戻るボタン -->
-    <%= link_to "レジに戻る", new_order_products_path, class: "form-button gray", style: "margin-top:8px;" %>
+    <!-- レジに戻る -->
+    <%= link_to "レジに戻る",
+        new_order_products_path,
+        class: "btn btn-gray",
+        style: "margin-top:.6rem;" %>
   </div>
 </div>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const imgData = sessionStorage.getItem("capturedImage");
-    const imgEl = document.getElementById("recognized-preview-image");
+    const imgEl   = document.getElementById("recognized-preview-image");
     if (imgData && imgEl) {
-      imgEl.src = imgData;
+      imgEl.src   = imgData;
       imgEl.style.display = "block";
       sessionStorage.removeItem("capturedImage");
     }

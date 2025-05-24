@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8"><!-- ① 追加 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- ② 上へ移動 -->
+
     <title>かんたんレジアプリ</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <!-- ✅ CSS 読み込み -->
-    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <!-- ✅ CSS -->
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "style", "data-turbo-track": "reload" %>
 
-    <%= stylesheet_link_tag 'style', media: 'all', 'data-turbo-track': 'reload' %>
-
-
-    <!-- ✅ JavaScript（Importmap用 + 画像プレビュー用） -->
+    <!-- ✅ JavaScript -->
     <%= javascript_importmap_tags %>
     <%= javascript_include_tag "preview", defer: true %>
   </head>

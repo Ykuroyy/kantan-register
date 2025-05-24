@@ -1,97 +1,99 @@
-<%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
+<div class="container">
+  <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
 
-<h2 class="form-heading">レジ画面</h2>
+  <h2 class="form-heading">レジ画面</h2>
 
-<!-- ① カートの中身 を一番上へ -->
-<div class="form-container">
-  <div class="form-card">
-    <p class="form-field">カートの中身</p>
+  <!-- ① カートの中身 -->
+  <div class="grid">
+    <div class="card">
+      <p class="form-field">カートの中身</p>
 
-    <% if @cart_items.present? %>
-      <%= form_with url: update_cart_products_path, method: :patch, local: true do |f| %>
-        <ul>
-          <% @cart_items.each do |item| %>
-            <% prod = item[:product] %>
-            <li style="margin-bottom:1em;">
-              <%= prod.name %> -
-              ¥<%= number_with_delimiter(prod.price) %>
-              ×
-              <%= number_field_tag "quantities[#{prod.id}]",
-                                  item[:quantity],
-                                  min: 0,
-                                  class: "quantity-field",
-                                  style: "width:60px;" %>
-            </li>
-          <% end %>
-        </ul>
-        <p><strong>合計:</strong> ¥<%= number_with_delimiter(@total) %></p>
-        <%= f.submit "数量を更新", class: "form-button yellow" %>
+      <% if @cart_items.present? %>
+        <%= form_with url: update_cart_products_path, method: :patch, local: true do %>
+          <ul>
+            <% @cart_items.each do |item| %>
+              <% prod = item[:product] %>
+              <li style="margin-bottom:1em;">
+                <%= prod.name %> -
+                ¥<%= number_with_delimiter(prod.price) %>
+                ×
+                <%= number_field_tag "quantities[#{prod.id}]", item[:quantity],
+                                     min: 0, class: "quantity-field",
+                                     style: "width:60px;" %>
+              </li>
+            <% end %>
+          </ul>
+
+          <p><strong>合計:</strong> ¥<%= number_with_delimiter(@total) %></p>
+          <%= submit_tag "数量を更新", class: "btn btn-yellow" %>
+        <% end %>
+
+        <div style="margin-top:12px; display:flex; gap:.6rem; flex-wrap:wrap;">
+          <%= button_to "支払い", create_order_products_path,
+                        method: :post, class: "btn btn-blue" %>
+
+          <%= button_to "カゴを空にする", clear_cart_products_path,
+                        method: :delete, class: "btn btn-red" %>
+        </div>
+      <% else %>
+        <p>カートに商品はありません。</p>
       <% end %>
-
-      <div style="margin-top:12px;">
-        <%= button_to "支払い",
-                      create_order_products_path,
-                      method: :post,
-                      class: "form-button blue" %>
-        <%= button_to "カゴを空にする",
-                      clear_cart_products_path,
-                      method: :delete,
-                      class: "form-button red" %>
-      </div>
-    <% else %>
-      <p>カートに商品はありません。</p>
-    <% end %>
+    </div>
   </div>
-</div>
 
-<!-- ② カメラ＆検索フォーム -->
-<div class="form-container">
-  <div class="form-card">
-    <p class="form-field">画像認識で商品を選ぶ</p>
-    <%= link_to "カメラで撮影", camera_products_path(mode: "order"), class: "form-button blue" %>
-  </div>
-  <div class="form-card">
-    <p class="form-field">商品名から検索</p>
-    <%= form_with url: new_order_products_path, method: :get, local: true do |f| %>
-      <%= f.text_field :keyword, value: params[:keyword],
-                       placeholder: "カタカナで商品名を入力", class: "form-field" %>
-      <%= f.submit "検索", class: "form-button blue" %>
-    <% end %>
-  </div>
-</div>
+  <!-- ② カメラ撮影 ＆ 検索フォーム -->
+  <div class="grid" style="margin-top:1rem;">
+    <!-- カメラ -->
+    <div class="card">
+      <p class="form-field">画像認識で商品を選ぶ</p>
+      <%= link_to "カメラで撮影", camera_products_path(mode: "order"),
+                  class: "btn btn-blue" %>
+    </div>
 
-<!-- ③ 検索結果 -->
-<!-- ③ 検索結果 -->
-<% if params[:keyword].present? %>
-  <div class="form-container search-results-container">
-    <% if @products.any? %>
-      <% @products.each do |product| %>
-        <div class="form-card">
-          <!-- 画像表示 -->
-          <% if product.image.attached? %>
-            <%= image_tag product.image.variant(resize_to_limit: [200,200]), class: "preview-image" %>
-          <% else %>
-            <div class="preview-image no-image">画像なし</div>
-          <% end %>
-          <!-- 商品名・価格 -->
-          <div class="form-field"><strong><%= product.name %></strong></div>
-          <div class="form-field">¥<%= number_with_delimiter(product.price) %></div>
-          <!-- カート追加フォーム -->
-          <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
-            <%= hidden_field_tag :recognized_name, product.name %>
-            <%= submit_tag "カートに追加", class: "form-button yellow" %>
-          <% end %>
+    <!-- キーワード検索 -->
+    <div class="card">
+      <p class="form-field">商品名から検索</p>
+      <%= form_with url: new_order_products_path, method: :get, local: true do |f| %>
+        <%= f.text_field :keyword,
+                         value: params[:keyword],
+                         placeholder: "カタカナで商品名を入力",
+                         class: "form-field",
+                         style: "width:100%;max-width:260px;" %>
+        <%= f.submit "検索", class: "btn btn-blue", style: "margin-top:.6rem;" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- ③ 検索結果 -->
+  <% if params[:keyword].present? %>
+    <div class="grid" style="margin-top:1rem;">
+      <% if @products.any? %>
+        <% @products.each do |product| %>
+          <div class="card">
+            <% if product.image.attached? %>
+              <%= image_tag product.image.variant(resize_to_limit: [200,200]),
+                            class: "preview-image" %>
+            <% else %>
+              <div class="preview-image no-image">画像なし</div>
+            <% end %>
+
+            <div class="form-field"><strong><%= product.name %></strong></div>
+            <div class="form-field">¥<%= number_with_delimiter(product.price) %></div>
+
+            <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
+              <%= hidden_field_tag :recognized_name, product.name %>
+              <%= submit_tag "カートに追加", class: "btn btn-yellow", style: "margin-top:.6rem;" %>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="card">
+          <p>該当する商品が見つかりませんでした。</p>
         </div>
       <% end %>
-    <% else %>
-      <div class="form-card">
-        <p>該当する商品が見つかりませんでした。</p>
-      </div>
-    <% end %>
-  </div>
-<% end %>
-
-
+    </div>
+  <% end %>
+</div>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {

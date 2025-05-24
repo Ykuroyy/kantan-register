@@ -1,187 +1,130 @@
-<%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
-<h2 class="form-heading">📷 カメラで撮影</h2>
+<div class="container" id="camera-container"
+     data-mode="<%= params[:mode] %>"
+     data-product-id="<%= params[:product_id] %>">
 
-<div id="camera-container" data-mode="<%= params[:mode] %>" data-product-id="<%= params[:product_id] %>" class="form-container">
-  <div class="form-card">
-    <!-- ライブカメラ映像 -->
-    <%# <video id="video" autoplay style="max-width:100%; height:auto; margin-bottom:16px;"></video> %>
-    
-    <!-- ✅ iOS 対応の playsinline と muted を追加 -->
+  <!-- トップへ戻る -->
+  <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
+
+  <h2 class="form-heading">📷 カメラで撮影</h2>
+
+  <!-- ライブカメラカード -->
+  <div class="card">
+
+    <!-- ライブ映像 -->
     <video id="video"
-          autoplay
-          playsinline
-          muted
-          style="max-width:100%; height:auto; margin-bottom:16px;"></video>
+           autoplay
+           playsinline
+           muted
+           style="max-width:100%; height:auto; border-radius:12px; margin-bottom:1rem;"></video>
 
-
-
-
-    <!-- ボタン群 -->
-    <div class="form-actions" style="justify-content:center; margin-bottom:16px;">
-      <button id="capture" class="form-button blue" type="button" style="margin-right:8px;">撮影する</button>
+    <!-- 撮影ボタン -->
+    <div style="text-align:center; margin-bottom:1rem;">
+      <button id="capture" type="button" class="btn btn-blue">撮影する</button>
     </div>
 
-    <!-- 戻るリンク -->
-    <div style="text-align:center; margin-top:16px;">
+    <!-- 戻るリンク群 -->
+    <div style="text-align:center; margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center;">
       <% if params[:mode] == "edit" && params[:product_id].present? %>
-        <%= link_to "商品編集に戻る", edit_product_path(params[:product_id]), class: "form-button gray" %>
+        <%= link_to "商品編集に戻る", edit_product_path(params[:product_id]), class: "btn btn-gray" %>
       <% elsif params[:mode] == "new" %>
-        <%= link_to "商品登録に戻る", new_product_path, class: "form-button gray" %>
+        <%= link_to "商品登録に戻る", new_product_path, class: "btn btn-gray" %>
       <% else %>
-        <%= link_to "レジ画面に戻る", new_order_products_path, class: "form-button gray" %>
+        <%= link_to "レジ画面に戻る", new_order_products_path, class: "btn btn-gray" %>
       <% end %>
     </div>
   </div>
-</div>    
+</div>
 
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const video      = document.getElementById("video");
-    const captureBtn = document.getElementById("capture");
-    const fileInput  = document.getElementById("upload-file");
-    const preview    = document.getElementById("camera-preview-image");
-    const container  = document.getElementById("camera-container");
-    if (!video || !captureBtn || !container) return;
+document.addEventListener("DOMContentLoaded", () => {
+  const video      = document.getElementById("video");
+  const captureBtn = document.getElementById("capture");
+  const container  = document.getElementById("camera-container");
+  if (!video || !captureBtn || !container) return;
 
-    // カメラ起動
-    // navigator.mediaDevices.getUserMedia({ video: true })
-      // .then(stream => video.srcObject = stream)
-      // .catch(err => console.error("カメラエラー:", err));
-
-    // --- 背面カメラ優先で起動 --------------------------------
-    let stream;  // グローバルに保持
-
-    async function startCamera(tryDeviceId = false) {
-      if (stream) stream.getTracks().forEach(t => t.stop()); // 既存ストリーム解放
-
-      try {
-        // ① facingMode で背面をリクエスト
-        const constraints = tryDeviceId
-          ? await rearCameraByDeviceId()      // ② deviceId フォールバック
-          : { video: { facingMode: { exact: "environment" } }, audio: false };
-
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = stream;
-      } catch (err) {
-        // ① 失敗 → ② を試す
-        if (!tryDeviceId) return startCamera(true);
-        console.error("背面カメラ取得に失敗:", err);
-        alert("背面カメラを起動できませんでした");
-      }
+  /* --- 背面カメラ優先で起動 ----------------------------- */
+  let stream;
+  async function startCamera(tryDeviceId = false) {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    try {
+      const constraints = tryDeviceId
+        ? await rearCameraByDeviceId()
+        : { video: { facingMode: { exact: "environment" } }, audio: false };
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = stream;
+    } catch (err) {
+      if (!tryDeviceId) return startCamera(true);
+      console.error("背面カメラ取得に失敗:", err);
+      alert("背面カメラを起動できませんでした");
     }
+  }
+  async function rearCameraByDeviceId() {
+    await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const rearCam = devices.find(d =>
+      d.kind === "videoinput" && /back|rear|environment/i.test(d.label)
+    );
+    return rearCam
+      ? { video: { deviceId: { exact: rearCam.deviceId } }, audio: false }
+      : { video: true, audio: false };
+  }
+  startCamera();
+  window.addEventListener("pagehide", () => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+  });
+  /* ------------------------------------------------------- */
 
-    // 背面カメラらしき deviceId を選ぶ
-    async function rearCameraByDeviceId() {
-      // label を得るために一度だけ権限取得
-      await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  const mode      = container.dataset.mode;
+  const productId = container.dataset.productId;
+  const flaskUrl  = ["localhost","127.0.0.1"].includes(location.hostname)
+                    ? "http://localhost:10000"
+                    : "https://ai-server-f6si.onrender.com";
 
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const rearCam = devices.find(d =>
-        d.kind === "videoinput" && /back|rear|environment/i.test(d.label)
-      );
+  function sendCapture(blob) {
+    const fd = new FormData();
+    fd.append("image", blob, "capture.png");           // PNG 送信
 
-      if (rearCam) {
-        return { video: { deviceId: { exact: rearCam.deviceId } }, audio: false };
-      }
-      // 見つからなければ通常カメラ
-      return { video: true, audio: false };
+    if (mode === "order") {
+      fetch(`${flaskUrl}/predict`, { method: "POST", body: fd })
+        .then(res => res.json())
+        .then(json => {
+          const name  = json.name  || '';
+          const score = json.score || 0;
+          window.location.href =
+            `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
+        })
+        .catch(err => console.error("予測エラー:", err));
+    } else {
+      fetch("/products/capture_product", { method: "POST", body: fd })
+        .then(() => {
+          const url = mode === "new"
+                     ? "/products/new?from_camera=1"
+                     : `/products/${productId}/edit?from_camera=1`;
+          window.location.href = url;
+        })
+        .catch(err => console.error("送信エラー:", err));
     }
+  }
 
-    // DOMContentLoaded 時点で起動
-    startCamera();
+  /* ===== リサイズ付きキャプチャ (MAX 512px, PNG) ===== */
+  captureBtn.addEventListener("click", () => {
+    const MAX   = 512;
+    const scale = Math.min(MAX / video.videoWidth,
+                           MAX / video.videoHeight, 1);
 
-    // ページ離脱時にストリーム解放（iOS 黒画面バグ対策）
-    window.addEventListener("pagehide", () => {
-      if (stream) stream.getTracks().forEach(t => t.stop());
-    });
-    // ----------------------------------------------------------
+    const canvas = document.createElement("canvas");
+    canvas.width  = Math.round(video.videoWidth  * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    canvas.getContext("2d").drawImage(
+      video, 0, 0, video.videoWidth, video.videoHeight,
+      0, 0, canvas.width, canvas.height
+    );
 
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);  // プレビュー用
+    sessionStorage.setItem("capturedImage", dataUrl);
 
-
-
-
-
-
-
-
-
-    const mode      = container.dataset.mode;
-    const productId = container.dataset.productId;
-    const isLocal   = ["localhost","127.0.0.1"].includes(location.hostname);
-    const flaskUrl  = isLocal ? "http://localhost:10000" : "https://ai-server-f6si.onrender.com";
-
-    // 撮影/送信処理
-    function sendCapture(blob) {
-      const fd = new FormData();
-      // fd.append("image", blob, "capture.png");
-      if (mode === "order") {
-        fetch(`${flaskUrl}/predict`, { method: "POST", body: fd })
-          .then(res => res.json())
-          .then(json => {
-            const name  = json.name || '';
-            const score = json.score || 0;
-            window.location.href = `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
-          })
-          .catch(err => console.error("予測エラー:", err));
-      } else {
-        fetch("/products/capture_product", { method: "POST", body: fd })
-          .then(() => {
-            const url = mode === "new"
-              ? "/products/new?from_camera=1"
-              : `/products/${productId}/edit?from_camera=1`;
-            window.location.href = url;
-          })
-          .catch(err => console.error("送信エラー:", err));
-      }
-    }
-
-    // キャプチャボタンイベント
-    captureBtn.addEventListener("click", () => {
-      // const canvas = document.createElement("canvas");
-      // canvas.width  = video.videoWidth;
-      // canvas.height = video.videoHeight;
-      // canvas.getContext("2d").drawImage(video, 0, 0);
-      
-    // Base64 データ URL を取得して保存
-    // const dataUrl = canvas.toDataURL("image/png");
-    // sessionStorage.setItem("capturedImage", dataUrl);
-
-
-    // Blob 変換して送信
-    // canvas.toBlob(blob => sendCapture(blob), "image/png");
-  // });
-     /* ===== ✅ リサイズ付きキャプチャ (MAX 512px, JPEG 85%) ===== */
-      const MAX = 512;                                       // 最長辺の上限
-      const scale = Math.min(
-        MAX / video.videoWidth,
-        MAX / video.videoHeight,
-        1                                // すでに小さい場合は等倍
-      );
-    
-      const canvas = document.createElement("canvas");
-      canvas.width  = Math.round(video.videoWidth  * scale);
-      canvas.height = Math.round(video.videoHeight * scale);
-    
-      canvas
-        .getContext("2d")
-        .drawImage(
-          video,
-          0, 0, video.videoWidth, video.videoHeight,  // 元サイズ
-          0, 0, canvas.width,    canvas.height       // リサイズ後
-        );
-    
-      // 👀 プレビュー保存 (任意)
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-      sessionStorage.setItem("capturedImage", dataUrl);
-    
-      // Blob 化して送信（既存の sendCapture をそのまま利用）
-      // canvas.toBlob(blob => sendCapture(blob), "image/jpeg", 0.85);
-      canvas.toBlob(blob => sendCapture(blob), "image/png");
-
-    });
-
-
- 
+    canvas.toBlob(blob => sendCapture(blob), "image/png");
+  });
 });
 </script>

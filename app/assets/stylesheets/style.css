@@ -1,320 +1,110 @@
-/* 画像プレビュー周りをまとめて一律管理 */
-.image-group {
-  display: flex;
-  gap: 16px;
-  margin: 8px 0 16px;
+/* ========== 1. レイアウト基盤 ========== */
+.container {
+  max-width: 700px;
+  margin-inline: auto;
+  padding: 1rem;
 }
 
-.image-block {
-  text-align: center;
+.grid          { display:grid; gap:1rem; }
+@media (min-width:600px){ .grid{ grid-template-columns:repeat(2,1fr);} }
+
+.card {
+  background:#fff;
+  border-radius:16px;
+  padding:1.2rem 1.4rem;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  text-align:center;
 }
 
-/* ラベルが必要なら .preview-label を使う */
-.preview-label {
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 4px;
+/* ========== 2. 見出し ========== */
+h1.form-heading{
+  font-size:clamp(1.6rem,4vw,2.4rem);
+  text-align:center;
+  margin-block:1.6rem 1rem;
+}
+.form-heading{ /* h2 等で再利用 */
+  text-align:center;
+  margin-block:.8rem;
 }
 
-.image-block .preview-image {
-  display: block;
-  margin: 0 auto;
-  max-width: 100px;
-  max-height: 100px;
-  object-fit: cover;
+/* ========== 3. ボタン ========== */
+.btn{
+  display:inline-block;
+  padding:.8rem 1.8rem;
+  border-radius:9999px;
+  font-weight:600;
+  color:#fff;
+  transition:transform .15s ease;
+}
+.btn-blue   { background:#1976d2; }
+.btn-yellow { background:#f9a825; color:#000; }
+.btn-gray   { background:#757575; }
+.btn-red    { background:#dc2626; }
+
+.btn:hover  { transform:translateY(-2px); }
+.btn:active { transform:translateY(1px);  }
+
+@media(max-width:480px){ .btn{ width:100%; } }
+
+/* ========== 4. 画像プレビュー共通 ========== */
+.preview-image{
+  display:block;
+  max-width:100%;
+  height:auto;
+  margin-inline:auto;
+  object-fit:cover;
+}
+.image-group{ display:flex; gap:1rem; margin-block:.5rem 1rem; }
+.image-block{ text-align:center; }
+.preview-label{ font-weight:bold; margin-bottom:.4rem; }
+
+.original-preview,
+.new-preview{
+  padding:8px;
+  border-radius:6px;
+  margin-bottom:1rem;
+}
+.original-preview{ border:2px solid #6b7280; background:#f3f4f6; }
+.new-preview     { border:2px solid #3b82f6; background:#eff6ff; }
+
+/* ========== 5. 撮影画面専用 ========== */
+.camera-wrapper{ max-width:420px; margin:auto; padding:0 1rem; }
+#video{
+  width:100%; height:auto;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.capture-fixed{
+  position:fixed; left:50%; bottom:2.4rem;
+  transform:translateX(-50%);
+  width:calc(100% - 3rem); max-width:420px;
+  text-align:center; z-index:1000;
 }
 
-/* ボタン間の余白 */
-.form-actions .form-button {
-  margin-right: 8px;
-}
-
-/* ファイル選択用ラベルをボタン風に */
-.file-button {
-  cursor: pointer;
-}
-
-
-
-
-.preview-label {
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-
-/* 検索結果用コンテナの余白調整 */
-.search-results-container {
-  margin-top: 16px;
-  flex-wrap: wrap;
-  justify-content: flex-start; /* 左詰め */
-}
-
-/* .form-container のデフォルトでは中央寄せなので、検索結果は左詰めにしたいとき */
-.search-results-container .form-card {
-  max-width: 200px;  /* カード幅を固定 */
-}
-
-
-
-
-
-
-
-/* 元の画像 */
-.original-preview {
-  border: 2px solid #6b7280;     /* グレーの枠 */
-  background-color: #f3f4f6;      /* 薄いグレー背景 */
-  padding: 8px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-}
-
-/* 新しい画像 */
-.new-preview {
-  border: 2px solid #3b82f6;     /* 青い枠 */
-  background-color: #eff6ff;      /* 薄い青背景 */
-  padding: 8px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-}
-
-/* 画像自体は中央寄せ */
-.preview-image {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.form-heading {
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.form-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 24px;
-}
-
-.form-card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 16px;
-  width: 250px;
-  text-align: center;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-}
-
-
-.form-field {
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.form-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-
-
-/* 共通ボタンベースクラス */
-.form-button {
-  padding: 10px 20px;
-  font-weight: bold;
-  border-radius: 4px;
-  display: inline-block;
-  margin: 5px;
-  text-align: center;
-  text-decoration: none;
-  transition: transform 0.2s ease;
-  cursor: pointer;
-  border: none;
-}
-
-
-
-
-
-
-.form-button:hover {
-  transform: scale(0.95); /* 押されたような動き */
-}
-
-.form-button:focus {
-  outline: none; /* 黒い枠を消す */
-}
-
-/* 色バリエーション */
-.form-button.yellow {
-  background-color: #facc15; /* 明るい黄色 */
-  color: #000;
-}
-
-.form-button.gray {
-  background-color: #6b7280; /* グレー */
-  color: #fff;
-}
-
-.form-button.red {
-  background-color: #dc2626; /* 赤 */
-  color: #fff;
-}
-
-.form-button.blue {
-  background-color: #3b82f6; /* 青（必要であれば） */
-  color: #fff;
-}
-
-
-
-
-
-/* 共通 */
-.indispensable {
-  background: #ea352d;
-  margin-left: 8px;
-  padding: 3px;
-  border-radius: 2px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-
-.optional {
-  background: #666;
-  margin-left: 8px;
-  padding: 3px;
-  border-radius: 2px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-
-
-.error-text {
-  color: #dc2626;   /* 赤字 */
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-
-
-
-
-
-/* 売上サマリー用 */
-.summary-cards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.summary-cards .card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 16px;
-  width: 180px;
-  text-align: center;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-}
-
-/* チャートコンテナ用 */
-.chart-container {
-  max-width: 600px;
-  margin: 0 auto 24px;
-}
-
-/* もしボタンと同じグレイ系を使うなら */
-.form-button.gray {
-  /* すでに定義済みですが、ここで幅や余白を微調整してもOK */
-  padding: 8px 16px;
-  font-size: 14px;
-}
-
-
-
-
-.report-table {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto 40px;
-  border-collapse: collapse;
+/* ========== 6. 検索結果・テーブル等 ========== */
+.search-results-container{ margin-top:1rem; }
+.search-results-container .card{ max-width:200px; }
+
+.report-table{
+  width:100%; max-width:600px; margin:0 auto 2.5rem;
+  border-collapse:collapse;
 }
 .report-table th,
-.report-table td {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
+.report-table td{ padding:8px; border-bottom:1px solid #eee; }
+.report-table th{ border-bottom:2px solid #ccc; text-align:left; }
+
+/* ========== 7. 売上ダッシュボード ========== */
+.chart-heading{ font-size:20px; font-weight:bold; margin-bottom:1rem; }
+.sales-summary{ list-style:none; padding:0; margin:0; font-size:14px; }
+.sales-summary li{ margin-bottom:.5rem; }
+
+/* ========== 8. インジケータ・エラー表示 ========== */
+.indispensable,
+.optional{
+  margin-left:8px; padding:3px 4px; border-radius:2px;
+  color:#fff; font-size:12px; font-weight:bold;
 }
-.report-table th {
-  border-bottom: 2px solid #ccc;
-  text-align: left;
-}
+.indispensable{ background:#ea352d; }
+.optional    { background:#666; }
 
-
-
-/* 売上分析ページ用 */
-
-/* グラフセクション：form-cardスタイルをベースに */
-.chart-card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 16px;
-  margin: 16px auto;
-  width: 90%;
-  max-width: 700px;
-  text-align: center;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* グラフの見出し：form-heading風に */
-.chart-heading {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 16px;
-}
-
-/* 売上サマリーリスト */
-.sales-summary {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 14px;
-}
-
-.sales-summary li {
-  margin-bottom: 8px;
-}
-
+.error-text{ color:#dc2626; font-size:12px; margin-top:4px; }

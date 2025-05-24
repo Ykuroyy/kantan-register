@@ -1,22 +1,26 @@
 <h1 class="form-heading">かんたんレジアプリ</h1>
 
-<div class="form-container">
-  <div class="form-card">
-    <h2>🍞 商品一覧</h2>
-    <p>商品の登録・編集・削除</p>
-    <%= link_to "商品一覧へ", products_path, class: "form-button blue" %>
-  </div>
+<div class="container">
+  <div class="grid">
+    <!-- 🍞 商品一覧 -->
+    <div class="card">
+      <h2>🍞 商品一覧</h2>
+      <p>商品の登録・編集・削除</p>
+      <%= link_to "商品一覧へ", products_path, class: "btn btn-blue" %>
+    </div>
 
-  <div class="form-card">
-    <h2>📊 売上分析</h2>
-    <p>売上データの確認</p>
-    <%= link_to "売上分析", orders_analytics_path, class: "form-button yellow" %>
-  </div>
+    <!-- 📊 売上分析 -->
+    <div class="card">
+      <h2>📊 売上分析</h2>
+      <p>売上データの確認</p>
+      <%= link_to "売上分析", orders_analytics_path, class: "btn btn-yellow" %>
+    </div>
 
-  <div class="form-card">
-    <h2>💴 レジ画面</h2>
-    <p>AIレジで販売処理</p>
-    
-    <%= link_to "レジ画面", new_order_products_path, class: "form-button gray" %>
+    <!-- 💴 レジ画面 -->
+    <div class="card">
+      <h2>💴 レジ画面</h2>
+      <p>AIレジで販売処理</p>
+      <%= link_to "レジ画面", new_order_products_path, class: "btn btn-gray" %>
+    </div>
   </div>
 </div>

@@ -1,48 +1,55 @@
-<div class="text-center" style="margin-top: 20px;">
-  <%= link_to "新規商品登録", new_product_path, class: "form-button blue" %>
-  <%= link_to "トップページに戻る", root_path, class: "form-button gray" %>
-</div>
+<div class="container">
+  <!-- トップ操作ボタン -->
+  <div class="text-center" style="margin-top:20px;">
+    <%= link_to "新規商品登録", new_product_path, class: "btn btn-blue" %>
+    <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
+  </div>
 
-<h1 class="form-heading">商品一覧</h1>
+  <h1 class="form-heading">商品一覧</h1>
 
-<!-- ✅ フラッシュメッセージ表示 -->
-<% if flash[:notice] %>
-  <p class="notice"><%= flash[:notice] %></p>
-<% end %>
-
-<% if flash[:alert] %>
-  <p class="alert"><%= flash[:alert] %></p>
-<% end %>
-
-<!-- 🔍 検索フォームを追加 -->
-<%= form_with url: products_path, method: :get, local: true do |f| %>
-  <%= f.label :keyword, "商品名で検索" %>
-  <%= f.text_field :keyword, value: params[:keyword], placeholder: "カタカナで商品名を入力" %>
-  <%= f.submit "検索", class: "form-button blue" %>
-<% end %>
-
-<div class="form-container">
-  <% @products.each do |product| %>
-    <div class="form-card">
-      <% if product.image.attached? %>
-        <%= image_tag product.image.variant(resize_to_limit: [500, 500]), class: "preview-image" %>
-      <% else %>
-        <div class="preview-image no-image">画像なし</div>
-      <% end %>
-
-      <div class="form-field">
-        <strong>商品名:</strong> <%= product.name %>
-      </div>
-
-      <div class="form-field">
-        <strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %>
-      </div>
-
-      <div class="form-actions">
-        <%= link_to "詳細", product_path(product), class: "form-button blue" %>
-      </div>
-    </div>
+  <!-- フラッシュ -->
+  <% if flash[:notice] %>
+    <p class="notice"><%= flash[:notice] %></p>
   <% end %>
+  <% if flash[:alert] %>
+    <p class="alert"><%= flash[:alert] %></p>
+  <% end %>
+
+  <!-- 検索フォーム -->
+  <div class="card" style="margin-bottom:1rem;">
+    <%= form_with url: products_path, method: :get, local: true do |f| %>
+      <%= f.label :keyword, "商品名で検索" %>
+      <%= f.text_field :keyword,
+                       value: params[:keyword],
+                       placeholder: "カタカナで商品名を入力",
+                       style: "margin-left:.4rem;" %>
+      <%= f.submit "検索", class: "btn btn-blue", style: "margin-left:.6rem;" %>
+    <% end %>
+  </div>
+
+  <!-- 商品カード一覧 -->
+  <div class="grid" style="margin-top:1rem;">
+    <% @products.each do |product| %>
+      <div class="card">
+        <% if product.image.attached? %>
+          <%= image_tag product.image.variant(resize_to_limit:[500,500]),
+                        class:"preview-image" %>
+        <% else %>
+          <div class="preview-image no-image">画像なし</div>
+        <% end %>
+
+        <div class="form-field">
+          <strong>商品名:</strong> <%= product.name %>
+        </div>
+
+        <div class="form-field">
+          <strong>価格:</strong> ¥<%= number_with_delimiter(product.price) %>
+        </div>
+
+        <div style="margin-top:.8rem;">
+          <%= link_to "詳細", product_path(product), class:"btn btn-blue" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
 </div>
-
-
