@@ -4,7 +4,17 @@
 <div id="camera-container" data-mode="<%= params[:mode] %>" data-product-id="<%= params[:product_id] %>" class="form-container">
   <div class="form-card">
     <!-- ライブカメラ映像 -->
-    <video id="video" autoplay style="max-width:100%; height:auto; margin-bottom:16px;"></video>
+    <%# <video id="video" autoplay style="max-width:100%; height:auto; margin-bottom:16px;"></video> %>
+    
+    <!-- ✅ iOS 対応の playsinline と muted を追加 -->
+    <video id="video"
+          autoplay
+          playsinline
+          muted
+          style="max-width:100%; height:auto; margin-bottom:16px;"></video>
+
+
+
 
     <!-- ボタン群 -->
     <div class="form-actions" style="justify-content:center; margin-bottom:16px;">
