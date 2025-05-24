@@ -216,6 +216,17 @@ class ProductsController < ApplicationController
 
   private
 
+  def attach_blob_image
+    return unless session[:product_image_blob_id].present?
+
+    if (blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id]))
+      @product.image.attach(blob)
+    end
+  end
+
+
+
+
   def set_product
     @product = Product.find(params[:id])
   end
