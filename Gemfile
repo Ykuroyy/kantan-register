@@ -99,3 +99,6 @@ gem "groupdate" # DB 方言を気にせず group_by_year などが使える
 
 
 gem "sidekiq"
+
+
+gem "redis"
