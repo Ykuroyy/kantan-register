@@ -142,6 +142,8 @@ GEM
     ffi (1.17.2-x86_64-linux-musl)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    groupdate (6.6.0)
+      activesupport (>= 7.1)
     httparty (0.23.1)
       csv
       mini_mime (>= 1.0.0)
@@ -377,6 +379,7 @@ DEPENDENCIES
   capybara
   debug
   factory_bot_rails
+  groupdate
   httparty
   image_processing (~> 1.2)
   importmap-rails

@@ -1,14 +1,21 @@
-/* ========== 1. レイアウト基盤 ========== */
-.container {
-  max-width: 700px;
-  margin-inline: auto;
-  padding: 1rem;
+/* =====================================================
+   1. レイアウト基盤
+===================================================== */
+.container{
+  max-width:1100px;          /* PC 横長でも余白が残る程度に拡大 */
+  margin-inline:auto;
+  padding:1rem;
 }
 
-.grid          { display:grid; gap:1rem; }
-@media (min-width:600px){ .grid{ grid-template-columns:repeat(2,1fr);} }
+/* カードを自動で 1 ～ n 列に並べる */
+.grid{
+  display:grid;
+  gap:1rem;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+}
 
-.card {
+/* 汎用カード */
+.card{
   background:#fff;
   border-radius:16px;
   padding:1.2rem 1.4rem;
@@ -16,18 +23,22 @@
   text-align:center;
 }
 
-/* ========== 2. 見出し ========== */
+/* =====================================================
+   2. 見出し
+===================================================== */
 h1.form-heading{
   font-size:clamp(1.6rem,4vw,2.4rem);
   text-align:center;
   margin-block:1.6rem 1rem;
 }
-.form-heading{ /* h2 等で再利用 */
+.form-heading{           /* h2/h3 等で再利用 */
   text-align:center;
   margin-block:.8rem;
 }
 
-/* ========== 3. ボタン ========== */
+/* =====================================================
+   3. ボタン
+===================================================== */
 .btn{
   display:inline-block;
   padding:.8rem 1.8rem;
@@ -44,9 +55,14 @@ h1.form-heading{
 .btn:hover  { transform:translateY(-2px); }
 .btn:active { transform:translateY(1px);  }
 
-@media(max-width:480px){ .btn{ width:100%; } }
+/* スマホだけ全幅 */
+@media(max-width:480px){
+  .btn{ width:100%; }
+}
 
-/* ========== 4. 画像プレビュー共通 ========== */
+/* =====================================================
+   4. 画像プレビュー共通
+===================================================== */
 .preview-image{
   display:block;
   max-width:100%;
@@ -54,20 +70,20 @@ h1.form-heading{
   margin-inline:auto;
   object-fit:cover;
 }
-.image-group{ display:flex; gap:1rem; margin-block:.5rem 1rem; }
-.image-block{ text-align:center; }
+.image-group { display:flex; gap:1rem; margin-block:.5rem 1rem; }
+.image-block { text-align:center; }
 .preview-label{ font-weight:bold; margin-bottom:.4rem; }
 
 .original-preview,
 .new-preview{
-  padding:8px;
-  border-radius:6px;
-  margin-bottom:1rem;
+  padding:8px; border-radius:6px; margin-bottom:1rem;
 }
 .original-preview{ border:2px solid #6b7280; background:#f3f4f6; }
 .new-preview     { border:2px solid #3b82f6; background:#eff6ff; }
 
-/* ========== 5. 撮影画面専用 ========== */
+/* =====================================================
+   5. 撮影画面専用
+===================================================== */
 .camera-wrapper{ max-width:420px; margin:auto; padding:0 1rem; }
 #video{
   width:100%; height:auto;
@@ -81,7 +97,9 @@ h1.form-heading{
   text-align:center; z-index:1000;
 }
 
-/* ========== 6. 検索結果・テーブル等 ========== */
+/* =====================================================
+   6. 検索結果・テーブル等
+===================================================== */
 .search-results-container{ margin-top:1rem; }
 .search-results-container .card{ max-width:200px; }
 
@@ -93,16 +111,29 @@ h1.form-heading{
 .report-table td{ padding:8px; border-bottom:1px solid #eee; }
 .report-table th{ border-bottom:2px solid #ccc; text-align:left; }
 
-/* ========== 7. 売上ダッシュボード ========== */
+/* =====================================================
+   7. 売上ダッシュボード
+===================================================== */
 .chart-heading{ font-size:20px; font-weight:bold; margin-bottom:1rem; }
 .sales-summary{ list-style:none; padding:0; margin:0; font-size:14px; }
 .sales-summary li{ margin-bottom:.5rem; }
 
-/* ========== 8. インジケータ・エラー表示 ========== */
+/* チャート高さ：PC とスマホで変更 */
+#period-sales-chart,
+#product-sales-chart{ width:100%; height:400px; }
+@media(max-width:480px){
+  #period-sales-chart,
+  #product-sales-chart{ height:260px; }
+}
+
+/* =====================================================
+   8. インジケータ・エラー表示
+===================================================== */
 .indispensable,
 .optional{
-  margin-left:8px; padding:3px 4px; border-radius:2px;
-  color:#fff; font-size:12px; font-weight:bold;
+  margin-left:8px; padding:3px 4px;
+  border-radius:2px; color:#fff;
+  font-size:12px; font-weight:bold;
 }
 .indispensable{ background:#ea352d; }
 .optional    { background:#666; }

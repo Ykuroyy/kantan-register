@@ -10,6 +10,10 @@ development:
   host: localhost
   database: kantan-register_development
 
+  # ▼ 追加 ▼  「DB内部の時刻は常に UTC」という前提なら安全
+  # variables:
+    # time_zone: "+00:00"
+
 test:
   <<: *default
   adapter: mysql2
