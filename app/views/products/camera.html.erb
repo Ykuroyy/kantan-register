@@ -45,9 +45,66 @@
     if (!video || !captureBtn || !container) return;
 
     // カメラ起動
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => video.srcObject = stream)
-      .catch(err => console.error("カメラエラー:", err));
+    // navigator.mediaDevices.getUserMedia({ video: true })
+      // .then(stream => video.srcObject = stream)
+      // .catch(err => console.error("カメラエラー:", err));
+
+    // --- 背面カメラ優先で起動 --------------------------------
+    let stream;  // グローバルに保持
+
+    async function startCamera(tryDeviceId = false) {
+      if (stream) stream.getTracks().forEach(t => t.stop()); // 既存ストリーム解放
+
+      try {
+        // ① facingMode で背面をリクエスト
+        const constraints = tryDeviceId
+          ? await rearCameraByDeviceId()      // ② deviceId フォールバック
+          : { video: { facingMode: { exact: "environment" } }, audio: false };
+
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = stream;
+      } catch (err) {
+        // ① 失敗 → ② を試す
+        if (!tryDeviceId) return startCamera(true);
+        console.error("背面カメラ取得に失敗:", err);
+        alert("背面カメラを起動できませんでした");
+      }
+    }
+
+    // 背面カメラらしき deviceId を選ぶ
+    async function rearCameraByDeviceId() {
+      // label を得るために一度だけ権限取得
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const rearCam = devices.find(d =>
+        d.kind === "videoinput" && /back|rear|environment/i.test(d.label)
+      );
+
+      if (rearCam) {
+        return { video: { deviceId: { exact: rearCam.deviceId } }, audio: false };
+      }
+      // 見つからなければ通常カメラ
+      return { video: true, audio: false };
+    }
+
+    // DOMContentLoaded 時点で起動
+    startCamera();
+
+    // ページ離脱時にストリーム解放（iOS 黒画面バグ対策）
+    window.addEventListener("pagehide", () => {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+    });
+    // ----------------------------------------------------------
+
+
+
+
+
+
+
+
+
 
     const mode      = container.dataset.mode;
     const productId = container.dataset.productId;
