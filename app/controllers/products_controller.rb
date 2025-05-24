@@ -245,10 +245,15 @@ class ProductsController < ApplicationController
 
     puts "✅ Flaskへ送信準備: #{image_url}"
    
-    HTTParty.post("#{flask_url}/register_image", body: {
-                    name: name,
-                    image_url: image_url
-                  })
+    HTTParty.post(
+      "#{flask_url}/register_image",
+      body: {
+        name: name,
+        image_url: image_url
+      },
+      open_timeout: 10,   # 接続確立 10 秒で諦め
+      read_timeout: 180   # 応答待ち 180 秒に延長
+    )
   end
 
   def _add_to_cart(product_id)
