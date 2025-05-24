@@ -114,7 +114,7 @@
     // 撮影/送信処理
     function sendCapture(blob) {
       const fd = new FormData();
-      fd.append("image", blob, "capture.png");
+      // fd.append("image", blob, "capture.png");
       if (mode === "order") {
         fetch(`${flaskUrl}/predict`, { method: "POST", body: fd })
           .then(res => res.json())
@@ -176,7 +176,9 @@
       sessionStorage.setItem("capturedImage", dataUrl);
     
       // Blob 化して送信（既存の sendCapture をそのまま利用）
-      canvas.toBlob(blob => sendCapture(blob), "image/jpeg", 0.85);
+      // canvas.toBlob(blob => sendCapture(blob), "image/jpeg", 0.85);
+      canvas.toBlob(blob => sendCapture(blob), "image/png");
+
     });
 
 
