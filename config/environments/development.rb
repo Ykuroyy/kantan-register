@@ -62,6 +62,10 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
+  # 本番と同じく 1 本のファイルにまとめて読み込む
+  config.assets.debug = false # ←デフォルト true を false に
+  # config.assets.css_compressor = :sass   # SCSS を使っている場合
+  config.assets.css_compressor = nil
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 

@@ -36,7 +36,7 @@
 
         <div class="form-actions">
           <!-- ファイル選択 -->
-          <label for="product_image" class="form-button yellow file-button">
+          <label for="product_image" class="btn-yellow file-button">
             ファイルから選択
           </label>
           <%= f.file_field :image,
@@ -49,11 +49,11 @@
                         camera_products_path(mode: "edit",
                                               product_id: @product.id,
                                               from_camera: 1),
-                        class: "form-button blue" %>
+                        class: ".btn-blue" %>
           <% else %>
             <%= link_to "カメラで撮影",
                         camera_products_path(mode: "new"),
-                        class: "form-button blue" %>
+                        class: ".btn-blue" %>
           <% end %>
         </div>
       </div>
@@ -78,10 +78,10 @@
 
       <!-- ボタン -->
       <div class="form-actions">
-        <%= f.submit (local_assigns[:submit_text] || "保存"), class: "form-button yellow" %>
+        <%= f.submit (local_assigns[:submit_text] || "保存"), class: "btn-yellow" %>
         <%= link_to "商品詳細に戻る",
                     (local_assigns[:cancel_path] || products_path),
-                    class: "form-button gray" %>
+                    class: "btn-gray" %>
       </div>
 
     <% end %>

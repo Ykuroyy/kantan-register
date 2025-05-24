@@ -54,9 +54,28 @@ document.addEventListener("DOMContentLoaded", () => {
       stream = await navigator.mediaDevices.getUserMedia(constraints);
       video.srcObject = stream;
     } catch (err) {
+      // if (!tryDeviceId) return startCamera(true);
+      // console.error("背面カメラ取得に失敗:", err);
+      // alert("背面カメラを起動できませんでした");
+
+
+      // ★ ① デバイスIDで背面カメラ再試行
       if (!tryDeviceId) return startCamera(true);
-      console.error("背面カメラ取得に失敗:", err);
-      alert("背面カメラを起動できませんでした");
+
+      console.warn("rear camera not found, fallback to front:", err);
+      // ★ ② それでも失敗したら front-camera（PC 用）へフォールバック
+      try {
+        const frontStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
+          audio: false,
+        });
+        stream = frontStream;
+        video.srcObject = stream;
+        console.log("✅ front camera");
+      } catch (e) {
+        console.error("front camera も取得できませんでした:", e);
+        alert("カメラを起動できませんでした");
+      }
     }
   }
   async function rearCameraByDeviceId() {
@@ -107,9 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* ===== リサイズ付きキャプチャ (MAX 512px, PNG) ===== */
+  /* ===== リサイズ付きキャプチャ  ===== */
   captureBtn.addEventListener("click", () => {
-    const MAX   = 512;
+    const MAX   = 640;
     const scale = Math.min(MAX / video.videoWidth,
                            MAX / video.videoHeight, 1);
 
@@ -121,10 +140,17 @@ document.addEventListener("DOMContentLoaded", () => {
       0, 0, canvas.width, canvas.height
     );
 
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);  // プレビュー用
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.80);  // 80% 品質でプレビュー
     sessionStorage.setItem("capturedImage", dataUrl);
 
-    canvas.toBlob(blob => sendCapture(blob), "image/png");
+
+    canvas.toBlob(
+      blob => sendCapture(blob),
+     "image/jpeg",
+     0.80                                     // 送信も 80% 品質
+    );
+
   });
 });
 </script>

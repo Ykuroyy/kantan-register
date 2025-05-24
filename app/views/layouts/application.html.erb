@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8"><!-- ① 追加 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- ② 上へ移動 -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>かんたんレジアプリ</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+
+    <!-- 🔽 追加ここから -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 🔼 追加ここまで -->
+
+
 
     <!-- ✅ CSS -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
