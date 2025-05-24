@@ -138,19 +138,47 @@
 
     // キャプチャボタンイベント
     captureBtn.addEventListener("click", () => {
-      const canvas = document.createElement("canvas");
-      canvas.width  = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext("2d").drawImage(video, 0, 0);
+      // const canvas = document.createElement("canvas");
+      // canvas.width  = video.videoWidth;
+      // canvas.height = video.videoHeight;
+      // canvas.getContext("2d").drawImage(video, 0, 0);
       
     // Base64 データ URL を取得して保存
-    const dataUrl = canvas.toDataURL("image/png");
-    sessionStorage.setItem("capturedImage", dataUrl);
+    // const dataUrl = canvas.toDataURL("image/png");
+    // sessionStorage.setItem("capturedImage", dataUrl);
 
 
     // Blob 変換して送信
-    canvas.toBlob(blob => sendCapture(blob), "image/png");
-  });
+    // canvas.toBlob(blob => sendCapture(blob), "image/png");
+  // });
+     /* ===== ✅ リサイズ付きキャプチャ (MAX 512px, JPEG 85%) ===== */
+      const MAX = 512;                                       // 最長辺の上限
+      const scale = Math.min(
+        MAX / video.videoWidth,
+        MAX / video.videoHeight,
+        1                                // すでに小さい場合は等倍
+      );
+    
+      const canvas = document.createElement("canvas");
+      canvas.width  = Math.round(video.videoWidth  * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
+    
+      canvas
+        .getContext("2d")
+        .drawImage(
+          video,
+          0, 0, video.videoWidth, video.videoHeight,  // 元サイズ
+          0, 0, canvas.width,    canvas.height       // リサイズ後
+        );
+    
+      // 👀 プレビュー保存 (任意)
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      sessionStorage.setItem("capturedImage", dataUrl);
+    
+      // Blob 化して送信（既存の sendCapture をそのまま利用）
+      canvas.toBlob(blob => sendCapture(blob), "image/jpeg", 0.85);
+    });
+
 
  
 });
