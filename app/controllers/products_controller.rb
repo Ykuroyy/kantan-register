@@ -8,10 +8,15 @@ class ProductsController < ApplicationController
 
   def index
     if params[:keyword].present? && params[:keyword].match?(/\A[ァ-ヶー－]+\z/)
-      @products = Product.where("name LIKE ?", "%#{params[:keyword]}%").order(created_at: :desc)
+      @products = Product
+                  .with_attached_image                            # ← 追加
+                  .where("name LIKE ?", "%#{params[:keyword]}%")
+                  .order(created_at: :desc)
     else
-      @products = Product.all.order(created_at: :desc)
-    end
+      @products = Product
+                  .with_attached_image                            # ← 追加
+                  .order(created_at: :desc)
+    end                 
   end
 
   def show; end
@@ -156,8 +161,9 @@ class ProductsController < ApplicationController
     @total      = calculate_total_price
   
   
-    # — 検索結果 or 全商品を @products にセット —
-    base_products = Product.all.order(created_at: :desc)
+    # # — 検索結果 or 全商品を @products にセット —
+    # base_products = Product.all.order(created_at: :desc)
+    base_products = Product.with_attached_image.order(created_at: :desc)
     if params[:keyword].present?
       @products = base_products.where("name LIKE ?", "%#{params[:keyword]}%")
     else
