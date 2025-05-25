@@ -1,11 +1,14 @@
 <!-- app/views/orders/analytics.html.erb  （レスポンシブ共通デザイン版） -->
 
 <div class="container">
-     id="analytics-container"
-     data-period-labels="<%= @period_labels.to_json %>"
-     data-period-data="<%= @period_data.to_json %>"
-     data-product-labels="<%= @product_sales.keys.to_json %>"
-     data-product-data="<%= @product_sales.values.to_json %>">
+  <%= content_tag :div, "",
+    id:    "analytics-container",
+    data: {
+      period_labels:  @period_labels,
+      period_data:    @period_data,
+      product_labels: @product_sales.keys,
+      product_data:   @product_sales.values
+    } %>
 
 
 
