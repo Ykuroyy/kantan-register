@@ -1,6 +1,6 @@
-/* 共通フォント設定 – ページ全体をゴシック体に揃える */
+/* 0. 共通フォント設定 */
 html, body {
-  font-family:
+  font-family: 
     "Noto Sans JP",                       /* 第一候補 Web フォント */
     -apple-system, BlinkMacSystemFont,    /* iOS / macOS */
     "Hiragino Kaku Gothic ProN", "Yu Gothic", /* Windows 日本語 */
@@ -9,75 +9,40 @@ html, body {
   -webkit-font-smoothing: antialiased;    /* Retina をクッキリ */
 }
 
-/* すべての商品プレビュー画像用 */
-.preview-image {
-  width: 100%;          /* 親要素の幅に合わせる（スマホでも崩れない） */
-  max-width: 320px;     /* ここを基準サイズに統一 */
-  height: auto;         /* 縦横比を維持 */
-  border-radius: 12px;
-  object-fit: cover;    /* はみ出しを防ぎ中央トリミング */
-  display: block;       /* 余計な隙間を消す */
-  margin-bottom: 1rem;  /* 下側スペース（お好みで） */
+/* 1. レイアウト基盤 */
+.container {
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: 1rem;
 }
 
-
-
-.image-group{
-  display:flex;
-  justify-content:center; /* ←中央寄せ */
-  gap:1rem;               /* ←左右(＆折返し時の上下)余白 */
-  flex-wrap:wrap;         /* ←スマホ幅で自動折返し */
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-.image-block{
-  text-align:center;
-  width:160px;            /* ★画像幅をそろえたいなら固定 */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+  text-align: center;
 }
 
-
-
-/* =====================================================
-   1. レイアウト基盤
-===================================================== */
-.container{
-  max-width:1100px;          /* PC 横長でも余白が残る程度に拡大 */
-  margin-inline:auto;
-  padding:1rem;
+/* 2. 見出し */
+h1.form-heading {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  text-align: center;
+  margin-block: 1.6rem 1rem;
 }
 
-/* カードを自動で 1 ～ n 列に並べる */
-.grid{
-  display:grid;
-  gap:1rem;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+.form-heading {
+  text-align: center;
+  margin-block: .8rem;
 }
 
-/* 汎用カード */
-.card{
-  background:#fff;
-  border-radius:16px;
-  padding:1.2rem 1.4rem;
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
-  text-align:center;
-}
-
-/* =====================================================
-   2. 見出し
-===================================================== */
-h1.form-heading{
-  font-size:clamp(1.6rem,4vw,2.4rem);
-  text-align:center;
-  margin-block:1.6rem 1rem;
-}
-.form-heading{           /* h2/h3 等で再利用 */
-  text-align:center;
-  margin-block:.8rem;
-}
-
-/* =====================================================
-   3. ボタン
-===================================================== */
-/* すべてのボタン共通 */
+/* 3. ボタン */
 .btn {
   display: inline-block;
   padding: .8rem 1.2rem;
@@ -85,176 +50,201 @@ h1.form-heading{
   border-radius: .5rem;
   text-align: center;
   cursor: pointer;
-  box-sizing: border-box;   /* 余計な幅膨張を防ぐ */
-  white-space: nowrap;      /* 文字で横伸びしない */
+  box-sizing: border-box;
+  white-space: nowrap;
+  color: #fff;
+  font-weight: bold;
 }
 
-/* ボタンを横並びさせているコンテナ */
-.btn-group,
-.image-group {
-  display: flex;
-  flex-wrap: wrap;          /* はみ出す前に折り返す */
-  gap: .6rem;
-  justify-content: center;  /* 中央寄せ（お好みで） */
-}
-
-
-.btn-blue   { background:#1976d2; }
-.btn-yellow { background:#f9a825; color:#000; }
-.btn-gray   { background:#757575; }
-.btn-red    { background:#dc2626; }
-
-.btn:hover  { transform:translateY(-2px); }
-.btn:active { transform:translateY(1px);  }
-
-
-/* style.css など共通ファイルへ */
 .btn-group {
-  display: flex;           /* 横並び */
-  gap: .8rem;              /* ボタン間の間隔 */
-  justify-content: center; /* 中央揃え（お好みで flex-end / start） */
-  flex-wrap: wrap;         /* 画面が狭いときは折り返し */
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  justify-content: center;
 }
 
+.btn-blue   { background: #1976d2; }
+.btn-yellow { background: #f9a825; color: #000; }
+.btn-gray   { background: #757575; }
+.btn-red    { background: #dc2626; }
 
-/* ▼―――― ここがスマホ対策 ――――▼ */
-@media (max-width: 600px) {
-  /* 1列にしたいなら */
-  .btn { width: 100%; max-width: 340px; }
+.btn:hover  { transform: translateY(-2px); }
+.btn:active { transform: translateY(1px);  }
 
-  /* 2列にしたいなら（コメントアウト解除して上を消す） */
-  /* .btn { flex: 1 1 45%; max-width: 180px; } */
-  /* .btn-group { justify-content: space-between; } */
-}
-
-/* ===============================
-   0-599px まで  ← モバイル基準
-   =============================== */
-
-/* --- ボタン共通 --- */
-.btn-yellow,
-.btn-blue,
-.btn-gray,
-.file-button {           /* ラベルもボタン扱い */
-  display: block;        /* 横幅100%にするため inline→block */
+/* ファイル選択ラベル／その他ボタン */
+.file-button {
+  display: block;
   width: 100%;
-  padding: 12px;         /* 横 padding を控えめに */
-  margin: 0;             /* 既存 margin をリセット */
+  padding: 12px;
+  margin: 0;
   text-align: center;
   box-sizing: border-box;
-  font-size: 1rem;       /* 必要なら 0.95rem に */
+  font-size: 1rem;
 }
 
-/* --- ボタンを縦に並べる --- */
+/* フォーム内アクションボタン */
 .form-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;             /* ボタン間の余白 */
-  align-items: stretch;  /* 子を幅いっぱいに伸ばす */
-  max-width: 480px;      /* ↑ 全体も守りで絞る */
-  margin: 0 auto;        /* 中央寄せ */
+  gap: 12px;
+  align-items: stretch;
+  max-width: 480px;
+  margin: 0 auto;
 }
-
-/* ===============================
-   600px 以上  ← タブレット / PC
-   =============================== */
 @media (min-width: 600px) {
   .form-actions {
-    flex-direction: row;    /* 元の横並びに戻す */
-    flex-wrap: wrap;        /* 足りなければ折り返し */
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 16px;
   }
+}
 
-  .btn-yellow,
-  .btn-blue,
-  .btn-gray,
-  .file-button {
-    width: auto;            /* 可変幅に戻す */
-    min-width: 160px;       /* 極端に縮まず、でも可変 */
-    padding: 14px 24px;     /* PC はゆったり */
-    font-size: 1.05rem;
+/* モバイル：ボタン幅100% */
+@media (max-width: 600px) {
+  .btn {
+    width: 100%;
+    max-width: 340px;
   }
 }
 
-
-
-
-/* =====================================================
-   4. 画像プレビュー共通
-===================================================== */
-.preview-image{
-  display:block;
-  max-width:100%;
-  height:auto;
-  margin-inline:auto;
-  object-fit:cover;
-}
-.image-group { display:flex; gap:1rem; margin-block:.5rem 1rem; }
-.image-block { text-align:center; }
-.preview-label{ font-weight:bold; margin-bottom:.4rem; }
-
-.original-preview,
-.new-preview{
-  padding:8px; border-radius:6px; margin-bottom:1rem;
-}
-.original-preview{ border:2px solid #6b7280; background:#f3f4f6; }
-.new-preview     { border:2px solid #3b82f6; background:#eff6ff; }
-
-/* =====================================================
-   5. 撮影画面専用
-===================================================== */
-.camera-wrapper{ max-width:420px; margin:auto; padding:0 1rem; }
-#video{
-  width:100%; height:auto;
-  border-radius:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-}
-.capture-fixed{
-  position:fixed; left:50%; bottom:2.4rem;
-  transform:translateX(-50%);
-  width:calc(100% - 3rem); max-width:420px;
-  text-align:center; z-index:1000;
+/* 4. 画像プレビュー共通 */
+.preview-image {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin-inline: auto;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  object-fit: cover;
 }
 
-/* =====================================================
-   6. 検索結果・テーブル等
-===================================================== */
-.search-results-container{ margin-top:1rem; }
-.search-results-container .card{ max-width:200px; }
+.image-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-block: .5rem 1rem;
+}
 
-.report-table{
-  width:100%; max-width:600px; margin:0 auto 2.5rem;
-  border-collapse:collapse;
+.image-block {
+  text-align: center;
+  width: 160px;
+}
+
+.preview-label {
+  font-weight: bold;
+  margin-bottom: .4rem;
+}
+
+.original-preview {
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 2px solid #6b7280;
+  background: #f3f4f6;
+}
+
+.new-preview {
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 2px solid #3b82f6;
+  background: #eff6ff;
+}
+
+/* 5. 撮影画面専用 */
+.camera-wrapper {
+  max-width: 420px;
+  margin: auto;
+  padding: 0 1rem;
+}
+
+#video {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+}
+
+.capture-fixed {
+  position: fixed;
+  left: 50%;
+  bottom: 2.4rem;
+  transform: translateX(-50%);
+  width: calc(100% - 3rem);
+  max-width: 420px;
+  text-align: center;
+  z-index: 1000;
+}
+
+/* 6. 検索結果・テーブル等 */
+.search-results-container {
+  margin-top: 1rem;
+}
+.search-results-container .card {
+  max-width: 200px;
+}
+
+.report-table {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+  border-collapse: collapse;
 }
 .report-table th,
-.report-table td{ padding:8px; border-bottom:1px solid #eee; }
-.report-table th{ border-bottom:2px solid #ccc; text-align:left; }
+.report-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+.report-table th {
+  border-bottom: 2px solid #ccc;
+  text-align: left;
+}
 
-/* =====================================================
-   7. 売上ダッシュボード
-===================================================== */
-.chart-heading{ font-size:20px; font-weight:bold; margin-bottom:1rem; }
-.sales-summary{ list-style:none; padding:0; margin:0; font-size:14px; }
-.sales-summary li{ margin-bottom:.5rem; }
+/* 7. 売上ダッシュボード */
+.chart-heading {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.sales-summary {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+}
+.sales-summary li {
+  margin-bottom: .5rem;
+}
 
-/* チャート高さ：PC とスマホで変更 */
 #period-sales-chart,
-#product-sales-chart{ width:100%; height:400px; }
-@media(max-width:480px){
+#product-sales-chart {
+  width: 100%;
+  height: 400px;
+}
+@media (max-width: 480px) {
   #period-sales-chart,
-  #product-sales-chart{ height:260px; }
+  #product-sales-chart {
+    height: 260px;
+  }
 }
 
-/* =====================================================
-   8. インジケータ・エラー表示
-===================================================== */
+/* 8. インジケータ・エラー表示 */
 .indispensable,
-.optional{
-  margin-left:8px; padding:3px 4px;
-  border-radius:2px; color:#fff;
-  font-size:12px; font-weight:bold;
+.optional {
+  margin-left: 8px;
+  padding: 3px 4px;
+  border-radius: 2px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
 }
-.indispensable{ background:#ea352d; }
-.optional    { background:#666; }
+.indispensable { background: #ea352d; }
+.optional     { background: #666; }
 
-.error-text{ color:#dc2626; font-size:12px; margin-top:4px; }
+.error-text {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+}
