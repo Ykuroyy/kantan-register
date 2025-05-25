@@ -70,16 +70,41 @@ class ProductsController < ApplicationController
   end
 
 
+  # app/controllers/products_controller.rb
   def destroy
     name = @product.name
     @product.destroy!
-    redirect_to products_path, notice: "#{name} を削除しました"
+
+    respond_to do |format|
+      format.html { redirect_to products_path, notice: "#{name} を削除しました" }
+      format.json { head :no_content }
+    end
   rescue ActiveRecord::InvalidForeignKey
-    redirect_to products_path, alert: "#{name} は注文履歴があるため削除できません"
+    respond_to do |format|
+      format.html do
+        redirect_to products_path,
+                    alert: "#{name} は注文履歴があるため削除できません"
+      end
+      format.json do
+        render json: { error: "#{name} は注文履歴があるため削除できません" },
+               status: :unprocessable_entity
+      end
+    end
   rescue => e
     logger.error "削除エラー: #{e.message}"
-    redirect_to products_path, alert: '削除中にエラーが発生しました'
+
+    respond_to do |format|
+      format.html do
+        redirect_to products_path,
+                    alert: '削除中にエラーが発生しました'
+      end
+      format.json do
+        render json: { error: '削除中にエラーが発生しました' },
+               status: :internal_server_error
+      end
+    end
   end
+
 
 
   def camera; end

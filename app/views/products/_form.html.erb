@@ -13,77 +13,60 @@
         </div>
       <% end %>
 
-      <!-- 画像セクション -->
+      <!-- ① 画像セクション -->
       <div class="form-field">
         <strong>商品画像：<span class="optional">任意</span></strong>
-
         <div class="image-group">
           <!-- 現在の画像 -->
           <div class="image-block">
             <p class="preview-label">現在の画像</p>
             <% if @product.image.attached? %>
-              <%= image_tag @product.image.variant(resize_to_limit: [320, 320]),
-                            id:   "server-preview-image",
+              <%= image_tag @product.image.variant(resize_to_limit: [320,320]),
+                            id: "server-preview-image",
                             class: "preview-image" %>
             <% end %>
           </div>
-
-          <!-- 新しい画像（ファイル or カメラ） -->
+          <!-- 新しい画像プレビュー -->
           <div class="image-block">
             <p class="preview-label">新しい画像</p>
             <%= tag.img "", id: "camera-preview-image",  class: "preview-image", style: "display:none;" %>
-            <%= tag.img "", id: "upload-preview-image",   class: "preview-image", style: "display:none;" %>
+            <%= tag.img "", id: "upload-preview-image",  class: "preview-image", style: "display:none;" %>
           </div>
         </div>
-
         <div class="form-actions">
-          <!-- ファイル選択 -->
-          <label for="product_image" class="btn btn-yellow file-button">
-            ファイルから選択
-          </label>
-          <%= f.file_field :image,
-                          id: "product_image",
-                          style: "display:none;" %>
-
-          <!-- カメラで撮影 -->
-          <%= link_to "カメラで撮影",
-                      camera_products_path(mode: "new"),
-                      class: "btn btn-blue" %>
-
-
-
-            <!-- 商品名 -->
-            <div class="form-field">
-              <%= f.label :name, "商品名" %> <span class="indispensable">必須</span><br>
-              <%= f.text_field :name, class: "products-text" %>
-              <% if @product.errors[:name].present? %>
-                <div class="error-text"><%= @product.errors[:name].first %></div>
-              <% end %>
-            </div>
-
-            <!-- 価格 -->
-            <div class="form-field">
-              <%= f.label :price, "価格" %> <span class="indispensable">必須</span><br>
-              <%= f.text_field :price, class: "price-input" %>
-              <% if @product.errors[:price].present? %>
-                <div class="error-text"><%= @product.errors[:price].first %></div>
-              <% end %>
-            </div>
-      
-
-              <!-- submit / cancel（横並びにしたい部分） -->
-                <div class="btn-group">
-                  <%= f.submit (local_assigns[:submit_text] || "保存"), class: "btn btn-yellow" %>
-                  <%= link_to "商品詳細に戻る",
-                              (local_assigns[:cancel_path] || products_path),
-                              class: "btn btn-gray" %>
-                </div>
-            
+          <label for="product_image" class="btn btn-yellow file-button">ファイルから選択</label>
+          <%= f.file_field :image, id: "product_image", style: "display:none;" %>
+          <%= link_to "カメラで撮影", camera_products_path(mode: "new"), class: "btn btn-blue" %>
         </div>
+      </div>
 
-            
+      <!-- ② 商品名 -->
+      <div class="form-field">
+        <%= f.label :name, "商品名" %> <span class="indispensable">必須</span><br>
+        <%= f.text_field :name, class: "products-text" %>
+        <% if @product.errors[:name].present? %>
+          <div class="error-text"><%= @product.errors[:name].first %></div>
+        <% end %>
+      </div>
+
+      <!-- ③ 価格 -->
+      <div class="form-field">
+        <%= f.label :price, "価格" %> <span class="indispensable">必須</span><br>
+        <%= f.number_field :price, class: "price-input" %>
+        <% if @product.errors[:price].present? %>
+          <div class="error-text"><%= @product.errors[:price].first %></div>
+        <% end %>
+      </div>
+
+      <!-- ④ 送信／キャンセル -->
+      <div class="form-actions btn-group">
+        <%= f.submit (local_assigns[:submit_text] || "保存"), class: "btn btn-yellow" %>
+        <%= link_to (local_assigns[:cancel_path] || products_path), class: "btn btn-gray" do %>
+          <%= local_assigns[:cancel_text] || "商品詳細に戻る" %>
+        <% end %>
       </div>
 
     <% end %>
-  </div>
-</div>
+  </div> 
+</div>   
+
