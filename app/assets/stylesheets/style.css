@@ -69,6 +69,17 @@ h1.form-heading{
 .btn:hover  { transform:translateY(-2px); }
 .btn:active { transform:translateY(1px);  }
 
+
+/* style.css など共通ファイルへ */
+.btn-group {
+  display: flex;           /* 横並び */
+  gap: .8rem;              /* ボタン間の間隔 */
+  justify-content: center; /* 中央揃え（お好みで flex-end / start） */
+  flex-wrap: wrap;         /* 画面が狭いときは折り返し */
+}
+
+
+
 /* スマホだけ全幅 */
 @media(max-width:480px){
   .btn{ width:100%; }
