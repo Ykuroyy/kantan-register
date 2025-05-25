@@ -9,6 +9,30 @@ html, body {
   -webkit-font-smoothing: antialiased;    /* Retina をクッキリ */
 }
 
+/* すべての商品プレビュー画像用 */
+.preview-image {
+  width: 100%;          /* 親要素の幅に合わせる（スマホでも崩れない） */
+  max-width: 320px;     /* ここを基準サイズに統一 */
+  height: auto;         /* 縦横比を維持 */
+  border-radius: 12px;
+  object-fit: cover;    /* はみ出しを防ぎ中央トリミング */
+  display: block;       /* 余計な隙間を消す */
+  margin-bottom: 1rem;  /* 下側スペース（お好みで） */
+}
+
+
+
+.image-group{
+  display:flex;
+  justify-content:center; /* ←中央寄せ */
+  gap:1rem;               /* ←左右(＆折返し時の上下)余白 */
+  flex-wrap:wrap;         /* ←スマホ幅で自動折返し */
+}
+
+.image-block{
+  text-align:center;
+  width:160px;            /* ★画像幅をそろえたいなら固定 */
+}
 
 
 
@@ -53,14 +77,28 @@ h1.form-heading{
 /* =====================================================
    3. ボタン
 ===================================================== */
-.btn{
-  display:inline-block;
-  padding:.8rem 1.8rem;
-  border-radius:9999px;
-  font-weight:600;
-  color:#fff;
-  transition:transform .15s ease;
+/* すべてのボタン共通 */
+.btn {
+  display: inline-block;
+  padding: .8rem 1.2rem;
+  font-size: 1rem;
+  border-radius: .5rem;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;   /* 余計な幅膨張を防ぐ */
+  white-space: nowrap;      /* 文字で横伸びしない */
 }
+
+/* ボタンを横並びさせているコンテナ */
+.btn-group,
+.image-group {
+  display: flex;
+  flex-wrap: wrap;          /* はみ出す前に折り返す */
+  gap: .6rem;
+  justify-content: center;  /* 中央寄せ（お好みで） */
+}
+
+
 .btn-blue   { background:#1976d2; }
 .btn-yellow { background:#f9a825; color:#000; }
 .btn-gray   { background:#757575; }
@@ -79,13 +117,15 @@ h1.form-heading{
 }
 
 
+/* ▼―――― ここがスマホ対策 ――――▼ */
+@media (max-width: 600px) {
+  /* 1列にしたいなら */
+  .btn { width: 100%; max-width: 340px; }
 
-/* スマホだけ全幅 */
-@media(max-width:480px){
-  .btn{ width:100%; }
+  /* 2列にしたいなら（コメントアウト解除して上を消す） */
+  /* .btn { flex: 1 1 45%; max-width: 180px; } */
+  /* .btn-group { justify-content: space-between; } */
 }
-
-
 
 /* ===============================
    0-599px まで  ← モバイル基準

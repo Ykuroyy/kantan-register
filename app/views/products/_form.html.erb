@@ -22,15 +22,17 @@
           <div class="image-block">
             <p class="preview-label">現在の画像</p>
             <% if @product.image.attached? %>
-              <%= image_tag @product.image, id: "server-preview-image", class: "preview-image" %>
+              <%= image_tag @product.image.variant(resize_to_limit: [320, 320]),
+                            id:   "server-preview-image",
+                            class: "preview-image" %>
             <% end %>
           </div>
 
           <!-- 新しい画像（ファイル or カメラ） -->
           <div class="image-block">
             <p class="preview-label">新しい画像</p>
-            <%= tag.img "", id: "camera-preview-image", class: "preview-image", style: "display:none;" %>
-            <%= tag.img "", id: "upload-preview-image", class: "preview-image", style: "display:none;" %>
+            <%= tag.img "", id: "camera-preview-image",  class: "preview-image", style: "display:none;" %>
+            <%= tag.img "", id: "upload-preview-image",   class: "preview-image", style: "display:none;" %>
           </div>
         </div>
 
