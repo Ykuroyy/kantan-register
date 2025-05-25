@@ -96,27 +96,8 @@ ER図：`kantan-register-er-diagram.png`
 * Python Flask (画像認識)
 * ActiveStorage
 
----
 
-## ローカルセットアップ
 
-```bash
-# リポジトリをクローン
-git clone https://github.com/Ykuroyy/kantan-register.git
-cd kantan-register
-
-# 依存インストール
-bundle install
-
-# DB準備
-rails db:create db:migrate
-
-# Rails サーバ起動
-rails server
-
-# 別ターミナルで Flask サーバ起動
-cd flask_server && python app.py
-```
 
 ---
 
