@@ -13,6 +13,7 @@ Rails.application.config.content_security_policy do |policy|
   policy.object_src  :none
   policy.script_src  :self, :https
   policy.style_src   :self, :https, :unsafe_inline # Tailwind/Vite なら :unsafe_inline が必要
+  policy.script_src :self, :https, :unsafe_inline
   # ↑ 追加ルールがあればここに書く
 end
 

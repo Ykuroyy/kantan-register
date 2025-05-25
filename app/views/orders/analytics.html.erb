@@ -1,8 +1,15 @@
 <!-- app/views/orders/analytics.html.erb  （レスポンシブ共通デザイン版） -->
 
 <div class="container">
-  <%= link_to "トップ画面に戻る", root_path, class: "btn btn-gray" %>
+     id="analytics-container"
+     data-period-labels="<%= @period_labels.to_json %>"
+     data-period-data="<%= @period_data.to_json %>"
+     data-product-labels="<%= @product_sales.keys.to_json %>"
+     data-product-data="<%= @product_sales.values.to_json %>">
 
+
+
+  <%= link_to "トップ画面に戻る", root_path, class: "btn btn-gray" %>
   <h1 class="form-heading">📈 売上分析ダッシュボード</h1>
 
   <!-- 期間タブ・グラフ・サマリーをカードで並べる -->
@@ -52,10 +59,3 @@
 <%= javascript_include_tag "https://cdn.jsdelivr.net/npm/chart.js", defer: true %>
 <%= javascript_include_tag "sales_analytics", defer: true %>
 
-<!-- データ埋め込み -->
-<script>
-  window.periodLabels  = <%= raw @period_labels.to_json  %>;
-  window.periodData    = <%= raw @period_data.to_json    %>;
-  window.productLabels = <%= raw @product_sales.keys.to_json   %>;
-  window.productData   = <%= raw @product_sales.values.to_json %>;
-</script>

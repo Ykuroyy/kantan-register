@@ -21,8 +21,9 @@
     <%= stylesheet_link_tag "style", "data-turbo-track": "reload" %>
 
     <!-- ✅ JavaScript -->
-    <%= javascript_importmap_tags %>
-    <%= javascript_include_tag "preview", defer: true %>
+    <%= javascript_include_tag "application",
+          defer: true,
+          "data-turbo-track": "reload" %>
   </head>
 
   <body>

@@ -1,29 +1,28 @@
+<!-- app/views/products/camera.html.erb -->
 <div class="container" id="camera-container"
      data-mode="<%= params[:mode] %>"
      data-product-id="<%= params[:product_id] %>">
 
-  <!-- トップへ戻る -->
   <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
 
   <h2 class="form-heading">📷 カメラで撮影</h2>
 
-  <!-- ライブカメラカード -->
   <div class="card">
-
     <!-- ライブ映像 -->
     <video id="video"
            autoplay
            playsinline
            muted
-           style="max-width:100%; height:auto; border-radius:12px; margin-bottom:1rem;"></video>
+           style="max-width:100%; height:auto; border-radius:12px; margin-bottom:1rem;">
+    </video>
 
     <!-- 起動＆撮影ボタン -->
     <div style="text-align:center; margin-bottom:1rem; display:flex; gap:.6rem; justify-content:center;">
-      <button id="start-camera" type="button" class="btn btn-blue">カメラ起動</button>
-      <button id="capture-photo" type="button" class="btn btn-yellow">撮影する</button>
+      <button id="start-camera"   type="button" class="btn btn-blue">カメラ起動</button>
+      <button id="capture-photo"  type="button" class="btn btn-yellow">撮影する</button>
     </div>
 
-    <!-- プレビュー表示 -->
+    <!-- プレビュー用イメージ -->
     <img id="preview" style="display:none; max-width:100%; border-radius:12px; margin-bottom:1rem;" />
 
     <!-- 戻るリンク群 -->
@@ -38,89 +37,5 @@
     </div>
   </div>
 
-  <!-- hidden canvas for capture -->
   <canvas id="canvas" style="display:none;"></canvas>
 </div>
-
-<script>
-document.addEventListener("turbo:load", () => {
-  const video      = document.getElementById("video");
-  const startBtn   = document.getElementById("start-camera");
-  const captureBtn = document.getElementById("capture-photo");
-  const canvas     = document.getElementById("canvas");
-  const ctx        = canvas.getContext("2d");
-  const preview    = document.getElementById("preview");
-  const container  = document.getElementById("camera-container");
-
-  if (!video || !startBtn || !captureBtn || !canvas || !container) return;
-
-  const mode      = container.dataset.mode;
-  const productId = container.dataset.productId;
-
-  // スマホかどうかを簡易判定
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-  const constraints = isMobile
-    ? { video: { facingMode: { ideal: "environment" } }, audio: false }  // スマホなら背面
-    : { video: { facingMode: "user" }, audio: false };                   // PCならインカメラ
-
-  // カメラ起動（ボタン押下時）
-  startBtn.addEventListener("click", async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      video.srcObject = stream;
-      await video.play();
-    } catch (err) {
-      alert("カメラが使用できません: " + err.message);
-      console.error(err);
-    }
-  });
-
-  // 撮影処理
-  captureBtn.addEventListener("click", () => {
-    // Canvas のサイズを video に合わせる
-    canvas.width  = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // JPEG 形式でプレビュー＆保存
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-    preview.src           = dataUrl;
-    preview.style.display = "block";
-    sessionStorage.setItem("capturedImage", dataUrl);
-
-    // JPEG 形式で Blob に変換して送信
-    canvas.toBlob((blob) => {
-      const formData = new FormData();
-      formData.append("image", blob, "capture.jpg");
-
-      if (mode === "new" || mode === "edit") {
-        fetch("/products/capture_product", { method: "POST", body: formData })
-          .then(() => {
-            const path = mode === "new"
-              ? "/products/new?from_camera=1"
-              : `/products/${productId}/edit?from_camera=1`;
-            window.location.href = path;
-          });
-      } else {
-        // Flask 予測用エンドポイント切り替え
-        const isLocal = ["localhost","127.0.0.1"].includes(location.hostname);
-        const baseUrl = isLocal
-          ? "http://localhost:10000"
-          : "https://ai-server-f6si.onrender.com";
-        fetch(`${baseUrl}/predict`, { method: "POST", body: formData })
-          .then(res => res.json())
-          .then(json => {
-            const name  = json.name  || "";
-            const score = json.score || 0;
-            window.location.href =
-              `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
-          })
-          .catch(err => {
-            console.error("予測エラー:", err);
-            alert("予測処理に失敗しました");
-          });
-      }
-    }, "image/jpeg", 0.8);
-  });
-});
-</script>

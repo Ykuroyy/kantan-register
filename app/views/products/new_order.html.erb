@@ -95,12 +95,3 @@
   <% end %>
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const name = localStorage.getItem("recognized_name");
-    if (name) {
-      alert("前回認識された商品: " + name);
-      localStorage.removeItem("recognized_name");
-    }
-  });
-</script>

@@ -60,14 +60,3 @@
   </div>
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const imgData = sessionStorage.getItem("capturedImage");
-    const imgEl   = document.getElementById("recognized-preview-image");
-    if (imgData && imgEl) {
-      imgEl.src   = imgData;
-      imgEl.style.display = "block";
-      sessionStorage.removeItem("capturedImage");
-    }
-  });
-</script>
