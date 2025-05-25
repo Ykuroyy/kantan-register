@@ -1,120 +1,130 @@
-## アプリケーション概要
-Kantan Register
 
-## アプリケーション概要
+# Kantan Register
 
-シンプルな商品登録・在庫管理・レジ機能を備えたWebアプリケーションです。
-
-* **商品登録・編集・削除**：カタカナのみの名前制約、価格のバリデーション
-* **画像アップロード**：ActiveStorage＋カメラ撮影連携
-* **レジ機能**：画像認識（Flask/SSIM）とキーワード検索でカートに追加
-* **カート管理**：セッションベースのカート、数量更新・クリア
-* **売上分析ダッシュボード**：年間／月間／日別の売上グラフとサマリー
+シンプルな商品登録・在庫管理・AI画像認識レジ機能を備えたWebアプリケーションです。
 
 ---
 
-## URL
+## Overview
 
-* デプロイ済み環境: `https://kantan-register.onrender.com`
-  （デプロイ後に更新）
-
----
-
-## テスト用アカウント
-
-* **Basic認証**
-
-  * ユーザー名：`admin`
-  * パスワード：`2222`
+親しみやすく、誰でもすぐに使えるシンプルPOSシステム。  
+Rails のフロントエンドと MySQL／PostgreSQL をバックエンドに、  
+画像認識部分は Flask＋SSIM を Python で実装しています。
 
 ---
 
-## 利用方法
+## 主な機能
 
-1. トップページ → 商品登録画面 → 新規商品登録
-2. 商品一覧で詳細確認
-3. レジ画面で画像認識 or キーワード検索 → カートに追加
-4. カート内で数量調整 → 会計実行
-5. 注文完了画面で内容確認
-
----
-
-## 作成背景
-
-* 小規模店舗やイベント出店での簡易POSを想定
-* ブラウザだけで手軽に管理・会計を完結させる
+| 機能                 | 説明                                                                 |
+|----------------------|----------------------------------------------------------------------|
+| **商品管理**         | カタカナのみの名前制約、価格バリデーション                             |
+| **画像アップロード** | ActiveStorage ＋ カメラ撮影連携                                       |
+| **AI画像認識レジ**   | Flask サーバー（Python）＋SSIM で撮影画像を商品にマッチ               |
+| **キーワード検索レジ**| 商品名キーワード検索でカートに追加                                     |
+| **カート管理**       | セッションベース、数量更新・クリア                                     |
+| **売上分析ダッシュボード** | 年次／月次／日次切替の売上グラフとサマリー指標 (合計売上・オーダー数・平均購入額) |
+| **Basic 認証**       | 管理画面は HTTP Basic 認証                                             |
 
 ---
 
-## 実装機能
+## Live Demo
 
-1. **商品登録・編集・削除**
-2. **画像アップロード & カメラ撮影**
-3. **Flask連携の画像認識**
-4. **キーワード検索レジ**
-5. **セッションカート**
-6. **売上分析（年間・月間・日別）**
- 
-
-<details>
-<summary>各機能のスクリーンショット/GIF（Gyazoリンク）</summary>
-
-* 商品登録画面：`https://gyazo.com/xxx`
-* 画像認識レジ：`https://gyazo.com/yyy`
-* 売上分析ダッシュボード：`https://gyazo.com/zzz`
-
-</details>
+https://kantan-register.onrender.com  
+_Basic 認証_  
+- ユーザー名：`admin`  
+- パスワード：`2222`  
 
 ---
 
-## 今後の実装予定
 
-* ユーザー認証・ログイン
-* 在庫数アラート
-* 複数店舗対応
-* ダークモード
-* 注文履歴管理
+## テクノロジー
 
----
+### Rails サイド
 
-## データベース設計
+- Ruby 3.2.0 / Rails 7.1.5  
+- MySQL 8.0（開発）／PostgreSQL（本番）  
+- Devise（ユーザー認証）  
+- Sprockets / Turbo / Stimulus  
+- ActiveStorage（画像管理）  
+- Groupdate（売上分析）  
+- Chart.js（グラフ描画）  
 
-ER図：`kantan-register-er-diagram.png`
+### Python（画像認識）サイド
 
----
+- Python 3.10  
+- Flask  
+- Pillow  
+- NumPy  
+- scikit-image（SSIM: 構造類似度計算）  
+- gunicorn（本番用 WSGI）  
 
-## 画面遷移図
+#### `requirements.txt` 抜粋
 
-図：`kantan-register-flow.png`
-
----
-
-## 開発環境
-
-* Ruby 3.2.0 / Rails 7.1.5
-* MySQL 8
-* Python Flask (画像認識)
-* ActiveStorage
+```text
+Flask>=2.3
+Pillow>=9.0
+numpy>=1.24
+scikit-image>=0.20
+gunicorn>=20.1
 
 
+画面遷移
+トップ → 商品一覧 → 新規登録／編集
+
+レジ画面 → カメラ認識 or キーワード → カート追加
+
+カート画面 → 数量更新 → 会計
+
+注文完了 → 履歴保存
+
+売上分析 → 年次／月次／日次の切替
+
+データベース設計（一部）
+products テーブル
+Column	Type	Options
+name	string	null: false, format: katakana
+price	integer	null: false, numericality: >0
+created_at	datetime	
+updated_at	datetime	
+
+users テーブル
+Column	Type	Options
+email	string	null: false, unique: true
+encrypted_password	string	null: false
+role	integer	default: 0 (管理者／一般)
+
+orders, order_items テーブル
+orders：購入トランザクション
+
+order_items：商品×数量×価格の中間テーブル
+
+開発背景
+小規模店舗やイベント出店での手軽な POS を目指して開発
+
+Flask の軽量サーバーで画像認識を切り出し、Rails 側と疎結合
+
+使い方
+トップページ → 商品登録
+
+レジ画面 → 「カメラ起動」→「撮影する」→「次へ」
+
+画像認識 or キーワードでカートに追加
+
+会計 → 注文完了
+
+売上分析 タブ切替
+
+今後の予定
+在庫数アラート
+
+複数店舗対応
+
+プッシュ通知（Web Push）
+
+レスポンシブ改善／ダークモード
+
+制作時間
+約 80時間
 
 
----
 
-## 工夫ポイント
-
-* ドラッグ&ドロップ不要のシンプルUX
-* セッションで軽量カート管理
-* Ruby側集計でタイムゾーン問題を吸収
-
----
-
-## 改善点
-
-* 機械学習モデルの導入（認識精度向上）
-
----
-
-## 制作時間
-
-約 **80時間**
