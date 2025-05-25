@@ -52,19 +52,19 @@ class ProductsController < ApplicationController
   end
 
   # — 更新処理 —
-  def update
-    # image が空ならパラメータから除外
-    filtered = product_params
-    filtered.except!(:image) unless params[:product][:image].present?
-    attach_blob_image
+def update
+  filtered = product_params
+  filtered = filtered.except(:image) unless params[:product][:image].present?
+  attach_blob_image
 
-    if @product.update(filtered)
-      register_image_to_flask!(@product.image, @product.name)
-      redirect_to products_path, notice: '商品情報を更新しました。'
-    else
-      render :edit, status: :unprocessable_entity
-    end
+  if @product.update(filtered)
+    register_image_to_flask!(@product.image, @product.name)
+    redirect_to products_path, notice: '商品情報を更新しました。'
+  else
+    render :edit, status: :unprocessable_entity
   end
+end
+
 
  
   # — 削除処理 —
