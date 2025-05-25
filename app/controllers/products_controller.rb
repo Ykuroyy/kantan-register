@@ -67,15 +67,19 @@ class ProductsController < ApplicationController
   end
 
   # — 削除処理 —
-  # app/controllers/products_controller.rb
-  def destroy
-    name = @product.name
-    @product.destroy
-    redirect_to products_path, notice: "#{name} を削除しました"
-  rescue => e
-    Rails.logger.error "❌ 削除エラー: #{e.message}"
-    redirect_to products_path, alert: '削除中にエラーが発生しました'
-  end
+# app/controllers/products_controller.rb
+def destroy
+  name = @product.name
+  @product.destroy!
+  redirect_to products_path, notice: "#{name} を削除しました"
+rescue ActiveRecord::InvalidForeignKey
+  # 通常はここで「注文履歴があるため削除できません」としますが
+  # 今だけ無視して削除するには dependent: :nullify などが必要
+  redirect_to products_path, alert: "#{name} は関連データがあり削除できません"
+rescue => e
+  Rails.logger.error "❌ 削除エラー: #{e.message}"
+  redirect_to products_path, alert: '削除中にエラーが発生しました'
+end
 
 
 
