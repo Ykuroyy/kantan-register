@@ -1,7 +1,19 @@
 <!-- app/views/products/camera.html.erb -->
-<div class="container" id="camera-container"
+<%# <div class="container" id="camera-container" %>
+     <%# data-mode="<%= params[:mode] %>
+     <%# data-product-id="<%= params[:product_id] %>
+
+<!-- app/views/products/camera.html.erb -->
+<div id="camera-container"
      data-mode="<%= params[:mode] %>"
-     data-product-id="<%= params[:product_id] %>">
+     data-product-id="<%= params[:product_id] %>"
+     data-image-url="<%= @product.image.service_url if @product&.image&.attached? %>">
+
+
+
+
+
+
 
   <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
 

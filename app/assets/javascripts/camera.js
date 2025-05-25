@@ -111,6 +111,34 @@ function initCameraPage() {
           ? "http://localhost:10000"
           : "https://ai-server-f6si.onrender.com";
 
+        // 本番環境では画像URLを送信
+        if (!["localhost", "127.0.0.1"].includes(location.hostname)) {
+          const s3ImageUrl = container.dataset.imageUrl; // HTMLに埋め込む必要あり
+          if (!s3ImageUrl) {
+            alert("画像URLがありません");
+            return;
+          }
+
+        const formData = new FormData();
+        formData.append("image_url", s3ImageUrl);
+
+
+        fetch(`${baseUrl}/predict`, { method: "POST", body: formData })
+          .then(res => res.json())
+          .then(json => {
+            const name  = json.name  || "";
+            const score = json.score || 0;
+            window.location.href =
+              `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
+          })
+          .catch(err => {
+            console.error("予測エラー:", err);
+            alert("予測処理に失敗しました");
+          });
+
+
+      } else {
+        // 開発モードでは blob 画像を送信
         fetch(`${baseUrl}/predict`, { method: "POST", body: fd })
           .then(res => res.json())
           .then(json => {
