@@ -33,12 +33,17 @@ function initCameraPage() {
       });
     })
     .catch(err => {
-      const errorMsg = document.createElement("p");
-      errorMsg.textContent = "📛 カメラを起動できませんでした: " + err.message;
-      errorMsg.style = "color:#c00; font-weight:bold; text-align:center; margin-top:1rem;";
-      container.appendChild(errorMsg);
-      console.error("📛 カメラ起動失敗:", err);
+    console.error("📛 カメラ起動失敗:", err);
+
+    // Safari や iOS で false alert を防止
+    if (err.name !== "NotAllowedError" && err.name !== "PermissionDeniedError") {
+        const errorMsg = document.createElement("p");
+        errorMsg.textContent = "📛 カメラを起動できませんでした: " + err.message;
+        errorMsg.style = "color:#c00; font-weight:bold; text-align:center; margin-top:1rem;";
+        container.appendChild(errorMsg);
+    }
     });
+
 
   // 撮影ボタン：キャプチャ→プレビュー→sessionStorage→サーバ送信→リダイレクト
   captureBtn.addEventListener("click", () => {

@@ -13,7 +13,13 @@ class ProductsController < ApplicationController
     @products = @products.order(created_at: :desc)
   end
 
-  def show; end
+  def show
+    @product = Product.find_by(id: params[:id])
+    return unless @product.nil?
+      redirect_to products_path, alert: "この商品は存在しません"
+    
+  end
+
 
   # — 新規登録フォーム —
   def new
@@ -61,15 +67,17 @@ class ProductsController < ApplicationController
   end
 
   # — 削除処理 —
+  # app/controllers/products_controller.rb
   def destroy
     name = @product.name
-    @product.destroy!
+    @product.destroy
     redirect_to products_path, notice: "#{name} を削除しました"
-  rescue ActiveRecord::InvalidForeignKey
-    redirect_to products_path, alert: "#{name} は注文履歴があるため削除できません"
-  rescue
+  rescue => e
+    Rails.logger.error "❌ 削除エラー: #{e.message}"
     redirect_to products_path, alert: '削除中にエラーが発生しました'
   end
+
+
 
   # — カメラ撮影画面 —
   def camera; end

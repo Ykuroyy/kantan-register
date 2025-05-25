@@ -54,6 +54,18 @@
       </ul>
     </div>
   </div>
+
+    <!-- ✅ 商品別売上ランキングを追記 -->
+  <div class="card" style="text-align:center; margin-top:2rem;">
+    <h2 class="chart-heading">🏅 商品別売上ランキング</h2>
+    <ul style="list-style:none; padding:0;">
+      <% @sales_data.each do |item| %>
+        <li style="margin:0.4rem 0;">
+          <%= item.product.try(:name) || "削除済み商品" %>（<%= number_with_delimiter(item.total) %>円）
+        </li>
+      <% end %>
+    </ul>
+  </div>
 </div>
 
 

@@ -5,11 +5,24 @@
     <p>注文ID: <%= @order.id %></p>
     <p>合計金額: ¥<%= number_with_delimiter(@order.total_price) %></p>
 
-    <ul style="margin-top:1rem; text-align:left; display:inline-block;">
-      <% @order.order_items.each do |item| %>
-        <li><%= item.product.name %> × <%= item.quantity %></li>
-      <% end %>
-    </ul>
+    <table style="margin: 1rem auto; width: auto; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th>商品名</th>
+          <th>数量</th>
+          <th>価格</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @order.order_items.each do |item| %>
+          <tr>
+            <td><%= item.product.try(:name) || "削除済み商品" %></td>
+            <td><%= item.quantity %></td>
+            <td>¥<%= item.product.try(:price) || "-" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
 
     <%= link_to "トップに戻る", root_path, class: "btn btn-gray", style: "margin-top:1.2rem;" %>
   </div>
