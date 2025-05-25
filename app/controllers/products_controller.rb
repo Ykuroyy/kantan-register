@@ -121,11 +121,55 @@ class ProductsController < ApplicationController
   end
 
   # — 認識結果 →
-  def predict_result
-    @predicted_name = params[:predicted_name]
-    @score          = params[:score].to_f
-    @product        = Product.find_by(name: @predicted_name)
+  # def predict_result
+    # @predicted_name = params[:predicted_name]
+    # @score          = params[:score].to_f
+    # @product        = Product.find_by(name: @predicted_name)
+  # end
+
+def predict
+  image = params[:image]
+  return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
+
+  if Rails.env.production?
+    # ✅ 本番環境：S3 URL を Flask に送信
+    image_url = url_for(image) # ActiveStorageでS3にアップされた画像URL
+    resp = HTTParty.post(
+      flask_base_url + '/predict',
+      body: { image_url: image_url }
+    )
+  else
+    # ✅ 開発環境：ローカルファイルを Flask に送信
+    resp = HTTParty.post(
+      flask_base_url + '/predict',
+      body: { image: File.open(image.tempfile.path) }
+    )
   end
+
+    result = JSON.parse(resp.body)
+
+    if result["name"]
+      @predicted_name = result["name"]
+      @score          = result["score"]
+      @product        = Product.find_by(name: @predicted_name)
+      render :predict_result
+    else
+      @error = "商品を認識できませんでした"
+      render :camera
+    end
+rescue => e
+    Rails.logger.error "予測中にエラー: #{e.message}"
+    @error = "画像認識中にエラーが発生しました"
+    render :camera
+end
+
+
+
+
+
+
+
+
 
   # — レジ画面 —
   def new_order
@@ -202,6 +246,7 @@ class ProductsController < ApplicationController
   'http://localhost:10000'
     end
   end
+
 
   # ActiveStorage Blob → 一時ファイル → Flask に送信
   def register_image_to_flask!(attached_image, name)
