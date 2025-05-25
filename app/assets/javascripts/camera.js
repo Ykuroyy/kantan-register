@@ -5,13 +5,14 @@ function initCameraPage() {
   const video      = document.getElementById("video");
   const startBtn   = document.getElementById("start-camera");
   const captureBtn = document.getElementById("capture-photo");
+  const nextBtn    = document.getElementById("next-button");
   const canvas     = document.getElementById("canvas");
   const ctx        = canvas.getContext("2d");
   const preview    = document.getElementById("preview");
   const container  = document.getElementById("camera-container");
 
   // 必須要素が揃っていなければ何もしない
-  if (![video, startBtn, captureBtn, canvas, preview, container].every(el => el)) {
+  if (![video, startBtn, captureBtn, nextBtn, canvas, preview, container].every(el => el)) {
     console.error("カメラ画面の必須要素が見つかりません");
     return;
   }
@@ -39,15 +40,25 @@ function initCameraPage() {
 
   // 撮影ボタン
   captureBtn.addEventListener("click", () => {
+    // カメラ映像を canvas に転写
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    // プレビュー表示
     const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
     preview.src           = dataUrl;
     preview.style.display = "block";
-    sessionStorage.setItem("capturedImage", dataUrl);
 
+    // 「次へ」表示
+    nextBtn.style.display = "inline-block";
+
+    // セッションにも保存しておく（不要なら削除）
+    sessionStorage.setItem("capturedImage", dataUrl);
+  });
+
+  // 次へボタン：ここでサーバ送信＆リダイレクト
+  nextBtn.addEventListener("click", () => {
     canvas.toBlob(blob => {
       const fd = new FormData();
       fd.append("image", blob, "capture.jpg");
