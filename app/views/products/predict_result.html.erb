@@ -39,12 +39,14 @@
         <%= hidden_field_tag :recognized_name, @product.name %>
         <%= submit_tag "カートに追加", class: "btn btn-yellow", style: "margin-top:.8rem;" %>
       <% end %>
-    <% else %>
-      <!-- ヒットなし -->
-      <p style="text-align:center; color:#666; margin-top:.8rem;">
-        一致する商品がありませんでした
-      </p>
-    <% end %>
+      <% else %>
+        <!-- ヒットなし -->
+        <p style="text-align:center; color:#c00; margin-top:.8rem;">
+          「<%= @predicted_name %>」という商品は登録されていません。
+        </p>
+        <p style="text-align:center; color:#666;">商品登録を確認してください。</p>
+      <% end %>
+
 
     <!-- 撮影をやり直す -->
     <%= link_to "撮影をやり直す",

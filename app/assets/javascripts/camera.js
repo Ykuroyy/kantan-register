@@ -18,21 +18,26 @@ function initCameraPage() {
   const mode      = container.dataset.mode;
   const productId = container.dataset.productId;
 
-  // カメラ設定（スマホなら背面カメラ）
-  const isMobile   = /Mobi|Android/i.test(navigator.userAgent);
+  // スマホで背面カメラ優先
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   const constraints = isMobile
     ? { video: { facingMode: { ideal: "environment" } }, audio: false }
-    : { video: { facingMode: "user" },                         audio: false };
+    : { video: { facingMode: "user" }, audio: false };
 
   // ページロード時にカメラ起動
   navigator.mediaDevices.getUserMedia(constraints)
     .then(stream => {
       video.srcObject = stream;
-      return video.play();
+      return video.play().catch(e => {
+        console.warn("📛 自動再生がブロックされました:", e);
+      });
     })
     .catch(err => {
-      alert("カメラが使用できません: " + err.message);
-      console.error(err);
+      const errorMsg = document.createElement("p");
+      errorMsg.textContent = "📛 カメラを起動できませんでした: " + err.message;
+      errorMsg.style = "color:#c00; font-weight:bold; text-align:center; margin-top:1rem;";
+      container.appendChild(errorMsg);
+      console.error("📛 カメラ起動失敗:", err);
     });
 
   // 撮影ボタン：キャプチャ→プレビュー→sessionStorage→サーバ送信→リダイレクト

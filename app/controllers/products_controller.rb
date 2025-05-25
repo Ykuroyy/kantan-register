@@ -164,11 +164,16 @@ rescue => e
 end
 
 
+# — 認識結果 →
+def predict_result
+  @predicted_name = params[:predicted_name]
+  @score          = params[:score].to_f
+  @product        = Product.find_by(name: @predicted_name)
 
+  Rails.logger.info "✅ predict_result: predicted_name=#{@predicted_name}, product_hit=#{@product.present?}"
 
-
-
-
+  render :predict_result
+end
 
 
   # — レジ画面 —
