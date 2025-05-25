@@ -67,64 +67,51 @@ numpy>=1.24
 scikit-image>=0.20
 gunicorn>=20.1
 
+## 画面遷移
+- **トップ** → 商品一覧 → 新規登録／編集
+- **レジ画面** → カメラ認識 or キーワード → カート追加
+- **カート画面** → 数量更新 → 会計
+- **注文完了** → 履歴保存
+- **売上分析** → 年次／月次／日次の切替
 
-画面遷移
-トップ → 商品一覧 → 新規登録／編集
+## データベース設計（一部）
 
-レジ画面 → カメラ認識 or キーワード → カート追加
+### products テーブル
+| Column      | Type     | Options                         |
+|-------------|----------|---------------------------------|
+| `name`      | string   | null: false, format: katakana   |
+| `price`     | integer  | null: false, numericality: >0   |
+| `created_at`| datetime |                                 |
+| `updated_at`| datetime |                                 |
 
-カート画面 → 数量更新 → 会計
+### users テーブル
+| Column             | Type    | Options                         |
+|--------------------|---------|---------------------------------|
+| `email`            | string  | null: false, unique: true       |
+| `encrypted_password` | string| null: false                     |
+| `role`             | integer | default: 0 (管理者／一般)        |
 
-注文完了 → 履歴保存
+### orders / order_items テーブル
+- `orders`      : 購入トランザクション  
+- `order_items` : 商品×数量×価格の中間テーブル  
 
-売上分析 → 年次／月次／日次の切替
+## 開発背景
+- 小規模店舗やイベント出店での手軽な POS を目指して開発  
+- Flask の軽量サーバーで画像認識を切り出し、Rails 側と疎結合  
 
-データベース設計（一部）
-products テーブル
-Column	Type	Options
-name	string	null: false, format: katakana
-price	integer	null: false, numericality: >0
-created_at	datetime	
-updated_at	datetime	
+## 使い方
+1. **トップページ** → 商品登録  
+2. **レジ画面** → 「カメラ起動」→「撮影する」→「次へ」  
+3. 画像認識 or キーワードでカートに追加  
+4. **会計** → 注文完了  
+5. **売上分析** タブ切替  
 
-users テーブル
-Column	Type	Options
-email	string	null: false, unique: true
-encrypted_password	string	null: false
-role	integer	default: 0 (管理者／一般)
+## 今後の予定
+- 在庫数アラート  
+- 複数店舗対応  
+- プッシュ通知（Web Push）  
+- レスポンシブ改善／ダークモード  
 
-orders, order_items テーブル
-orders：購入トランザクション
-
-order_items：商品×数量×価格の中間テーブル
-
-開発背景
-小規模店舗やイベント出店での手軽な POS を目指して開発
-
-Flask の軽量サーバーで画像認識を切り出し、Rails 側と疎結合
-
-使い方
-トップページ → 商品登録
-
-レジ画面 → 「カメラ起動」→「撮影する」→「次へ」
-
-画像認識 or キーワードでカートに追加
-
-会計 → 注文完了
-
-売上分析 タブ切替
-
-今後の予定
-在庫数アラート
-
-複数店舗対応
-
-プッシュ通知（Web Push）
-
-レスポンシブ改善／ダークモード
-
-制作時間
-約 80時間
-
-
+## 制作時間
+約 **80時間**
 
