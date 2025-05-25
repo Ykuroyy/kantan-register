@@ -1,7 +1,6 @@
 class Product < ApplicationRecord
   has_one_attached :image
-  # has_many :order_items, dependent: :restrict_with_error
-  has_many :order_items, dependent: :nullify
+  has_many :order_items, dependent: :restrict_with_error
 
   before_validation :normalize_blank_price_and_name
 
