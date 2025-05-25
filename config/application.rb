@@ -21,13 +21,16 @@ module KantanRegister
     # ロケールファイルを自動で読み込む
     config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]
 
+
+
+    config.active_storage.queues.analyze = nil
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w(assets tasks))
 
 
-    config.active_job.queue_adapter = :sidekiq
+    # config.active_job.queue_adapter = :sidekiq
     config.cache_store = :redis_cache_store, { url: "redis://localhost:6379/1" }
 
     # Configuration for the application, engines, and railties goes here.
