@@ -176,16 +176,25 @@ rescue => e
 end
 
 
-# — 認識結果 →
-def predict_result
-  @predicted_name = params[:predicted_name]
-  @score          = params[:score].to_f
-  @product        = Product.find_by(name: @predicted_name)
+ 
+  # — 認識結果 →
+  def predict_result
+    @predicted_name = params[:predicted_name]
+    @score          = params[:score].to_f
 
-  Rails.logger.info "✅ predict_result: predicted_name=#{@predicted_name}, product_hit=#{@product.present?}"
+    # 名前を正規化（スペース削除、全角→半角変換）
+    normalized_name = @predicted_name.strip.gsub(/\s+/, "").tr("Ａ-Ｚａ-ｚ０-９", "A-Za-z0-9")
 
-  render :predict_result
-end
+    # あいまい一致検索（スペースや全角・半角の違いを吸収）
+    @product = Product.all.find do |p|
+      p.name.gsub(/\s+/, "").tr("Ａ-Ｚａ-ｚ０-９", "A-Za-z0-9") == normalized_name
+    end
+
+    Rails.logger.info "✅ predict_result: predicted_name=#{@predicted_name}, product_hit=#{@product.present?}"
+
+    render :predict_result
+  end
+
 
 
   # — レジ画面 —
