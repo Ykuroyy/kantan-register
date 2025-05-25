@@ -22,11 +22,11 @@
 
     <!-- JavaScript -->
     <%= javascript_include_tag "application",           defer: true, "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "camera",                defer: true %>
+    <%# <%= javascript_include_tag "camera",                defer: true %> 
     <%= javascript_include_tag "product_form_preview",  defer: true %>
-    <%= javascript_include_tag "sales_analytics",       defer: true %>
+    <%# <%= javascript_include_tag "sales_analytics",       defer: true %> 
   </head>
-  
+
   <body>
     <%= yield %>
   </body>

@@ -1,16 +1,15 @@
 // app/assets/javascripts/sales_analytics.js
-
-document.addEventListener("turbo:load", () => {
+document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("analytics-container");
   if (!container) return;
 
-  // HTML data-属性から文字列を取り出し、JSON.parse で JS の配列に戻す
+  // JSON.parse でデータを読み込む（data属性は文字列）
   const periodLabels  = JSON.parse(container.dataset.periodLabels);
   const periodData    = JSON.parse(container.dataset.periodData);
   const productLabels = JSON.parse(container.dataset.productLabels);
   const productData   = JSON.parse(container.dataset.productData);
 
-  // ② 期間別売上グラフ
+  // 売上グラフ
   const ctx1 = document.getElementById("period-sales-chart").getContext("2d");
   new Chart(ctx1, {
     type: "line",
@@ -19,12 +18,12 @@ document.addEventListener("turbo:load", () => {
       datasets: [{
         label: "売上",
         data: periodData,
+        borderWidth: 2
       }],
     },
-    options: { /* 必要に応じて */ }
   });
 
-  // ③ 商品別販売数グラフ
+  // 商品別販売数グラフ
   const ctx2 = document.getElementById("product-sales-chart").getContext("2d");
   new Chart(ctx2, {
     type: "bar",
@@ -33,8 +32,8 @@ document.addEventListener("turbo:load", () => {
       datasets: [{
         label: "販売数",
         data: productData,
+        backgroundColor: "rgba(75, 192, 192, 0.6)"
       }],
     },
-    options: { /* 必要に応じて */ }
   });
 });

@@ -14,6 +14,8 @@ Rails.application.config.content_security_policy do |policy|
   policy.script_src  :self, :https
   policy.style_src   :self, :https, :unsafe_inline # Tailwind/Vite なら :unsafe_inline が必要
   policy.script_src :self, :https, :unsafe_inline
+  #  policy.connect_src :self, :https, "http://localhost:10000"
+  policy.connect_src :self, :https, "https://ai-server-f6si.onrender.com"
   # ↑ 追加ルールがあればここに書く
 end
 

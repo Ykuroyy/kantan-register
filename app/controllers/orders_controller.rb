@@ -24,7 +24,7 @@ class OrdersController < ApplicationController
       mysql_fmt  = "%Y-%m"
       pg_fmt     = "YYYY-MM"
     else
-      end_date   = today - 1.day
+      end_date   = today
       start_date = end_date - 6.days
       mysql_fmt  = "%Y-%m-%d"
       pg_fmt     = "YYYY-MM-DD"

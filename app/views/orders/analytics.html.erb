@@ -2,18 +2,16 @@
 
 <div class="container">
   <%= content_tag :div, "",
-    id:    "analytics-container",
+    id: "analytics-container",
     data: {
-      period_labels:  @period_labels,
-      period_data:    @period_data,
-      product_labels: @product_sales.keys,
-      product_data:   @product_sales.values
+      period_labels:  @period_labels.to_json,
+      period_data:    @period_data.to_json,
+      product_labels: @product_sales.keys.to_json,
+      product_data:   @product_sales.values.to_json
     } %>
 
-
-
   <%= link_to "トップ画面に戻る", root_path, class: "btn btn-gray" %>
-  <h1 class="form-heading">📈 売上分析ダッシュボード</h1>
+  <h1 class="form-headxing">📈 売上分析ダッシュボード</h1>
 
   <!-- 期間タブ・グラフ・サマリーをカードで並べる -->
   <div class="grid">
@@ -58,7 +56,9 @@
   </div>
 </div>
 
+
 <!-- Chart.js 読み込み -->
 <%= javascript_include_tag "https://cdn.jsdelivr.net/npm/chart.js", defer: true %>
 <%= javascript_include_tag "sales_analytics", defer: true %>
+
 
