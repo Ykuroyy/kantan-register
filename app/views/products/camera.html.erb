@@ -16,27 +16,35 @@
            style="max-width:100%; height:auto; border-radius:12px; margin-bottom:1rem;">
     </video>
 
-    <!-- 起動＆撮影ボタン -->
-    <div style="text-align:center; margin-bottom:1rem; display:flex; gap:.6rem; justify-content:center;">
-      <button id="start-camera"   type="button" class="btn btn-blue">カメラ起動</button>
-      <button id="capture-photo"  type="button" class="btn btn-yellow">撮影する</button>
-      <button id="next-button"   type="button" class="btn btn-primary" style="display:none;">次へ</button>
+    <!-- 撮影ボタン -->
+    <div style="text-align:center; margin-bottom:1rem;">
+      <button id="capture-photo" class="btn btn-blue">撮影する</button>
     </div>
 
     <!-- プレビュー用イメージ -->
-    <img id="preview" style="display:none; max-width:100%; border-radius:12px; margin-bottom:1rem;" />
+    <img id="preview"
+         style="display:none; max-width:100%; border-radius:12px; margin-bottom:1rem;"
+         alt="撮影画像プレビュー" />
 
     <!-- 戻るリンク群 -->
     <div style="text-align:center; margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center;">
-      <% if params[:mode] == "edit" && params[:product_id].present? %>
-        <%= link_to "商品編集に戻る", edit_product_path(params[:product_id]), class: "btn btn-gray" %>
-      <% elsif params[:mode] == "new" %>
-        <%= link_to "商品登録に戻る", new_product_path, class: "btn btn-gray" %>
+      <% case params[:mode] %>
+      <% when "edit" %>
+        <%= link_to "商品編集に戻る",
+                    edit_product_path(params[:product_id]),
+                    class: "btn btn-gray" %>
+      <% when "new" %>
+        <%= link_to "商品登録に戻る",
+                    new_product_path,
+                    class: "btn btn-gray" %>
       <% else %>
-        <%= link_to "レジ画面に戻る", new_order_products_path, class: "btn btn-gray" %>
+        <%= link_to "レジ画面に戻る",
+                    new_order_products_path,
+                    class: "btn btn-gray" %>
       <% end %>
     </div>
   </div>
 
+  <!-- hidden canvas for capture -->
   <canvas id="canvas" style="display:none;"></canvas>
 </div>

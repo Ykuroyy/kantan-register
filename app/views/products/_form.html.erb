@@ -13,6 +13,17 @@
         </div>
       <% end %>
 
+      <!-- カメラ撮影からの遷移なら大プレビューを表示 -->
+      <% if params[:from_camera] %>
+        <div class="form-field">
+          <p class="preview-label">撮影画像プレビュー</p>
+          <%= image_tag "",
+               id:    "camera-preview-main",
+               class: "preview-image",
+               style: "display:none; max-width:320px; margin-bottom:1rem;" %>
+        </div>
+      <% end %>
+
       <!-- ① 画像セクション -->
       <div class="form-field">
         <strong>商品画像：<span class="optional">任意</span></strong>
@@ -22,21 +33,33 @@
             <p class="preview-label">現在の画像</p>
             <% if @product.image.attached? %>
               <%= image_tag @product.image.variant(resize_to_limit: [320,320]),
-                            id: "server-preview-image",
+                            id:    "server-preview-image",
                             class: "preview-image" %>
             <% end %>
           </div>
-          <!-- 新しい画像プレビュー -->
+
+          <!-- 新しい画像サムネイルプレビュー -->
           <div class="image-block">
             <p class="preview-label">新しい画像</p>
-            <%= tag.img "", id: "camera-preview-image",  class: "preview-image", style: "display:none;" %>
-            <%= tag.img "", id: "upload-preview-image",  class: "preview-image", style: "display:none;" %>
+            <%= tag.img "",
+                  id:    "camera-preview-thumb",
+                  class: "preview-image",
+                  style: "display:none; max-width:160px;" %>
+            <%= tag.img "",
+                  id:    "upload-preview-image",
+                  class: "preview-image",
+                  style: "display:none; max-width:160px;" %>
           </div>
         </div>
+
         <div class="form-actions">
-          <label for="product_image" class="btn btn-yellow file-button">ファイルから選択</label>
+          <label for="product_image" class="btn btn-yellow file-button">
+            ファイルから選択
+          </label>
           <%= f.file_field :image, id: "product_image", style: "display:none;" %>
-          <%= link_to "カメラで撮影", camera_products_path(mode: "new"), class: "btn btn-blue" %>
+          <%= link_to "カメラで撮影",
+                      camera_products_path(mode: "new"),
+                      class: "btn btn-blue" %>
         </div>
       </div>
 
@@ -61,12 +84,12 @@
       <!-- ④ 送信／キャンセル -->
       <div class="form-actions btn-group">
         <%= f.submit (local_assigns[:submit_text] || "保存"), class: "btn btn-yellow" %>
-        <%= link_to (local_assigns[:cancel_path] || products_path), class: "btn btn-gray" do %>
+        <%= link_to (local_assigns[:cancel_path] || products_path),
+                    class: "btn btn-gray" do %>
           <%= local_assigns[:cancel_text] || "商品詳細に戻る" %>
         <% end %>
       </div>
 
     <% end %>
-  </div> 
-</div>   
-
+  </div>
+</div>

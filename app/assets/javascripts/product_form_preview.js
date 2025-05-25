@@ -1,34 +1,46 @@
 // app/assets/javascripts/product_form_preview.js
 
-// Turbo Drive 対応でページ読み込みごとに動くように
-document.addEventListener("turbo:load", () => {
-  const imageData   = sessionStorage.getItem("capturedImage");
-  const cameraEl    = document.getElementById("camera-preview-image");
-  const serverEl    = document.getElementById("server-preview-image");
-  const uploadEl    = document.getElementById("upload-preview-image");
+function initProductFormPreview() {
+  const dataUrl = sessionStorage.getItem("capturedImage");
+  const main    = document.getElementById("camera-preview-main");
+  const thumb   = document.getElementById("camera-preview-thumb");
+  const server  = document.getElementById("server-preview-image");
+  const upload  = document.getElementById("upload-preview-image");
 
-  // カメラ撮影から戻ってきたプレビュー表示
-  if (imageData && cameraEl) {
-    cameraEl.src              = imageData;
-    cameraEl.style.display    = "block";
-    if (serverEl) serverEl.style.display = "none";
+  // カメラ撮影プレビュー表示
+  if (dataUrl) {
+    if (main) {
+      main.src           = dataUrl;
+      main.style.display = "block";
+    }
+    if (thumb) {
+      thumb.src           = dataUrl;
+      thumb.style.display = "block";
+    }
+    if (server) {
+      server.style.display = "none";
+    }
     sessionStorage.removeItem("capturedImage");
   }
 
   // ファイル選択プレビュー
   const fileInput = document.getElementById("product_image");
-  if (fileInput && uploadEl) {
+  if (fileInput && upload) {
     fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = evt => {
-        uploadEl.src              = evt.target.result;
-        uploadEl.style.display    = "block";
-        if (serverEl) serverEl.style.display  = "none";
-        if (cameraEl) cameraEl.style.display  = "none";
+        upload.src           = evt.target.result;
+        upload.style.display = "block";
+        if (server)  server.style.display  = "none";
+        if (main)    main.style.display    = "none";
+        if (thumb)   thumb.style.display   = "none";
       };
       reader.readAsDataURL(file);
     });
   }
-});
+}
+
+document.addEventListener("DOMContentLoaded", initProductFormPreview);
+document.addEventListener("turbo:load",       initProductFormPreview);
