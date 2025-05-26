@@ -8,10 +8,6 @@ function initCameraPage() {
   const preview    = document.getElementById("preview");
   const container  = document.getElementById("camera-container");
 
-  console.log("🎯 video:", video);
-  console.log("🎯 captureBtn:", captureBtn);
-  console.log("🎯 container:", container);
-
   if (![video, captureBtn, canvas, ctx, preview, container].every(el => el)) {
     console.error("❌ 必須要素が見つかりません");
     return;
@@ -60,6 +56,7 @@ function initCameraPage() {
       }
       fd.append("image", blob, "capture.jpg");
 
+      // 商品登録・編集
       if (mode === "new" || mode === "edit") {
         const path = mode === "new"
           ? "/products/new?from_camera=1"
@@ -72,6 +69,7 @@ function initCameraPage() {
             alert("画像保存に失敗しました");
           });
 
+      // Flask画像登録
       } else if (mode === "register") {
         fetch("http://127.0.0.1:10000/register_image", {
           method: "POST",
@@ -86,18 +84,21 @@ function initCameraPage() {
             alert("登録エラー: " + err.message);
           });
 
-      } else {
+      // レジモード（画像認識）
+      } else if (mode === "order") {
         const baseUrl = (["localhost", "127.0.0.1"].includes(location.hostname))
           ? "http://localhost:10000"
           : "https://ai-server-f6si.onrender.com";
 
+        // 本番：画像URL送信
         if (!["localhost", "127.0.0.1"].includes(location.hostname)) {
           const s3ImageUrl = container.dataset.imageUrl;
           console.log("📦 image_url:", s3ImageUrl);
-        if (!s3ImageUrl || s3ImageUrl === "null" || s3ImageUrl === "undefined") {
-          alert("画像URLがありません（画像未登録の可能性）");
-          return;
-        }
+
+          if (!s3ImageUrl || s3ImageUrl === "null" || s3ImageUrl === "undefined") {
+            alert("画像URLがありません（画像未登録の可能性）");
+            return;
+          }
 
           const formData = new FormData();
           formData.append("image_url", s3ImageUrl);
@@ -115,6 +116,7 @@ function initCameraPage() {
               alert("予測処理に失敗しました");
             });
 
+        // 開発：blob送信
         } else {
           fetch(`${baseUrl}/predict`, { method: "POST", body: fd })
             .then(res => res.json())
@@ -135,4 +137,4 @@ function initCameraPage() {
 }
 
 document.addEventListener("DOMContentLoaded", initCameraPage);
-document.addEventListener("turbo:load",       initCameraPage);
+document.addEventListener("turbo:load", initCameraPage);

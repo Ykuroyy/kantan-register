@@ -90,9 +90,11 @@ end
   # — カメラ撮影画面 —
   # app/controllers/products_controller.rb
   def camera
-    return unless params[:product_id].present?
+    if params[:product_id].present?
       @product = Product.find_by(id: params[:product_id])
-    
+    else
+      @product = Product.last # ← 直近の商品を仮で渡すなど応急対応も可能
+    end
   end
 
 
