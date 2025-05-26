@@ -75,14 +75,12 @@ function initCameraPage() {
           method: "POST",
           body: fd
         })
-          .then(res => {
-            if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
-            alert("登録に成功しました");
-          })
-          .catch(err => {
-            console.error("登録エラー:", err);
-            alert("登録エラー: " + err.message);
-          });
+        .then(res => {
+          if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
+          console.log("✅ 登録に成功しました");
+        })
+        // 必要なら画面内にメッセージを挿入するなど、alert は使わない
+    
 
       // レジモード（画像認識）
       } else if (mode === "order") {
@@ -96,7 +94,7 @@ function initCameraPage() {
           console.log("📦 image_url:", s3ImageUrl);
 
           if (!s3ImageUrl || s3ImageUrl === "null" || s3ImageUrl === "undefined") {
-            alert("画像URLがありません（画像未登録の可能性）");
+            console.warn("画像URLがありません");
             return;
           }
 
@@ -113,7 +111,7 @@ function initCameraPage() {
             })
             .catch(err => {
               console.error("予測エラー:", err);
-              alert("予測処理に失敗しました");
+              console.warn("予測処理に失敗しました");
             });
 
         // 開発：blob送信
@@ -121,10 +119,15 @@ function initCameraPage() {
           fetch(`${baseUrl}/predict`, { method: "POST", body: fd })
             .then(res => res.json())
             .then(json => {
-              const name  = json.name  || "";
+              const name  = json.name || "";
               const score = json.score || 0;
+              if (!name) {
+                console.warn("⚠️ 商品認識はできましたが、登録済み商品にはマッチしませんでした");
+                return; // 何も表示せずに終了
+              }
+              // ヒットあり → 結果ページへ
               window.location.href =
-                `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
+                `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;           
             })
             .catch(err => {
               console.error("予測エラー:", err);
