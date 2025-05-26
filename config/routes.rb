@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       delete :clear_cart        # カートを空にする
       post   :add_to_cart       # 商品をカートに追加
       post   :create_order      # 会計処理（注文作成）
+      post 'products/predict', to: 'products#predict'
     end
   end
 

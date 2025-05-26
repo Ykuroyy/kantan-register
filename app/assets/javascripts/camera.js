@@ -62,17 +62,16 @@ function initCameraPage() {
           ? "/products/new?from_camera=1"
           : `/products/${productId}/edit?from_camera=1`;
 
-        fetch("/products/capture_product", { method: "POST", body: fd })
-            .then(() => window.location.href = path)
-            .catch(err => {
-              console.error("キャプチャ保存エラー:", err);
-              // alert("画像保存に失敗しました");  ← 削除
-              // 必要なら画面内にメッセージ要素を挿入する例：
-              // const msg = document.createElement("p");
-              // msg.textContent = "画像保存に失敗しました";
-              // msg.style = "color:#c00; text-align:center;";
-              // container.appendChild(msg);
-            });
+        fetch("/products/capture_product", {
+          method: "POST",
+          headers: { "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content },
+          body: fd
+        })
+        .then(() => { window.location.href = path; })
+        .catch(err => {
+          console.error("キャプチャ保存エラー:", err);
+        });
+
 
 
       // Flask画像登録
@@ -85,7 +84,7 @@ function initCameraPage() {
           if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
           console.log("✅ 登録に成功しました");
         })
-        // 必要なら画面内にメッセージを挿入するなど、alert は使わない
+      
     
 
       // レジモード（画像認識）
@@ -95,15 +94,13 @@ function initCameraPage() {
           : "https://ai-server-f6si.onrender.com";
 
         // 本番：画像URL送信
-        if (!["localhost", "127.0.0.1"].includes(location.hostname)) {
+        if (baseUrl.includes("ai-server")) {
+          // 本番環境：S3 に上がっている URL を送る
           const s3ImageUrl = container.dataset.imageUrl;
-          console.log("📦 image_url:", s3ImageUrl);
-
-          if (!s3ImageUrl || s3ImageUrl === "null" || s3ImageUrl === "undefined") {
-            console.warn("画像URLがありません");
+          if (!s3ImageUrl) {
+            console.warn("⚠️ S3 画像 URL がありません");
             return;
           }
-
           const formData = new FormData();
           formData.append("image_url", s3ImageUrl);
 
@@ -117,7 +114,6 @@ function initCameraPage() {
             })
             .catch(err => {
               console.error("予測エラー:", err);
-              console.warn("予測処理に失敗しました");
             });
 
         // 開発：blob送信

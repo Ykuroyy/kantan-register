@@ -89,13 +89,13 @@ end
 
   # — カメラ撮影画面 —
   # app/controllers/products_controller.rb
-  def camera
-    if params[:product_id].present?
-      @product = Product.find_by(id: params[:product_id])
-    else
-      @product = Product.last # ← 直近の商品を仮で渡すなど応急対応も可能
-    end
+def camera
+  if params[:product_id].present?
+    @product = Product.find_by(id: params[:product_id])
+  else
+    @product = Product.last # ← 直近の商品を仮で渡すなど応急対応も可能
   end
+end
 
 
   # — 撮影画像の一時保存 →
@@ -151,41 +151,41 @@ end
     # @product        = Product.find_by(name: @predicted_name)
   # end
 
-def predict
-  image = params[:image]
-  return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
+  def predict
+    image = params[:image]
+    return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
 
-  if Rails.env.production?
-    # ✅ 本番環境：S3 URL を Flask に送信
-    image_url = url_for(image) # ActiveStorageでS3にアップされた画像URL
-    resp = HTTParty.post(
-      flask_base_url + '/predict',
-      body: { image_url: image_url }
-    )
-  else
-    # ✅ 開発環境：ローカルファイルを Flask に送信
-    resp = HTTParty.post(
-      flask_base_url + '/predict',
-      body: { image: File.open(image.tempfile.path) }
-    )
-  end
-
-    result = JSON.parse(resp.body)
-
-    if result["name"]
-      @predicted_name = result["name"]
-      @score          = result["score"]
-      @product        = Product.find_by(name: @predicted_name)
-      render :predict_result
+    if Rails.env.production?
+      # ✅ 本番環境：S3 URL を Flask に送信
+      image_url = url_for(image) # ActiveStorageでS3にアップされた画像URL
+      resp = HTTParty.post(
+        flask_base_url + '/predict',
+        body: { image_url: image_url }
+      )
     else
-      @error = "商品を認識できませんでした"
-      render :camera
+      # ✅ 開発環境：ローカルファイルを Flask に送信
+      resp = HTTParty.post(
+        flask_base_url + '/predict',
+        body: { image: File.open(image.tempfile.path) }
+      )
     end
-rescue => e
-    Rails.logger.error "予測中にエラー: #{e.message}"
-    @error = "画像認識中にエラーが発生しました"
-    render :camera
-end
+
+      result = JSON.parse(resp.body)
+
+      if result["name"]
+        @predicted_name = result["name"]
+        @score          = result["score"]
+        @product        = Product.find_by(name: @predicted_name)
+        render :predict_result
+      else
+        @error = "商品を認識できませんでした"
+        render :camera
+      end
+  rescue => e
+      Rails.logger.error "予測中にエラー: #{e.message}"
+      @error = "画像認識中にエラーが発生しました"
+      render :camera
+  end
 
 
  
