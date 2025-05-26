@@ -6,6 +6,9 @@ function initCameraPage() {
   const canvas     = document.getElementById("canvas");
   const ctx        = canvas.getContext("2d");
   const preview    = document.getElementById("preview");
+
+
+  console.log("📸 カメラ初期化開始");
   const container  = document.getElementById("camera-container");
 
   // 必須要素チェック
