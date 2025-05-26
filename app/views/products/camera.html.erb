@@ -1,7 +1,7 @@
 <div id="camera-container"
      data-mode="<%= params[:mode] %>"
      data-product-id="<%= params[:product_id] %>"
-     data-image-url="<%= @product.image.service_url if @product&.image&.attached? %>">
+     data-image-url="<%= url_for(@product.image) if @product&.image&.attached? %>"
 
   <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
 
