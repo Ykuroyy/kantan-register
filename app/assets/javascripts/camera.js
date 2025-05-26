@@ -190,18 +190,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.location.href = url;
   });
-// ────────────────
-// 「認識結果ページ」で撮影画像をプレビュー表示するスクリプト
-document.addEventListener("DOMContentLoaded", function() {
-  const resultPreview = document.getElementById("recognized-preview-image");
-  if (!resultPreview) return;
+}); 
 
-  const dataUrl = sessionStorage.getItem("capturedImage");
-  if (dataUrl) {
-    resultPreview.src           = dataUrl;
-    resultPreview.style.display = "block";
-    sessionStorage.removeItem("capturedImage");
-  }
-});
+  // ② 認識結果ページで撮影画像のプレビュー表示
+  document.addEventListener("DOMContentLoaded", function() {
+    const resultPreview = document.getElementById("recognized-preview-image");
+    if (!resultPreview) return;
 
+    const dataUrl = sessionStorage.getItem("capturedImage");
+    if (dataUrl) {
+      resultPreview.src           = dataUrl;
+      resultPreview.style.display = "block";
+      sessionStorage.removeItem("capturedImage");
+    }
+  });
 
