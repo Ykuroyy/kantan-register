@@ -151,8 +151,7 @@ function initCameraPage() {
 document.addEventListener("DOMContentLoaded", initCameraPage);
 document.addEventListener("turbo:load", initCameraPage);
 
-// ──────────────────────────────────
-// ↓↓ ここから「保存＆復元」スクリプトを追加
+// --- 追加：編集画面→カメラ→戻り の name/price 保存＆復元 ---
 document.addEventListener("DOMContentLoaded", function() {
   const nameField  = document.querySelector("input[name='product[name]']");
   const priceField = document.querySelector("input[name='product[price]']");
@@ -177,9 +176,8 @@ document.addEventListener("DOMContentLoaded", function() {
     cameraBtn.addEventListener("click", function() {
       if (nameField)  sessionStorage.setItem("product_name",  nameField.value);
       if (priceField) sessionStorage.setItem("product_price", priceField.value);
-      // 編集画面から飛ぶなら mode=edit、new なら mode=new に変更
-      window.location.href = "/products/camera?mode=edit";
+      const productId = cameraBtn.dataset.productId;
+      window.location.href = `/products/camera?mode=edit&product_id=${productId}`;
     });
   }
 });
-// ↑↑ ここまで

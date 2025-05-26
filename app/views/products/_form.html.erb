@@ -59,7 +59,8 @@
           <%= f.file_field :image, id: "product_image", style: "display:none;" %>
           <a href="javascript:void(0)"
             id="to-camera-btn"
-            class="btn btn-blue">
+            class="btn btn-blue"
+            data-product-id="<%= @product.id %>">
             カメラで撮影
           </a>
         </div>
