@@ -88,7 +88,13 @@ end
 
 
   # — カメラ撮影画面 —
-  def camera; end
+  # app/controllers/products_controller.rb
+  def camera
+    return unless params[:product_id].present?
+      @product = Product.find_by(id: params[:product_id])
+    
+  end
+
 
   # — 撮影画像の一時保存 →
   def capture_product
