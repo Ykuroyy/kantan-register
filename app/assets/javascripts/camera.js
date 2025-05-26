@@ -151,11 +151,13 @@ function initCameraPage() {
 document.addEventListener("DOMContentLoaded", initCameraPage);
 document.addEventListener("turbo:load", initCameraPage);
 
-// --- 追加：編集画面→カメラ→戻り の name/price 保存＆復元 ---
+// 編集画面→カメラ→戻り の name/price 保存＆復元
 document.addEventListener("DOMContentLoaded", function() {
   const nameField  = document.querySelector("input[name='product[name]']");
   const priceField = document.querySelector("input[name='product[price]']");
   const cameraBtn  = document.getElementById("to-camera-btn");
+
+  if (!cameraBtn) return;
 
   // 戻ってきたときの復元
   if (nameField && priceField) {
@@ -172,12 +174,20 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // カメラ画面へ遷移する前に保存
-  if (cameraBtn) {
-    cameraBtn.addEventListener("click", function() {
-      if (nameField)  sessionStorage.setItem("product_name",  nameField.value);
-      if (priceField) sessionStorage.setItem("product_price", priceField.value);
-      const productId = cameraBtn.dataset.productId;
-      window.location.href = `/products/camera?mode=edit&product_id=${productId}`;
-    });
-  }
+  cameraBtn.addEventListener("click", function() {
+    // 値の退避
+    if (nameField)  sessionStorage.setItem("product_name",  nameField.value);
+    if (priceField) sessionStorage.setItem("product_price", priceField.value);
+
+    const mode      = cameraBtn.dataset.mode;       // "edit" or "new"
+    const productId = cameraBtn.dataset.productId;  // undefined on new
+
+    // 遷移URLを組み立て
+    let url = `/products/camera?mode=${mode}`;
+    if (mode === "edit" && productId) {
+      url += `&product_id=${productId}`;
+    }
+
+    window.location.href = url;
+  });
 });

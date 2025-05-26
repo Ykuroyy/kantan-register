@@ -52,19 +52,34 @@
           </div>
         </div>
 
+        <!-- ここをこのように置き換える -->
         <div class="form-actions">
           <label for="product_image" class="btn btn-yellow file-button">
             ファイルから選択
           </label>
           <%= f.file_field :image, id: "product_image", style: "display:none;" %>
-          <a href="javascript:void(0)"
-            id="to-camera-btn"
-            class="btn btn-blue"
-            data-product-id="<%= @product.id %>">
-            カメラで撮影
-          </a>
+
+          <% if @product.persisted? %>
+            <!-- 編集画面 -->
+            <a href="javascript:void(0)"
+              id="to-camera-btn"
+              class="btn btn-blue"
+              data-mode="edit"
+              data-product-id="<%= @product.id %>">
+              カメラで撮影
+            </a>
+          <% else %>
+            <!-- 新規画面 -->
+            <a href="javascript:void(0)"
+              id="to-camera-btn"
+              class="btn btn-blue"
+              data-mode="new">
+              カメラで撮影
+            </a>
+          <% end %>
         </div>
-      </div>
+  </div>
+
 
       <!-- ② 商品名 -->
       <div class="form-field">
