@@ -3,16 +3,16 @@
 
   <h2 class="form-heading">🔍 認識結果</h2>
 
-  <div class="card">
     <!-- 画像 2 枚を並べる -->
     <div class="grid">
       <!-- 撮影した画像 -->
       <div class="card">
         <p class="preview-label">撮影した画像</p>
-        <img id="recognized-preview-image"
-             class="preview-image"
-             style="display:none; max-width:100%;" 
-             alt="撮影画像プレビュー" />
+        <%= image_tag "",
+              id:    "recognized-preview-image",
+              class: "preview-image",
+              style: "display:none; max-width:100%;",
+              alt:   "撮影画像プレビュー" %>
       </div>
 
       <!-- 登録済み商品画像 -->
