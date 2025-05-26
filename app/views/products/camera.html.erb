@@ -1,12 +1,12 @@
 <div id="camera-container"
      data-mode="<%= params[:mode] %>"
      data-product-id="<%= params[:product_id] %>"
-     data-image-url="<%= url_for(@product.image, host: request.base_url) if @product&.image&.attached? %>">
+     data-image-url="<%= rails_blob_url(@product.image, host: request.base_url) if @product&.image&.attached? %>">
 
   <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
 
   <h2 class="form-heading">📷 カメラで撮影</h2>
-  
+
   <div class="card">
     <!-- ライブ映像 -->
     <video id="video"
