@@ -57,9 +57,11 @@
             ファイルから選択
           </label>
           <%= f.file_field :image, id: "product_image", style: "display:none;" %>
-          <%= link_to "カメラで撮影",
-                      camera_products_path(mode: "new"),
-                      class: "btn btn-blue" %>
+          <a href="javascript:void(0)"
+            id="to-camera-btn"
+            class="btn btn-blue">
+            カメラで撮影
+          </a>
         </div>
       </div>
 

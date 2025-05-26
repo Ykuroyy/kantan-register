@@ -63,11 +63,17 @@ function initCameraPage() {
           : `/products/${productId}/edit?from_camera=1`;
 
         fetch("/products/capture_product", { method: "POST", body: fd })
-          .then(() => window.location.href = path)
-          .catch(err => {
-            console.error("キャプチャ保存エラー:", err);
-            alert("画像保存に失敗しました");
-          });
+            .then(() => window.location.href = path)
+            .catch(err => {
+              console.error("キャプチャ保存エラー:", err);
+              // alert("画像保存に失敗しました");  ← 削除
+              // 必要なら画面内にメッセージ要素を挿入する例：
+              // const msg = document.createElement("p");
+              // msg.textContent = "画像保存に失敗しました";
+              // msg.style = "color:#c00; text-align:center;";
+              // container.appendChild(msg);
+            });
+
 
       // Flask画像登録
       } else if (mode === "register") {
@@ -131,7 +137,7 @@ function initCameraPage() {
             })
             .catch(err => {
               console.error("予測エラー:", err);
-              alert("予測処理に失敗しました");
+              // console.warn("予測処理に失敗しました");
             });
         }
       }
@@ -139,5 +145,41 @@ function initCameraPage() {
   });
 }
 
+
+
+// ⇒ ここまでが initCameraPage() の定義 と イベント登録
 document.addEventListener("DOMContentLoaded", initCameraPage);
 document.addEventListener("turbo:load", initCameraPage);
+
+// ──────────────────────────────────
+// ↓↓ ここから「保存＆復元」スクリプトを追加
+document.addEventListener("DOMContentLoaded", function() {
+  const nameField  = document.querySelector("input[name='product[name]']");
+  const priceField = document.querySelector("input[name='product[price]']");
+  const cameraBtn  = document.getElementById("to-camera-btn");
+
+  // 戻ってきたときの復元
+  if (nameField && priceField) {
+    const storedName  = sessionStorage.getItem("product_name");
+    const storedPrice = sessionStorage.getItem("product_price");
+    if (storedName  != null) {
+      nameField.value = storedName;
+      sessionStorage.removeItem("product_name");
+    }
+    if (storedPrice != null) {
+      priceField.value = storedPrice;
+      sessionStorage.removeItem("product_price");
+    }
+  }
+
+  // カメラ画面へ遷移する前に保存
+  if (cameraBtn) {
+    cameraBtn.addEventListener("click", function() {
+      if (nameField)  sessionStorage.setItem("product_name",  nameField.value);
+      if (priceField) sessionStorage.setItem("product_price", priceField.value);
+      // 編集画面から飛ぶなら mode=edit、new なら mode=new に変更
+      window.location.href = "/products/camera?mode=edit";
+    });
+  }
+});
+// ↑↑ ここまで
