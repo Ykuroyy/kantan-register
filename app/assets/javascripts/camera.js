@@ -93,10 +93,11 @@ function initCameraPage() {
 
         if (!["localhost", "127.0.0.1"].includes(location.hostname)) {
           const s3ImageUrl = container.dataset.imageUrl;
-          if (!s3ImageUrl) {
-            alert("画像URLがありません");
-            return;
-          }
+          console.log("📦 image_url:", s3ImageUrl);
+        if (!s3ImageUrl || s3ImageUrl === "null" || s3ImageUrl === "undefined") {
+          alert("画像URLがありません（画像未登録の可能性）");
+          return;
+        }
 
           const formData = new FormData();
           formData.append("image_url", s3ImageUrl);
