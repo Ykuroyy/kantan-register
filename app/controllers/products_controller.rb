@@ -164,25 +164,24 @@ end
 
   # — 認識結果 →def predict_result
   def predict_result
-    # JSONで受け取った近似候補を配列に変換
-    raw = params[:candidates] || "[]"
-    candidates = begin
-                   JSON.parse(raw)
-    rescue
-                   []
-    end
-
-    # 予測結果のベストマッチ商品
+    # まずはこれまでどおりパラメータを取得
     @predicted_name = params[:predicted_name]
     @score          = params[:score].to_f
-    @product        = Product.find_by(name: @predicted_name)
 
-    # 近似候補の商品レコードをまとめて取得
-    names = candidates.map { |c| c["name"] }
-    @candidate_products = Product.with_attached_image.where(name: names)
+    # raw は文字列化された JSON "[{…},{…},…]" なのでパースして配列に
+    raw = params[:candidates] || "[]"
+    @candidates = begin
+                    JSON.parse(raw)
+    rescue
+                    []
+    end
 
-    # ビュー用にスコアも保持
-    @candidate_scores = candidates.index_by { |c| c["name"] }
+    # DB にヒットしたオブジェクトだけ取ってくる
+    @candidate_products = @candidates.map do |c|
+      Product.find_by(name: c["name"])
+    end.compact
+
+    Rails.logger.info "✅ 対症療法: 見つかった候補件数=#{@candidate_products.size}"
   end
 
 

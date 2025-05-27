@@ -50,11 +50,10 @@
           <h3>🔎 近似候補</h3>
           <ul class="candidates-list" style="display:flex; gap:1rem; flex-wrap:wrap;">
             <% @candidate_products.each do |prod| %>
-              <% score = @candidate_scores[prod.name]["score"] rescue 0 %>
+              <% score = @candidates.find { |c| c["name"] == prod.name }["score"] rescue 0 %>
               <li style="list-style:none; text-align:center; width:100px;">
                 <% if prod.image.attached? %>
-                  <%= image_tag prod.image.variant(resize_to_limit: [100,100]), 
-                                alt: prod.name, 
+                  <%= image_tag prod.image.variant(resize_to_limit: [100,100]), alt: prod.name,
                                 style: "border:1px solid #ccc; border-radius:4px;" %>
                 <% else %>
                   <div style="width:100px; height:100px; background:#f0f0f0;
@@ -71,8 +70,7 @@
             <% end %>
           </ul>
         <% end %>
-
-
+  
       <% end %>
 
 
