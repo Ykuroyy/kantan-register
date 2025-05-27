@@ -119,90 +119,63 @@ end
     end
   end
 
+
+
   # — 画像認識リクエスト —
   def predict
     image = params[:image]
     return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
 
-    resp = HTTParty.post(
-      flask_base_url + '/predict',
-      body: { image: File.open(image.tempfile.path) }
-    )
-    result = JSON.parse(resp.body)
-
-    if result["name"]
-      @predicted_name = result["name"]
-      @score          = result["score"]
-      @product        = Product.find_by(name: @predicted_name)
-      render :predict_result
-    else
-      @error = "商品を認識できませんでした"
-      render :camera
-    end
-  rescue
-    @error = "画像認識中にエラーが発生しました"
-    render :camera
-  end
-
-  # — 認識結果 →
-  # def predict_result
-    # @predicted_name = params[:predicted_name]
-    # @score          = params[:score].to_f
-    # @product        = Product.find_by(name: @predicted_name)
-  # end
-
-  def predict
-    image = params[:image]
-    return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
-
+    # 本番／開発で送信内容を切り替え
     if Rails.env.production?
-      # ✅ 本番環境：S3 URL を Flask に送信
-      image_url = url_for(image) # ActiveStorageでS3にアップされた画像URL
+      # S3 にアップした URL を Flask に送信
+      image_url = url_for(image) 
       resp = HTTParty.post(
         flask_base_url + '/predict',
         body: { image_url: image_url }
       )
     else
-      # ✅ 開発環境：ローカルファイルを Flask に送信
+      # ローカルファイルを Flask に送信
       resp = HTTParty.post(
         flask_base_url + '/predict',
         body: { image: File.open(image.tempfile.path) }
       )
     end
 
-      result = JSON.parse(resp.body)
+    result = JSON.parse(resp.body)
 
-      if result["name"]
-        @predicted_name = result["name"]
-        @score          = result["score"]
-        @product        = Product.find_by(name: @predicted_name)
-        render :predict_result
-      else
-        @error = "商品を認識できませんでした"
-        render :camera
-      end
-  rescue => e
-      Rails.logger.error "予測中にエラー: #{e.message}"
-      @error = "画像認識中にエラーが発生しました"
+    if result["name"]
+      @predicted_name = result["name"]
+      @score          = result["score"].to_f
+      @candidates     = result["candidates"] || []
+      @product        = Product.find_by(name: @predicted_name)
+      render :predict_result
+    else
+      @error = "商品を認識できませんでした"
       render :camera
+    end
+  rescue => e
+    Rails.logger.error "予測中にエラー: #{e.message}"
+    @error = "画像認識中にエラーが発生しました"
+    render :camera
   end
 
 
- 
+
   # — 認識結果 →
   def predict_result
     @predicted_name = params[:predicted_name]
     @score          = params[:score].to_f
 
-    # 名前を正規化（スペース削除、全角→半角変換）
-    normalized_name = @predicted_name.strip.gsub(/\s+/, "").tr("Ａ-Ｚａ-ｚ０-９", "A-Za-z0-9")
 
-    # あいまい一致検索（スペースや全角・半角の違いを吸収）
-    @product = Product.all.find do |p|
-      p.name.gsub(/\s+/, "").tr("Ａ-Ｚａ-ｚ０-９", "A-Za-z0-9") == normalized_name
-    end
+    # Flask から渡されてきた候補リストを配列で受け取る
+    @candidates     = params[:candidates] || []
 
-    Rails.logger.info "✅ predict_result: predicted_name=#{@predicted_name}, product_hit=#{@product.present?}"
+    # マスタに本当に存在する商品を探す
+    @product        = Product.find_by(name: @predicted_name)
+
+
+    Rails.logger.info "✅ predict_result: predicted_name=#{@predicted_name}, product_hit=#{@product.present?}, candidates=#{@candidates.inspect}"
 
     render :predict_result
   end
