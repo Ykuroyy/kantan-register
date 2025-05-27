@@ -33,7 +33,4 @@ Rails.application.routes.draw do
 
   # Render用ヘルスチェック
   get "up", to: "rails/health#show", as: :rails_health_check
-
-
-  get "/admin/reset_all" => "admin#reset_all"
 end
