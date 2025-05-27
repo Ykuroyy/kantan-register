@@ -114,11 +114,10 @@ function initCameraPage() {
 
               // URLSearchParams を使って文字列化
               const params = new URLSearchParams();
-              params.append("predicted_name", encodeURIComponent(name));
-              params.append("score", score);
-              // JSON.stringify してエンコード
-              params.append("candidates", encodeURIComponent(JSON.stringify(candidates)));
-
+              params.set("predicted_name", name);
+              params.set("score", score);
+              // ✋ ここは encodeURIComponent は不要
+              params.set("candidates", JSON.stringify(candidates));
               window.location.href =
                 `/products/predict_result?${params.toString()}`;
             })

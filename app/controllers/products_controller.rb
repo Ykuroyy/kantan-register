@@ -162,24 +162,24 @@ end
 
 
 
-  # — 認識結果 →
+  # — 認識結果 →def predict_result
   def predict_result
     @predicted_name = params[:predicted_name]
     @score          = params[:score].to_f
 
+    raw = params[:candidates]   # これがクエリパラで渡ってくる JSON 文字列
+    if raw.present?
+      @candidates = begin
+                      JSON.parse(raw)
+      rescue
+                      []
+      end
+    else
+      @candidates = []
+    end
 
-    # Flask から渡されてきた候補リストを配列で受け取る
-    @candidates     = params[:candidates] || []
-
-    # マスタに本当に存在する商品を探す
-    @product        = Product.find_by(name: @predicted_name)
-
-
-    Rails.logger.info "✅ predict_result: predicted_name=#{@predicted_name}, product_hit=#{@product.present?}, candidates=#{@candidates.inspect}"
-
-    render :predict_result
+    @product = Product.find_by(name: @predicted_name)
   end
-
 
 
   # — レジ画面 —
