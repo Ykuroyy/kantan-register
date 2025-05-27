@@ -10,19 +10,26 @@
 
       <% if @cart_items.present? %>
         <%= form_with url: update_cart_products_path, method: :patch, local: true do %>
-          <ul>
-            <% @cart_items.each do |item| %>
-              <% prod = item[:product] %>
-              <li style="margin-bottom:1em;">
-                <%= prod.name %> -
-                ¥<%= number_with_delimiter(prod.price) %>
-                ×
-                <%= number_field_tag "quantities[#{prod.id}]", item[:quantity],
-                                     min: 0, class: "quantity-field",
-                                     style: "width:60px;" %>
-              </li>
-            <% end %>
-          </ul>
+          <table>
+            <thead>
+              <tr>
+                <th>商品名</th>
+                <th>数量</th>
+                <th>小計</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @cart_items.each do |item| %>
+                <% prod = item[:product] %>
+                <% next unless prod %>
+                <tr>
+                  <td><%= prod.name %></td>
+                  <td><%= item[:quantity] %></td>
+                  <td><%= number_to_currency(prod.price * item[:quantity]) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
 
           <p><strong>合計:</strong> ¥<%= number_with_delimiter(@total) %></p>
           <%= submit_tag "数量を更新", class: "btn btn-yellow" %>
