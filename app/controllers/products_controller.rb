@@ -164,21 +164,25 @@ end
 
   # — 認識結果 →def predict_result
   def predict_result
-    @predicted_name = params[:predicted_name]
-    @score          = params[:score].to_f
-
-    raw = params[:candidates]   # これがクエリパラで渡ってくる JSON 文字列
-    if raw.present?
-      @candidates = begin
-                      JSON.parse(raw)
-      rescue
-                      []
-      end
-    else
-      @candidates = []
+    # JSONで受け取った近似候補を配列に変換
+    raw = params[:candidates] || "[]"
+    candidates = begin
+                   JSON.parse(raw)
+    rescue
+                   []
     end
 
-    @product = Product.find_by(name: @predicted_name)
+    # 予測結果のベストマッチ商品
+    @predicted_name = params[:predicted_name]
+    @score          = params[:score].to_f
+    @product        = Product.find_by(name: @predicted_name)
+
+    # 近似候補の商品レコードをまとめて取得
+    names = candidates.map { |c| c["name"] }
+    @candidate_products = Product.with_attached_image.where(name: names)
+
+    # ビュー用にスコアも保持
+    @candidate_scores = candidates.index_by { |c| c["name"] }
   end
 
 
