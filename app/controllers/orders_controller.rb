@@ -65,16 +65,6 @@ class OrdersController < ApplicationController
                      .group("products.name")
                      .sum(:quantity)
 
-    # ✅ 商品別売上ランキングデータ（合計金額でソート）
-    # @sales_data = OrderItem
-    # .joins(:product)
-    # .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-    # .group(:product_id)
-    # .select("product_id, SUM(quantity * products.price) AS total")
-    # .includes(:product)
-    # .order("total DESC")
-
-
     @sales_data = OrderItem
                   .joins(:product)
                   .where(order_items: { created_at: start_date.beginning_of_day..end_date.end_of_day })
