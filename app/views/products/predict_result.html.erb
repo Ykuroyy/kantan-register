@@ -45,18 +45,14 @@
           「<%= @predicted_name %>」という商品は登録されていません。
         </p>
         <p style="text-align:center; color:#666;">商品登録を確認してください。</p>
-
-        <% if @candidates.present? %>
-            <h3 style="margin-top:1rem; text-align:center;">もしかしてこの商品？</h3>
-            <ul style="list-style:none; padding:0; text-align:center;">
-              <% @candidates.each do |c| %>
-                <li style="margin-bottom:.5rem;">
-                  <strong><%= c["name"] %></strong>
-                  （類似度：<%= (c["score"] * 100).round(1) %>%）
-                </li>
-              <% end %>
-            </ul>
-          <% end %>
+        <% if @candidates.any? %>
+          <h3>近似候補</h3>
+          <ul>
+            <% @candidates.each do |c| %>
+              <li><%= c["name"] %> (score: <%= c["score"] %>)</li>
+            <% end %>
+          </ul>
+        <% end %>
       <% end %>
 
 

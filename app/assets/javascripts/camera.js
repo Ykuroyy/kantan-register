@@ -109,12 +109,21 @@ function initCameraPage() {
             .then(json => {
               const name  = json.name  || "";
               const score = json.score || 0;
+              const candidates = json.candidates || [];
+
+
+              // URLSearchParams を使って文字列化
+              const params = new URLSearchParams();
+              params.append("predicted_name", encodeURIComponent(name));
+              params.append("score", score);
+              // JSON.stringify してエンコード
+              params.append("candidates", encodeURIComponent(JSON.stringify(candidates)));
+
               window.location.href =
-                `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
+                `/products/predict_result?${params.toString()}`;
             })
-            .catch(err => {
-              console.error("予測エラー:", err);
-            });
+            .catch(err => console.error("予測エラー:", err));
+ 
 
         // 開発：blob送信
         } else {
