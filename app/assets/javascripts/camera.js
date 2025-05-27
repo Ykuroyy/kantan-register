@@ -120,17 +120,18 @@ function initCameraPage() {
         } else {
           fetch(`${baseUrl}/predict`, { method: "POST", body: fd })
             .then(res => res.json())
-            .then(json => {
-              const name  = json.name || "";
-              const score = json.score || 0;
-              if (!name) {
-                console.warn("⚠️ 商品認識はできましたが、登録済み商品にはマッチしませんでした");
-                return; // 何も表示せずに終了
-              }
-              // ヒットあり → 結果ページへ
-              window.location.href =
-                `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;           
-            })
+              .then(data => {
+                if (data.candidates) {
+                  // 上位3件を画面にレンダリング
+                  showSuggestions(data.candidates);
+                } else {
+                  // 従来の単一マッチ
+                  const name  = data.name  || "";
+                  const score = data.score || 0;
+                  window.location.href =
+                    `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
+                }
+              })
             .catch(err => {
               console.error("予測エラー:", err);
               // console.warn("予測処理に失敗しました");
