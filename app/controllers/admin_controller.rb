@@ -1,3 +1,4 @@
+# app/controllers/admin_controller.rb
 class AdminController < ApplicationController
   # CSRF トークンチェックは飛ばす
   skip_before_action :verify_authenticity_token
@@ -5,21 +6,23 @@ class AdminController < ApplicationController
   RESET_TOKEN = ENV.fetch("RESET_TOKEN")
 
   def reset_all
-    # クエリパラメータ ?token=xxxx がない or 間違ってたら 401
+    # token チェック
     return head :unauthorized unless params[:token] == RESET_TOKEN
 
-    # カート・注文関連
-    CartItem.delete_all
-    OrderItem.delete_all
-    Order.delete_all
+    # ——— 注文明細と注文を削除 ———
+    OrderItem.delete_all if defined?(OrderItem)
+    Order.delete_all     if defined?(Order)
 
-    # ActiveStorage の関連レコード
+    # ——— ActiveStorage の関連テーブルを削除 ———
     ActiveStorage::VariantRecord.delete_all
     ActiveStorage::Attachment.delete_all
     ActiveStorage::Blob.delete_all
 
-    # 商品
+    # ——— 商品を全件削除 ———
     Product.delete_all
+
+    # ——— セッション内のカートもクリア ———
+    reset_session
 
     render plain: "🚨 リセット完了！", status: :ok
   end
