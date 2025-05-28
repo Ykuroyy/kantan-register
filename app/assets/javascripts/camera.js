@@ -152,9 +152,22 @@ function initCameraPage() {
 
 
 
-// ⇒ ここまでが initCameraPage() の定義 と イベント登録
+// 初期化の登録
 document.addEventListener("DOMContentLoaded", initCameraPage);
 document.addEventListener("turbo:load", initCameraPage);
+
+// 認識結果ページでの撮影画像プレビュー表示
+document.addEventListener("DOMContentLoaded", function() {
+  const resultPreview = document.getElementById("recognized-preview-image");
+  if (!resultPreview) return;
+
+  const dataUrl = sessionStorage.getItem("capturedImage");
+  if (dataUrl) {
+    resultPreview.src           = dataUrl;
+    resultPreview.style.display = "block";
+    sessionStorage.removeItem("capturedImage");
+  }
+});
 
 // 編集画面→カメラ→戻り の name/price 保存＆復元
 document.addEventListener("DOMContentLoaded", function() {
@@ -180,33 +193,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // カメラ画面へ遷移する前に保存
   cameraBtn.addEventListener("click", function() {
-    // 値の退避
     if (nameField)  sessionStorage.setItem("product_name",  nameField.value);
     if (priceField) sessionStorage.setItem("product_price", priceField.value);
 
-    const mode      = cameraBtn.dataset.mode;       // "edit" or "new"
-    const productId = cameraBtn.dataset.productId;  // undefined on new
-
-    // 遷移URLを組み立て
-    let url = `/products/camera?mode=${mode}`;
-    if (mode === "edit" && productId) {
-      url += `&product_id=${productId}`;
+    let url = `/products/camera?mode=${cameraBtn.dataset.mode}`;
+    if (cameraBtn.dataset.mode === "edit" && cameraBtn.dataset.productId) {
+      url += `&product_id=${cameraBtn.dataset.productId}`;
     }
-
     window.location.href = url;
   });
-}); 
+});
 
-  // ② 認識結果ページで撮影画像のプレビュー表示
-  document.addEventListener("DOMContentLoaded", function() {
-    const resultPreview = document.getElementById("recognized-preview-image");
-    if (!resultPreview) return;
 
-    const dataUrl = sessionStorage.getItem("capturedImage");
-    if (dataUrl) {
-      resultPreview.src           = dataUrl;
-      resultPreview.style.display = "block";
-      sessionStorage.removeItem("capturedImage");
-    }
-  });
 

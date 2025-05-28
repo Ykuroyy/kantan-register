@@ -9,7 +9,7 @@ Rails.application.routes.draw do
       get    :camera            # カメラ起動
       post   :capture_product   # 撮影した画像を保存
       post   :predict           # Flask画像認識
-      get    :predict_result    # 認識結果確認
+      # get    :predict_result    # 認識結果確認
       get    :new_order         # レジ画面（カート内容表示）
       patch  :update_cart       # カート数量更新
       delete :clear_cart        # カートを空にする

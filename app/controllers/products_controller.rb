@@ -119,84 +119,32 @@ class ProductsController < ApplicationController
   end
 
 
-
-    # — 画像認識リクエスト —
+    
+  # — 画像認識リクエスト & 結果表示
   def predict
     image = params[:image]
     return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
 
-    # 本番／開発で送信内容を切り替え
-    if Rails.env.production?
+    # 1) Flask へ投げる
+    resp = if Rails.env.production?
       image_url = url_for(image)
-      resp = HTTParty.post(flask_base_url + '/predict',
-                          body: { image_url: image_url })
-    else
-      resp = HTTParty.post(flask_base_url + '/predict',
-                          body: { image: File.open(image.tempfile.path) })
-    end
+      HTTParty.post(flask_base_url + '/predict',  body: { image_url: image_url })
+           else
+      HTTParty.post(flask_base_url + '/predict',  body: { image: File.open(image.tempfile.path) })
+           end
 
-    result = JSON.parse(resp.body)
+    result     = JSON.parse(resp.body)
+    raw_scores = result["all_scores"] || []
 
-    # ベストマッチ取得
-    @best         = result["best"]
-    @best_product = Product.find_by(name: @best["name"])
-
-    raw_scores   = result["all_scores"] || []
+    # 2) シンボルキー化＆フィルタ
     scores       = raw_scores.map { |h| h.transform_keys(&:to_sym) }
-
     @all_scores  = scores
-    @hit_scores  = scores.select { |h| h[:score] >= 0.2 }
+    @hit_scores  = scores.select { |c| c[:score] >= 0.2 }
     @candidates  = @hit_scores.first(3)
-    @best        = @hit_scores.max_by { |h| h[:score] }
+    @best        = @hit_scores.max_by { |c| c[:score] }
     @best_product = Product.find_by(name: @best[:name])
 
-    render :predict_result
-  end
-
-
-
-  def predict_result
-    # ① JSON をパース
-    raw_best       = { "name" => params[:predicted_name], "score" => params[:score].to_f }
-    raw_candidates = begin
-                       JSON.parse(params[:candidates] || "[]")
-    rescue
-                       []
-    end
-    raw_all        = begin
-                       JSON.parse(params[:all] || "[]")
-    rescue
-                       []
-    end  # ← Flask 側で "all" を返す前提
-
-    # ② name_mapping.json をロード（S3 キー→正式名）
-    mapping_file = Rails.root.join("name_mapping.json")
-    name_mapping = mapping_file.exist? ? JSON.parse(mapping_file.read) : {}
-
-    # ③ mapping を best / candidates / all に適用
-    ([raw_best] + raw_candidates + raw_all).each do |h|
-      h["name"] = name_mapping[h["name"]] if h["name"].present? && name_mapping[h["name"]]
-    end
-
-    # ④ best が空文字だったら candidates の先頭をフォールバック
-    raw_best = raw_candidates.shift if raw_best["name"].blank? && raw_candidates.any?
-
-    # ⑤ いったんインスタンス変数に全件入れておく
-    @all_scores   = raw_all
-
-    # ↓ ここから “ヒット” と “類似候補” のしきい値処理（例: 20% 以上をヒットとみなす）
-    threshold = 0.2
-    hit_list = @all_scores.select { |c| c["score"] >= threshold }
-
-    # インスタンス変数へ
-    @hit_scores     = hit_list
-    @best           = hit_list.first
-    @candidates     = hit_list.drop(1).take(3)
-
-    # DBレコード取得
-    @best_product       = @best && Product.find_by(name: @best["name"])
-    @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
-
+    # 3) ここで直接ビューをレンダー（別アクション不要）
     render :predict_result
   end
 
