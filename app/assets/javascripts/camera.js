@@ -33,7 +33,7 @@ function initCameraPage() {
     })
     .catch(err => {
       console.error("📛 カメラ起動失敗:", err);
-      if (err.name !== "NotAllowedError" && err.name !== "PermissionDeniedError") {
+      if (!["NotAllowedError", "PermissionDeniedError"].includes(err.name)) {
         const errorMsg = document.createElement("p");
         errorMsg.textContent = "📛 カメラを起動できませんでした: " + err.message;
         errorMsg.style = "color:#c00; font-weight:bold; text-align:center; margin-top:1rem;";
@@ -53,7 +53,7 @@ function initCameraPage() {
     preview.src = dataUrl;
     preview.style.display = "block";
 
-    // セッションストレージに保存（predict_result ページ用）
+    // predict_result ページ用にセッションストレージに保存
     sessionStorage.setItem("capturedImage", dataUrl);
 
     // Blob をサーバに送信
@@ -94,19 +94,32 @@ function initCameraPage() {
         // CSRF トークン取得
         const token = document.querySelector('meta[name="csrf-token"]').content;
 
-        // Rails predict アクション用フォーム作成
+        // フォーム生成
         const form = document.createElement("form");
         form.method  = "POST";
         form.action  = "/products/predict";
         form.enctype = "multipart/form-data";
 
-        // authenticity_token 埋め込み
-        form.innerHTML = `<input type="hidden" name="authenticity_token" value="${token}">`;
+        // authenticity_token hidden input
+        const tokenInput = document.createElement("input");
+        tokenInput.type  = "hidden";
+        tokenInput.name  = "authenticity_token";
+        tokenInput.value = token;
+        form.appendChild(tokenInput);
 
-        // FormData の中身(image)をフォームにコピー
-        fd.forEach((value, key) => form.append(key, value));
+        // ファイル input を作成し、Blob → File 変換してセット
+        const fileInput = document.createElement("input");
+        fileInput.type  = "file";
+        fileInput.name  = "image";
+        fileInput.style.display = "none";
+        form.appendChild(fileInput);
 
-        // submit
+        // DataTransfer に File を追加
+        const dt = new DataTransfer();
+        dt.items.add(new File([blob], "capture.jpg", { type: "image/jpeg" }));
+        fileInput.files = dt.files;
+
+        // フォーム送信
         document.body.appendChild(form);
         form.submit();
       }
