@@ -37,7 +37,7 @@ function initCameraPage() {
         container.appendChild(errorMsg);
       }
     });
-
+  // キャプチャボタン押下時
   captureBtn.addEventListener("click", () => {
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -47,16 +47,15 @@ function initCameraPage() {
     preview.src = dataUrl;
     preview.style.display = "block";
 
+    // 撮影画像をセッションストレージに保持
     sessionStorage.setItem("capturedImage", dataUrl);
 
+    // Blob をサーバに送信
     canvas.toBlob(blob => {
       const fd = new FormData();
-      if (mode === "register") {
-        fd.append("name", `user_${Date.now()}`);
-      }
       fd.append("image", blob, "capture.jpg");
 
-      // 商品登録・編集
+      // 商品登録・編集モード
       if (mode === "new" || mode === "edit") {
         const path = mode === "new"
           ? "/products/new?from_camera=1"
@@ -64,17 +63,17 @@ function initCameraPage() {
 
         fetch("/products/capture_product", {
           method: "POST",
-          headers: { "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content },
+          headers: { 
+            "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content 
+          },
           body: fd
         })
-        .then(() => { window.location.href = path; })
-        .catch(err => {
-          console.error("キャプチャ保存エラー:", err);
-        });
+        .then(() => window.location.href = path)
+        .catch(err => console.error("キャプチャ保存エラー:", err));
 
 
 
-      // Flask画像登録
+      // Flask 画像登録モード
       } else if (mode === "register") {
         fetch("http://127.0.0.1:10000/register_image", {
           method: "POST",
@@ -84,83 +83,43 @@ function initCameraPage() {
           if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
           console.log("✅ 登録に成功しました");
         })
+        .catch(err => console.error("登録エラー:", err));
       
     
-
-      // レジモード（画像認識）
+      // レジ（画像認識）モード：POST /products/predict へフォーム送信
       } else if (mode === "order") {
-        const baseUrl = (["localhost", "127.0.0.1"].includes(location.hostname))
-          ? "http://localhost:10000"
-          : "https://ai-server-f6si.onrender.com";
+        // CSRF トークン取得
+        const token = document.querySelector('meta[name="csrf-token"]').content;
 
-        // 本番：画像URL送信
-        if (baseUrl.includes("ai-server")) {
-          // 本番環境：S3 に上がっている URL を送る
-          const s3ImageUrl = container.dataset.imageUrl;
-          if (!s3ImageUrl) {
-            console.warn("⚠️ S3 画像 URL がありません");
-            return;
-          }
-          const formData = new FormData();
-          formData.append("image_url", s3ImageUrl);
+        // フォーム生成
+        const form = document.createElement("form");
+        form.method  = "POST";
+        form.action  = "/products/predict";
+        form.enctype = "multipart/form-data";
 
-          fetch(`${baseUrl}/predict`, { method: "POST", body: formData })
-            .then(res => res.json())
-            .then(json => {
-              const name  = json.name  || "";
-              const score = json.score || 0;
-              const candidates = json.candidates || [];
+        // トークン埋め込み
+        form.innerHTML = `<input type="hidden" name="authenticity_token" value="${token}">`;
 
+        // FormData の中身（image）をフォームにコピー
+        fd.forEach((value, key) => form.append(key, value));
 
-              // URLSearchParams を使って文字列化
-              const params = new URLSearchParams();
-              params.set("predicted_name", name);
-              params.set("score", score);
-              // ✋ ここは encodeURIComponent は不要
-              params.set("candidates", JSON.stringify(candidates));
-              window.location.href =
-                `/products/predict_result?${params.toString()}`;
-            })
-            .catch(err => console.error("予測エラー:", err));
- 
-
-        // 開発：blob送信
-        } else {
-          fetch(`${baseUrl}/predict`, { method: "POST", body: fd })
-            .then(res => res.json())
-              .then(data => {
-                if (data.candidates) {
-                  // 上位3件を画面にレンダリング
-                  showSuggestions(data.candidates);
-                } else {
-                  // 従来の単一マッチ
-                  const name  = data.name  || "";
-                  const score = data.score || 0;
-                  window.location.href =
-                    `/products/predict_result?predicted_name=${encodeURIComponent(name)}&score=${score}`;
-                }
-              })
-            .catch(err => {
-              console.error("予測エラー:", err);
-              // console.warn("予測処理に失敗しました");
-            });
-        }
+        // フォームを送信
+        document.body.appendChild(form);
+        form.submit();
       }
     }, "image/jpeg", 0.8);
   });
 }
 
 
-
-// 初期化の登録
+// 初期化登録
 document.addEventListener("DOMContentLoaded", initCameraPage);
-document.addEventListener("turbo:load", initCameraPage);
+document.addEventListener("turbo:load",     initCameraPage);
 
 // 認識結果ページでの撮影画像プレビュー表示
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", () => {
   const resultPreview = document.getElementById("recognized-preview-image");
   if (!resultPreview) return;
-
   const dataUrl = sessionStorage.getItem("capturedImage");
   if (dataUrl) {
     resultPreview.src           = dataUrl;
@@ -170,18 +129,17 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // 編集画面→カメラ→戻り の name/price 保存＆復元
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", () => {
   const nameField  = document.querySelector("input[name='product[name]']");
   const priceField = document.querySelector("input[name='product[price]']");
   const cameraBtn  = document.getElementById("to-camera-btn");
-
   if (!cameraBtn) return;
 
   // 戻ってきたときの復元
   if (nameField && priceField) {
     const storedName  = sessionStorage.getItem("product_name");
     const storedPrice = sessionStorage.getItem("product_price");
-    if (storedName  != null) {
+    if (storedName != null) {
       nameField.value = storedName;
       sessionStorage.removeItem("product_name");
     }
@@ -192,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // カメラ画面へ遷移する前に保存
-  cameraBtn.addEventListener("click", function() {
+  cameraBtn.addEventListener("click", () => {
     if (nameField)  sessionStorage.setItem("product_name",  nameField.value);
     if (priceField) sessionStorage.setItem("product_price", priceField.value);
 
@@ -203,6 +161,3 @@ document.addEventListener("DOMContentLoaded", function() {
     window.location.href = url;
   });
 });
-
-
-
