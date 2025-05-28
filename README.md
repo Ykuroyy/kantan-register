@@ -17,16 +17,18 @@ Rails のフロントエンドと MySQL／PostgreSQL をバックエンドに、
 
 ## 主な機能
 
+
 | 機能                       | 説明                                                                 |
 |----------------------------|----------------------------------------------------------------------|
 | **商品管理**               | カタカナのみの名前制約、価格バリデーション                             |
 | **画像アップロード**       | ActiveStorage ＋ カメラ撮影連携                                       |
-| **AI画像認識レジ**         | Flask サーバー（Python）＋SSIM／SIFT／ORB による複合スコアで高精度マッチング |
+| **AI画像認識レジ**         | Flask サーバー＋SSIM／SIFT／ORB による複合スコアで高精度マッチング      |
 | **キーワード検索レジ**     | 商品名キーワード検索でカートに追加                                     |
 | **カート管理**             | セッションベース、数量更新・クリア                                     |
-| **売上分析ダッシュボード** | 年次／月次／日次切替の売上グラフとサマリー指標 (合計売上・オーダー数・平均購入額) |
+| **売上分析ダッシュボード** | 年次／月次／日次切替の売上グラフとサマリー指標                         |
 | **管理画面リセット機能**   | `GET /admin/reset_all?token=…` で全データ削除（Basic 認証下）          |
-| **Basic 認証**             | 管理画面は HTTP Basic 認証  
+| **Basic 認証**             | 管理画面は HTTP Basic 認証                                           |
+
 ---
 
 ## Live Demo
@@ -54,27 +56,31 @@ _Basic 認証_
 
 ### Python（画像認識）サイド
 
-- Python 3.10  
-- Flask 2.3.2  
-- Pillow 10.3.0  
-- NumPy 1.26.4  
-- scikit-image（SSIM）  
+- Python 3.11  
+- Flask 3.1.1 
+- Pillow 11.2.1 
+- NumPy 2.2.6  
+- scikit-image 0.25.2（SSIM） 
 - OpenCV（ORB／SIFT）  
 - gunicorn  
 - Flask-CORS  
 - requests 2.31.0
+- SQLAlchemy 2.0.20 / psycopg2-binary 2.9.6（本番でDBマッピングを使う場合）
 
 
 #### `requirements.txt` 抜粋
 ```text
-Flask==2.3.2
-Pillow==10.3.0
-numpy==1.26.4
-scikit-image
-opencv-python
-gunicorn
-Flask-CORS
-requests==2.31.0
+Flask==3.1.1
+Pillow==11.2.1
+numpy==2.2.6
+scikit-image==0.25.2
+opencv-python==4.11.0.86
+gunicorn==23.0.0
+Flask-CORS==6.0.0
+requests==2.32.3
+SQLAlchemy==2.0.20
+psycopg2-binary==2.9.6
+boto3==1.38.23
 
 
 
@@ -92,6 +98,7 @@ requests==2.31.0
 |-------------|----------|---------------------------------|
 | `name`      | string   | null: false, format: katakana   |
 | `price`     | integer  | null: false, numericality: >0   |
+| `s3_key`    | string   | 登録済み画像の S3 キー保存用        |
 | `created_at`| datetime |                                 |
 | `updated_at`| datetime |                                 |
 

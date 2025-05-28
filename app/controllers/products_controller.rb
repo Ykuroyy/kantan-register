@@ -1,10 +1,19 @@
-# app/controllers/products_controller.rb
 class ProductsController < ApplicationController
   require 'httparty'
+  require 'aws-sdk-s3'
+  require 'securerandom'
+
+  S3_BUCKET  = ENV.fetch("S3_BUCKET")
+  S3_CLIENT  = Aws::S3::Client.new(
+    region: ENV["AWS_REGION"],
+    access_key_id: ENV["AWS_ACCESS_KEY_ID"],
+    secret_access_key: ENV["AWS_SECRET_ACCESS_KEY"]
+  )
 
   skip_before_action :verify_authenticity_token, only: [:predict, :capture_product]
   before_action :set_product, only: [:show, :edit, :update, :destroy]
   
+
   
   # — 商品一覧（レジ画面兼用） —
   def index
@@ -30,15 +39,12 @@ class ProductsController < ApplicationController
   # — 新規登録処理 —
   def create
     @product = Product.new(product_params)
-    attach_blob_image  # カメラ撮影後の Blob を attach
+    attach_blob_image
 
     if @product.save
-
-      # ここにログ出力を追加
       Rails.logger.info "▶️ register_image_to_flask! name=#{@product.name.inspect}"
-
-
-      register_image_to_flask!(@product.image, @product.name)
+      new_key = register_image_to_flask!(@product.image, @product.name)
+      @product.update!(s3_key: new_key) if new_key.present?
       session.delete(:product_image_blob_id)
       redirect_to products_path, notice: "「#{@product.name}」を登録しました"
     else
@@ -58,11 +64,9 @@ class ProductsController < ApplicationController
     attach_blob_image
 
     if @product.update(filtered)
-      # 返り値として S3 側のキーを受け取る
       new_key = register_image_to_flask!(@product.image, @product.name)
-      # DB の s3_key カラムにも書き込む
-      @product.update!(s3_key: new_key) if new_key.present?
-
+      # もし register_image_to_flask! 内で更新していないなら外で書き込む
+      @product.update!(s3_key: new_key) if new_key.present? && !@product.s3_key.eql?(new_key)
       redirect_to products_path, notice: '商品情報を更新しました。'
     else
       render :edit, status: :unprocessable_entity
@@ -240,32 +244,30 @@ class ProductsController < ApplicationController
   end
 
 
-  # ActiveStorage Blob → 一時ファイル → Flask に送信
+  # ActiveStorage Blob → 一時ファイル → S3 と Flask に送信
+  # 戻り値として S3 へアップしたキー（filename）を返す
   def register_image_to_flask!(attached_image, name)
     return unless attached_image.attached?
 
     blob     = attached_image.blob
-    filename = nil
+    filename = "#{SecureRandom.uuid}#{File.extname(blob.filename.to_s)}"
 
     Tempfile.create(['upload', File.extname(blob.filename.to_s)]) do |temp|
       temp.binmode
       temp.write blob.download
       temp.flush
 
-      # S3 にアップするキーを UUID で決定
-      filename = "#{SecureRandom.uuid}#{File.extname(blob.filename.to_s)}"
-
-      # → S3 へアップロード
-      s3.upload_file(
-        Filename: temp.path,
-        Bucket: S3_BUCKET,
-        Key: filename,
-        ExtraArgs: { ContentType: blob.content_type }
+      # 1) S3 にアップロード
+      S3_CLIENT.put_object(
+        bucket: S3_BUCKET,
+        key: filename,
+        body: File.open(temp.path),
+        content_type: blob.content_type
       )
 
-      # → Flask にも送信
+      # 2) Flask サーバーにも送信
       resp = HTTParty.post(
-        flask_base_url + '/register_image',
+        "#{flask_base_url}/register_image",
         multipart: true,
         body: {
           "name" => name,
@@ -275,16 +277,15 @@ class ProductsController < ApplicationController
 
       if resp.code == 200
         Rails.logger.info "▶️ register_image_to_flask! sent name=#{name.inspect}"
-
-        # ← ここで DB にも書き込む
-        @product.update!(s3_key: filename)
+        # s3_key カラムがあれば更新
+        @product.update!(s3_key: filename) if @product.respond_to?(:s3_key=)
       else
         Rails.logger.error "Flask 画像登録失敗（#{resp.code}）: #{resp.body}"
       end
     end
 
     filename
-  end
+  end 
 
 
   # カート追加ヘルパー
