@@ -144,20 +144,14 @@ end
 
     result = JSON.parse(resp.body)
 
-    if result["name"]
-      @predicted_name = result["name"]
-      @score          = result["score"].to_f
-      @candidates     = result["candidates"] || []
-      @product        = Product.find_by(name: @predicted_name)
-      render :predict_result
-    else
-      @error = "商品を認識できませんでした"
-      render :camera
+    @best = result["best"]
+    @best_product = Product.find_by(name: @best["name"])
+    @candidates = result["candidates"].map do |c|
+      prod = Product.find_by(name: c["name"])
+      { product: prod, name: c["name"], score: c["score"] }
     end
-  rescue => e
-    Rails.logger.error "予測中にエラー: #{e.message}"
-    @error = "画像認識中にエラーが発生しました"
-    render :camera
+
+    render :predict_result
   end
 
 
