@@ -134,8 +134,13 @@ class ProductsController < ApplicationController
     return head :bad_request unless uploaded
 
     # Flask に画像投げて結果取得
-    resp   = HTTParty.post(flask_base_url + "/predict",
-               body: { image: File.open(uploaded.tempfile.path) })
+    resp   = HTTParty.post(
+      flask_base_url + "/predict",
+               multipart: true,
+               body: {
+                 image: File.open(uploaded.tempfile.path)
+               }
+    )    
     result = JSON.parse(resp.body)
 
     # ↓ ここを all_scores から all_similarity_scores に合わせる
