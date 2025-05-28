@@ -81,20 +81,29 @@
   <% end %>
 
   <% if @all_scores.present? %>
-    <h3 style="margin-top:2rem;">📊 全商品の類似度スコア</h3>
-    <table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">
-      <thead>
-        <tr>
-          <th style="border:1px solid #ccc; padding:4px;">商品名</th>
-          <th style="border:1px solid #ccc; padding:4px;">スコア (%)</th>
-        </tr>
-      </thead>
+    <h3>📊 全商品の類似度スコア</h3>
+    <table>
+      <thead>…</thead>
       <tbody>
-        <% @all_scores.each do |c| %>
+        <% @all_scores.each do |h| %>
+          <% prod = Product.find_by(name: h["name"]) %>
           <tr>
-            <td style="border:1px solid #ccc; padding:4px;"><%= c["name"] %></td>
-            <td style="border:1px solid #ccc; padding:4px; text-align:right;">
-              <%= (c["score"] * 100).round(1) %>%
+            <td style="display:flex; align-items:center; gap:0.5em;">
+              <% if prod&.image&.attached? %>
+                <%= image_tag prod.image.variant(resize_to_limit:[50,50]), alt: prod.name %>
+              <% else %>
+                <div style="width:50px;height:50px;background:#eee;"></div>
+              <% end %>
+              <%= h["name"] %>
+            </td>
+            <td style="text-align:right;"><%= (h["score"]*100).round(1) %>%</td>
+            <td>
+              <% if prod %>
+                <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
+                  <%= hidden_field_tag :recognized_name, prod.name %>
+                  <%= submit_tag "カートに追加", class: "btn btn-sm btn-yellow" %>
+                <% end %>
+              <% end %>
             </td>
           </tr>
         <% end %>

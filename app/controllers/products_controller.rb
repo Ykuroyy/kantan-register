@@ -157,37 +157,38 @@ class ProductsController < ApplicationController
 
   # — 認識結果 →def predict_result
   def predict_result
-    # 1) JSONパース
-    raw_best       = { "name" => params[:predicted_name], "score" => params[:score].to_f }
-    raw_candidates = begin
-                       JSON.parse(params[:candidates] || "[]")
-    rescue
-                       []
-    end
+    result = JSON.parse(params[:_dummy])  # 実際は params から組み立て
 
-    # 2) マッピングロード
+    # マッピングロード
     mapping_file = Rails.root.join("name_mapping.json")
     mapping = mapping_file.exist? ? JSON.parse(mapping_file.read) : {}
 
-    # 3) 正式名に置き換え
-    raw_candidates.each { |c| c["name"] = mapping[c["name"]] if mapping[c["name"]] }
+    # best, candidates, all を読み込む
+    raw_best       = result["best"]
+    raw_cands      = result["candidates"]
+    raw_all        = result["all"]
 
-    # 4) フォールバック
-    raw_best = raw_candidates.shift if raw_best["name"].blank? && raw_candidates.any?
+    # mapping 適用
+    [raw_best].concat(raw_cands).concat(raw_all).each do |h|
+      h["name"] = mapping[h["name"]] if mapping[h["name"]]
+    end
 
-    @best       = raw_best
-    @candidates = raw_candidates
+    # 一致判定（例: 60%以上だけ「一致」とみなす）
+    @best       = raw_best["score"] >= 0.6 ? raw_best : nil
 
-    # → ここで all_scores
-    all = [@best] + raw_candidates
-    @all_scores = all.map { |c| { "name" => c["name"], "score" => c["score"] } }
+    # 類似候補（例: 10%以上のみ）
+    @candidates = raw_cands.select { |h| h["score"] >= 0.1 }
 
-    # 5) DB レコード取得
-    @best_product       = Product.find_by(name: @best["name"])
-    @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
+    # 全スコア一覧（そのまま全部）
+    @all_scores = raw_all
+
+    # DB レコードを用意
+    @best_product       = Product.find_by(name: @best["name"])   if @best
+    @candidate_products = @candidates.map { |h| Product.find_by(name: h["name"]) }.compact
 
     render :predict_result
   end
+ 
 
 
   # — レジ画面 —
