@@ -158,23 +158,40 @@ end
 
   # — 認識結果 →def predict_result
   def predict_result
-    # JSON をパースして @best と @candidates をセット
-    @best = { "name" => params[:predicted_name], "score" => params[:score].to_f }
-    @candidates = begin
-                    JSON.parse(params[:candidates] || "[]")
+    # 1) 渡ってきた JSON をパース
+    raw_best       = { "name" => params[:predicted_name], "score" => params[:score].to_f }
+    raw_candidates = begin
+                       JSON.parse(params[:candidates] || "[]")
     rescue
-                    []
+                       []
     end
 
-    # ベストマッチの実レコード
-    @best_product = Product.find_by(name: @best["name"])
+    # 2) name_mapping.json（S3キー→正式名マッピング）をロード
+    mapping = {}
+    mapping_file = Rails.root.join("name_mapping.json")
+    mapping = JSON.parse(mapping_file.read) if mapping_file.exist?
 
-    # 類似候補のレコード（存在するものだけ）
-    @candidate_products = @candidates.map do |c|
-      Product.find_by(name: c["name"])
-    end.compact
+    # 3) candidates のキーが S3 オブジェクトキーの場合は正式名に置き換え
+    raw_candidates.each do |c|
+      c["name"] = mapping[c["name"]] if mapping[c["name"]]
+    end
 
-    render :predict_result
+
+      # 4) ベストマッチが空なら、候補のトップをベスト扱いにフォールバック
+      if raw_best["name"].blank? && raw_candidates.any?
+        raw_best = raw_candidates.shift
+      end
+
+      @best       = raw_best
+      @candidates = raw_candidates
+
+      # 5) DB から対応する Product レコードを引く
+      @best_product       = Product.find_by(name: @best["name"])
+      @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
+
+      render :predict_result
+    end
+
   end
 
 
