@@ -1,3 +1,5 @@
+// app/javascript/camera.js
+
 function initCameraPage() {
   console.log("📸 initCameraPage 実行開始");
 
@@ -21,6 +23,7 @@ function initCameraPage() {
     ? { video: { facingMode: { ideal: "environment" } }, audio: false }
     : { video: { facingMode: "user" }, audio: false };
 
+  // カメラ起動
   navigator.mediaDevices.getUserMedia(constraints)
     .then(stream => {
       video.srcObject = stream;
@@ -37,6 +40,7 @@ function initCameraPage() {
         container.appendChild(errorMsg);
       }
     });
+
   // キャプチャボタン押下時
   captureBtn.addEventListener("click", () => {
     canvas.width  = video.videoWidth;
@@ -71,8 +75,6 @@ function initCameraPage() {
         .then(() => window.location.href = path)
         .catch(err => console.error("キャプチャ保存エラー:", err));
 
-
-
       // Flask 画像登録モード
       } else if (mode === "register") {
         fetch("http://127.0.0.1:10000/register_image", {
@@ -84,8 +86,7 @@ function initCameraPage() {
           console.log("✅ 登録に成功しました");
         })
         .catch(err => console.error("登録エラー:", err));
-      
-    
+
       // レジ（画像認識）モード：POST /products/predict へフォーム送信
       } else if (mode === "order") {
         // CSRF トークン取得
@@ -110,7 +111,6 @@ function initCameraPage() {
     }, "image/jpeg", 0.8);
   });
 }
-
 
 // 初期化登録
 document.addEventListener("DOMContentLoaded", initCameraPage);
