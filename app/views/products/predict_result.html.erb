@@ -65,31 +65,38 @@
   <% end %>
 
   <% if @all_scores.present? %>
-    <h3 style="margin-top:2rem;">📊 全商品の類似度スコア</h3>
-    <table style="width:100%; border-collapse:collapse;">
+    <h3>📊 全商品の類似度スコア</h3>
+    <table>
       <thead>
-        <tr>
-          <th>画像</th><th>商品名</th><th>スコア (%)</th><th>カート</th>
-        </tr>
+        <tr><th>画像</th><th>商品名</th><th>スコア</th><th>カート</th></tr>
       </thead>
       <tbody>
         <% @all_scores.each do |c| %>
           <tr>
-            <!-- ② ここから：画像＋カートフォーム -->
+            <!-- 画像セル -->
             <td>
-              <%= image_tag Product.find_by(name: c[:name])&.image
-                            &.variant(resize_to_limit:[100,100])
-                            if Product.exists?(name: c[:name]) %>
-            </td>
-            <td><%= c[:name] %></td>
-            <td><%= (c[:score]*100).round(1) %>%</td>
-            <td>
-              <%= form_with url: add_to_cart_products_path, local: true do %>
-                <%= hidden_field_tag :recognized_name, c[:name] %>
-                <%= submit_tag "カートに追加", class: "btn btn-sm btn-yellow" %>
+              <% prod = Product.find_by(name: c[:name]) %>
+              <% if prod&.image&.attached? %>
+                <%= image_tag(prod.image.variant(resize_to_limit: [100,100])) %>
+              <% else %>
+                —
               <% end %>
             </td>
-            <!-- ② ここまで -->
+            <!-- 名前セル -->
+            <td><%= c[:name] %></td>
+            <!-- スコアセル -->
+            <td><%= "#{(c[:score] * 100).round(1)}%" %></td>
+            <!-- カートセル -->
+            <td>
+              <% if prod %>
+                <%= form_with url: add_to_cart_products_path, local: true do %>
+                  <%= hidden_field_tag :recognized_name, prod.name %>
+                  <%= submit_tag "＋カート", class: "btn btn-sm btn-yellow" %>
+                <% end %>
+              <% else %>
+                —
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>
