@@ -122,26 +122,40 @@ class ProductsController < ApplicationController
     
   # — 画像認識リクエスト & 結果表示
   def predict
-    # ① 画像取得
     uploaded = params[:image]
     return render json: { error: "画像がありません" }, status: :bad_request unless uploaded
 
-    # ② Flask へ画像投げる
-    resp   = HTTParty.post(flask_base_url + "/predict",
-                          body: { image: File.open(uploaded.tempfile.path) })
+    # Flask に画像を投げて結果を取得
+    resp = HTTParty.post(
+      flask_base_url + "/predict",
+      body: { image: File.open(uploaded.tempfile.path) }
+    )
     result = JSON.parse(resp.body)
 
-    # ③ JSON 整形
-    raw_scores = result["all_scores"] || []
-    scores     = raw_scores.map { |h| h.transform_keys(&:to_sym) }
+    # 生スコアをシンボルキー化
+    raw_scores  = result["all_scores"] || []
+    scores      = raw_scores.map { |h| h.transform_keys(&:to_sym) }
 
-    @all_scores   = scores
-    @hit_scores   = scores.select { |c| c[:score] >= 0.2 }
-    @candidates   = @hit_scores.first(3)
-    @best         = @hit_scores.max_by { |c| c[:score] }
-    @best_product = Product.find_by(name: @best[:name])
+    @all_scores = scores
 
-    # ④ ビュー描画
+    # しきい値 0.2 以上をヒットとみなす
+    hit = scores.select { |c| c[:score] >= 0.2 }
+
+    if hit.any?
+      @hit_scores = hit
+      @best       = hit.max_by { |c| c[:score] }
+      @candidates = hit.first(3)
+    else
+      # しきい値を満たさない場合は全体から上位を取る
+      @hit_scores = []
+      @best       = scores.first
+      @candidates = scores.drop(1).first(3)
+    end
+
+    # DB レコードを引く
+    @best_product       = Product.find_by(name: @best[:name]) if @best
+    @candidate_products = @candidates.map { |c| Product.find_by(name: c[:name]) }.compact
+
     render :predict_result
   rescue StandardError => e
     Rails.logger.error e.full_message
