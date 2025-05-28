@@ -22,113 +22,83 @@
     </div>
   </div>
 
-  <% if @best_product.present? %>
-    <!-- —— ベストマッチ表示 —— -->
-    <p style="margin-top:1rem;">
-      ベストマッチ：
-      <strong><%= @best_product.name %></strong>
-      (<%= (@best["score"] * 100).round(1) %>%)
-    </p>
-
-    <!-- カート追加ボタン -->
-    <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
-      <%= hidden_field_tag :recognized_name, @best_product.name %>
-      <%= submit_tag "カートに追加", class: "btn btn-yellow",
-                      style: "margin-top:.8rem;" %>
-    <% end %>
-
+  <!-- ① ここから：ヒット判定 ＆ 類似上位 ＆ 全件スコア表 -->
+  <% if @hit_scores.any? %>
+    <p>✅ 商品ヒット：<strong><%= @best_product&.name || @best["name"] %></strong>（<%= (@best["score"]*100).round(1) %>%）</p>
   <% else %>
-    <!-- —— ヒットゼロ時 —— -->
-    <p style="text-align:center; color:#c00; margin-top:1rem;">
-      一致する商品はありませんでした。
-    </p>
+    <p style="color:red">一致する商品はありません（スコア < 20%）</p>
   <% end %>
 
-  <% if @candidate_products.any? %>
-    <h3 style="margin-top:1.5rem;">🔎 類似候補</h3>
-    <ul style="display:flex; gap:1rem; flex-wrap:wrap;">
-      <% @candidate_products.each do |prod| %>
-        <% score = (@candidates.find { |c| c["name"] == prod.name }["score"] * 100).round(1) rescue 0 %>
-        <li style="width:120px; text-align:center;">
-          <%# 商品画像 %>
-          <% if prod.image.attached? %>
-            <%= image_tag prod.image.variant(resize_to_limit: [100,100]), alt: prod.name %>
-          <% else %>
-            <div style="width:100px; height:100px; background:#eee;
-                        display:flex; align-items:center; justify-content:center;">
-              no image
-            </div>
-          <% end %>
-
-          <%# 商品名とスコア %>
-          <p style="margin:0.5em 0 0;">
-            <strong><%= prod.name %></strong><br>
-            (<%= score %>%)
-          </p>
-
-          <%# カート追加ボタン %>
-          <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
-            <%= hidden_field_tag :recognized_name, prod.name %>
-            <%= submit_tag "カートに追加", class: "btn btn-sm btn-yellow", style: "margin-top:0.5em;" %>
-          <% end %>
+  <% if @candidates.any? %>
+    <h3>🔎 類似上位</h3>
+    <ul>
+      <% @candidates.each do |c| %>
+        <li>
+          <%= c[:name] %> — <%= (c[:score]*100).round(1) %>%
         </li>
       <% end %>
     </ul>
+  <% end %>
+
+  <h3>📊 全商品のスコア</h3>
+  <table>
+    <tr><th>商品名</th><th>スコア</th></tr>
+    <% @all_scores.each do |c| %>
+      <tr>
+        <td><%= c[:name] %></td>
+        <td><%= (c[:score]*100).round(1) %>%</td>
+      </tr>
+    <% end %>
+  </table>
+  <!-- ① ここまで -->
+
+  <% if @best_product.present? %>
+    …（ベストマッチ＆カートボタン）…
+  <% else %>
+    …（ヒットゼロ時メッセージ）…
+  <% end %>
+
+  <% if @candidate_products.any? %>
+    …（既存の類似候補ループ）…
   <% elsif @best_product.blank? %>
-    <p style="text-align:center; color:#c00; margin-top:1rem;">
-      類似候補もありませんでした。
-    </p>
+    …（候補なしメッセージ）…
   <% end %>
 
   <% if @all_scores.present? %>
     <h3 style="margin-top:2rem;">📊 全商品の類似度スコア</h3>
-    <table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">
+    <table style="width:100%; border-collapse:collapse;">
       <thead>
         <tr>
-          <th style="border:1px solid #ccc; padding:4px;">画像</th>
-          <th style="border:1px solid #ccc; padding:4px;">商品名</th>
-          <th style="border:1px solid #ccc; padding:4px;">スコア (%)</th>
-          <th style="border:1px solid #ccc; padding:4px;">カート</th>
+          <th>画像</th><th>商品名</th><th>スコア (%)</th><th>カート</th>
         </tr>
       </thead>
       <tbody>
-        <% @all_scores.each do |h| %>
-          <% prod = Product.find_by(name: h["name"]) %>
+        <% @all_scores.each do |c| %>
           <tr>
-            <td style="border:1px solid #ccc; padding:4px; text-align:center;">
-              <% if prod&.image&.attached? %>
-                <%= image_tag prod.image.variant(resize_to_limit: [50,50]) %>
-              <% else %>
-                — 
+            <!-- ② ここから：画像＋カートフォーム -->
+            <td>
+              <%= image_tag Product.find_by(name: c[:name])&.image
+                            &.variant(resize_to_limit:[100,100])
+                            if Product.exists?(name: c[:name]) %>
+            </td>
+            <td><%= c[:name] %></td>
+            <td><%= (c[:score]*100).round(1) %>%</td>
+            <td>
+              <%= form_with url: add_to_cart_products_path, local: true do %>
+                <%= hidden_field_tag :recognized_name, c[:name] %>
+                <%= submit_tag "カートに追加", class: "btn btn-sm btn-yellow" %>
               <% end %>
             </td>
-            <td style="border:1px solid #ccc; padding:4px;"><%= h["name"] %></td>
-            <td style="border:1px solid #ccc; padding:4px; text-align:right;">
-              <%= (h["score"] * 100).round(1) %>%
-            </td>
-            <td style="border:1px solid #ccc; padding:4px; text-align:center;">
-              <% if prod %>
-                <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
-                  <%= hidden_field_tag :recognized_name, prod.name %>
-                  <%= submit_tag "＋カート", class: "btn btn-sm btn-yellow" %>
-                <% end %>
-              <% else %>
-                — 
-              <% end %>
-            </td>
+            <!-- ② ここまで -->
           </tr>
         <% end %>
       </tbody>
-    </table>    
+    </table>
   <% end %>
 
-
-
   <!-- 操作ボタン -->
-  <%= link_to "撮影をやり直す",
-      camera_products_path(mode: "order"),
-      class: "btn btn-blue", style: "margin-top:1.2rem;" %>
-  <%= link_to "レジに戻る",
-      new_order_products_path,
-      class: "btn btn-gray", style: "margin-top:.6rem;" %>
+  <%= link_to "撮影をやり直す", camera_products_path(mode: "order"),
+              class: "btn btn-blue", style: "margin-top:1.2rem;" %>
+  <%= link_to "レジに戻る", new_order_products_path,
+              class: "btn btn-gray", style: "margin-top:.6rem;" %>
 </div>

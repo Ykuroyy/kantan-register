@@ -141,23 +141,22 @@ class ProductsController < ApplicationController
     @best         = result["best"]
     @best_product = Product.find_by(name: @best["name"])
 
-    # 類似候補取得
-    @candidates = result["candidates"].map do |c|
-      prod = Product.find_by(name: c["name"])
-      { product: prod, name: c["name"], score: c["score"] }
-    end
+    raw_scores   = result["all_scores"] || []
+    scores       = raw_scores.map { |h| h.transform_keys(&:to_sym) }
 
-    # ← こちらを追加
-    @all_scores = result["all_scores"] || []
-
+    @all_scores  = scores
+    @hit_scores  = scores.select { |h| h[:score] >= 0.2 }
+    @candidates  = @hit_scores.first(3)
+    @best        = @hit_scores.max_by { |h| h[:score] }
+    @best_product = Product.find_by(name: @best[:name])
+    
     render :predict_result
   end
 
 
 
-  # — 認識結果 →def predict_result
   def predict_result
-    # 1) 受け取った JSON をパース
+    # ① JSON をパース
     raw_best       = { "name" => params[:predicted_name], "score" => params[:score].to_f }
     raw_candidates = begin
                        JSON.parse(params[:candidates] || "[]")
@@ -168,31 +167,41 @@ class ProductsController < ApplicationController
                        JSON.parse(params[:all] || "[]")
     rescue
                        []
-    end   # ← Flask 側で "all" を返す想定
+    end  # ← Flask 側で "all" を返す前提
 
-    # 2) name_mapping.json をロード
+    # ② name_mapping.json をロード（S3 キー→正式名）
     mapping_file = Rails.root.join("name_mapping.json")
-    mapping      = mapping_file.exist? ? JSON.parse(mapping_file.read) : {}
+    name_mapping = mapping_file.exist? ? JSON.parse(mapping_file.read) : {}
 
-    # 3) mapping 適用（best, candidates, all）
+    # ③ mapping を best / candidates / all に適用
     ([raw_best] + raw_candidates + raw_all).each do |h|
-      h["name"] = mapping[h["name"]] if h["name"].present? && mapping[h["name"]]
+      h["name"] = name_mapping[h["name"]] if h["name"].present? && name_mapping[h["name"]]
     end
 
-    # 4) best が空文字列なら候補トップをフォールバック
+    # ④ best が空文字だったら candidates の先頭をフォールバック
     raw_best = raw_candidates.shift if raw_best["name"].blank? && raw_candidates.any?
 
-    # 5) Rails 用のインスタンス変数にセット
-    @best         = raw_best["name"].present? ? raw_best : nil
-    @candidates   = raw_candidates
+    # ⑤ いったんインスタンス変数に全件入れておく
     @all_scores   = raw_all
+    @candidates   = raw_candidates
+    @best         = raw_best["name"].present? ? raw_best : nil
 
-    # 6) DBレコードを引く
+    # ↓ ここから “ヒット” と “類似候補” のしきい値処理（例: 20% 以上をヒットとみなす）
+    threshold = 0.2
+    hit_list = @all_scores.select { |c| c["score"] >= threshold }
+
+    @best       = hit_list.first
+    @candidates = hit_list.drop(1).take(3)
+    # ※ 必要なら @candidates.empty? をビューで「類似候補ゼロ」と判断できます
+
+    # ⑥ DB レコード取得
     @best_product       = @best && Product.find_by(name: @best["name"])
-    @candidate_products = @candidates.map { |h| Product.find_by(name: h["name"]) }.compact
+    @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
 
     render :predict_result
   end
+
+
 
 
   # — レジ画面 —
