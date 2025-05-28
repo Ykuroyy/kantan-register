@@ -157,38 +157,42 @@ class ProductsController < ApplicationController
 
   # — 認識結果 →def predict_result
   def predict_result
-    result = JSON.parse(params[:_dummy])  # 実際は params から組み立て
+    # 1) 受け取った JSON をパース
+    raw_best       = { "name" => params[:predicted_name], "score" => params[:score].to_f }
+    raw_candidates = begin
+                       JSON.parse(params[:candidates] || "[]")
+    rescue
+                       []
+    end
+    raw_all        = begin
+                       JSON.parse(params[:all] || "[]")
+    rescue
+                       []
+    end   # ← Flask 側で "all" を返す想定
 
-    # マッピングロード
+    # 2) name_mapping.json をロード
     mapping_file = Rails.root.join("name_mapping.json")
-    mapping = mapping_file.exist? ? JSON.parse(mapping_file.read) : {}
+    mapping      = mapping_file.exist? ? JSON.parse(mapping_file.read) : {}
 
-    # best, candidates, all を読み込む
-    raw_best       = result["best"]
-    raw_cands      = result["candidates"]
-    raw_all        = result["all"]
-
-    # mapping 適用
-    [raw_best].concat(raw_cands).concat(raw_all).each do |h|
-      h["name"] = mapping[h["name"]] if mapping[h["name"]]
+    # 3) mapping 適用（best, candidates, all）
+    ([raw_best] + raw_candidates + raw_all).each do |h|
+      h["name"] = mapping[h["name"]] if h["name"].present? && mapping[h["name"]]
     end
 
-    # 一致判定（例: 60%以上だけ「一致」とみなす）
-    @best       = raw_best["score"] >= 0.6 ? raw_best : nil
+    # 4) best が空文字列なら候補トップをフォールバック
+    raw_best = raw_candidates.shift if raw_best["name"].blank? && raw_candidates.any?
 
-    # 類似候補（例: 10%以上のみ）
-    @candidates = raw_cands.select { |h| h["score"] >= 0.1 }
+    # 5) Rails 用のインスタンス変数にセット
+    @best         = raw_best["name"].present? ? raw_best : nil
+    @candidates   = raw_candidates
+    @all_scores   = raw_all
 
-    # 全スコア一覧（そのまま全部）
-    @all_scores = raw_all
-
-    # DB レコードを用意
-    @best_product       = Product.find_by(name: @best["name"])   if @best
+    # 6) DBレコードを引く
+    @best_product       = @best && Product.find_by(name: @best["name"])
     @candidate_products = @candidates.map { |h| Product.find_by(name: h["name"]) }.compact
 
     render :predict_result
   end
- 
 
 
   # — レジ画面 —
