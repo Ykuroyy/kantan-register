@@ -149,7 +149,7 @@ class ProductsController < ApplicationController
     @candidates  = @hit_scores.first(3)
     @best        = @hit_scores.max_by { |h| h[:score] }
     @best_product = Product.find_by(name: @best[:name])
-    
+
     render :predict_result
   end
 
@@ -183,18 +183,17 @@ class ProductsController < ApplicationController
 
     # ⑤ いったんインスタンス変数に全件入れておく
     @all_scores   = raw_all
-    @candidates   = raw_candidates
-    @best         = raw_best["name"].present? ? raw_best : nil
 
     # ↓ ここから “ヒット” と “類似候補” のしきい値処理（例: 20% 以上をヒットとみなす）
     threshold = 0.2
     hit_list = @all_scores.select { |c| c["score"] >= threshold }
 
-    @best       = hit_list.first
-    @candidates = hit_list.drop(1).take(3)
-    # ※ 必要なら @candidates.empty? をビューで「類似候補ゼロ」と判断できます
+    # インスタンス変数へ
+    @hit_scores     = hit_list
+    @best           = hit_list.first
+    @candidates     = hit_list.drop(1).take(3)
 
-    # ⑥ DB レコード取得
+    # DBレコード取得
     @best_product       = @best && Product.find_by(name: @best["name"])
     @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
 
