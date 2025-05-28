@@ -51,14 +51,18 @@ class ProductsController < ApplicationController
     session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
   end
 
-    # — 更新処理 —
+   # — 更新処理 —# app/controllers/products_controller.rb
   def update
     filtered = product_params
     filtered = filtered.except(:image) unless params[:product][:image].present?
     attach_blob_image
 
     if @product.update(filtered)
-      register_image_to_flask!(@product.image, @product.name)
+      # 返り値として S3 側のキーを受け取る
+      new_key = register_image_to_flask!(@product.image, @product.name)
+      # DB の s3_key カラムにも書き込む
+      @product.update!(s3_key: new_key) if new_key.present?
+
       redirect_to products_path, notice: '商品情報を更新しました。'
     else
       render :edit, status: :unprocessable_entity
@@ -236,32 +240,50 @@ class ProductsController < ApplicationController
   end
 
 
-
   # ActiveStorage Blob → 一時ファイル → Flask に送信
   def register_image_to_flask!(attached_image, name)
     return unless attached_image.attached?
 
-    blob = attached_image.blob
+    blob     = attached_image.blob
+    filename = nil
+
     Tempfile.create(['upload', File.extname(blob.filename.to_s)]) do |temp|
       temp.binmode
       temp.write blob.download
       temp.flush
 
+      # S3 にアップするキーを UUID で決定
+      filename = "#{SecureRandom.uuid}#{File.extname(blob.filename.to_s)}"
+
+      # → S3 へアップロード
+      s3.upload_file(
+        Filename: temp.path,
+        Bucket: S3_BUCKET,
+        Key: filename,
+        ExtraArgs: { ContentType: blob.content_type }
+      )
+
+      # → Flask にも送信
       resp = HTTParty.post(
         flask_base_url + '/register_image',
-        multipart: true,               # ★ここを追加
+        multipart: true,
         body: {
-          "name" => name,             # 必ず文字列キーで
+          "name" => name,
           "image" => File.open(temp.path)
         }
       )
 
       if resp.code == 200
         Rails.logger.info "▶️ register_image_to_flask! sent name=#{name.inspect}"
+
+        # ← ここで DB にも書き込む
+        @product.update!(s3_key: filename)
       else
         Rails.logger.error "Flask 画像登録失敗（#{resp.code}）: #{resp.body}"
       end
     end
+
+    filename
   end
 
 
