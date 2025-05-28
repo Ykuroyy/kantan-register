@@ -51,19 +51,19 @@ class ProductsController < ApplicationController
     session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
   end
 
-  # — 更新処理 —
-def update
-  filtered = product_params
-  filtered = filtered.except(:image) unless params[:product][:image].present?
-  attach_blob_image
+    # — 更新処理 —
+  def update
+    filtered = product_params
+    filtered = filtered.except(:image) unless params[:product][:image].present?
+    attach_blob_image
 
-  if @product.update(filtered)
-    register_image_to_flask!(@product.image, @product.name)
-    redirect_to products_path, notice: '商品情報を更新しました。'
-  else
-    render :edit, status: :unprocessable_entity
+    if @product.update(filtered)
+      register_image_to_flask!(@product.image, @product.name)
+      redirect_to products_path, notice: '商品情報を更新しました。'
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
-end
 
 
  
@@ -87,15 +87,14 @@ end
 
 
 
-  # — カメラ撮影画面 —
-  # app/controllers/products_controller.rb
-def camera
-  if params[:product_id].present?
-    @product = Product.find_by(id: params[:product_id])
-  else
-    @product = Product.last # ← 直近の商品を仮で渡すなど応急対応も可能
+    # — カメラ撮影画面 —
+  def camera
+    if params[:product_id].present?
+      @product = Product.find_by(id: params[:product_id])
+    else
+      @product = Product.last # ← 直近の商品を仮で渡すなど応急対応も可能
+    end
   end
-end
 
 
   # — 撮影画像の一時保存 →
@@ -178,9 +177,7 @@ end
 
 
       # 4) ベストマッチが空なら、候補のトップをベスト扱いにフォールバック
-      if raw_best["name"].blank? && raw_candidates.any?
-        raw_best = raw_candidates.shift
-      end
+      raw_best = raw_candidates.shift if raw_best["name"].blank? && raw_candidates.any?
 
       @best       = raw_best
       @candidates = raw_candidates
@@ -190,8 +187,6 @@ end
       @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
 
       render :predict_result
-    end
-
   end
 
 
