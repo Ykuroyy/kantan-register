@@ -43,15 +43,17 @@ function initCameraPage() {
 
   // キャプチャボタン押下時
   captureBtn.addEventListener("click", () => {
+    // 撮影画像を canvas に描画
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    // プレビュー表示
     const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
     preview.src = dataUrl;
     preview.style.display = "block";
 
-    // 撮影画像をセッションストレージに保持
+    // セッションストレージに保存（predict_result ページ用）
     sessionStorage.setItem("capturedImage", dataUrl);
 
     // Blob をサーバに送信
@@ -59,7 +61,7 @@ function initCameraPage() {
       const fd = new FormData();
       fd.append("image", blob, "capture.jpg");
 
-      // 商品登録・編集モード
+      // — 新規登録 or 編集 モード —
       if (mode === "new" || mode === "edit") {
         const path = mode === "new"
           ? "/products/new?from_camera=1"
@@ -67,15 +69,15 @@ function initCameraPage() {
 
         fetch("/products/capture_product", {
           method: "POST",
-          headers: { 
-            "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content 
+          headers: {
+            "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
           },
           body: fd
         })
         .then(() => window.location.href = path)
         .catch(err => console.error("キャプチャ保存エラー:", err));
 
-      // Flask 画像登録モード
+      // — Flask 画像登録 モード —
       } else if (mode === "register") {
         fetch("http://127.0.0.1:10000/register_image", {
           method: "POST",
@@ -87,24 +89,24 @@ function initCameraPage() {
         })
         .catch(err => console.error("登録エラー:", err));
 
-      // レジ（画像認識）モード：POST /products/predict へフォーム送信
+      // — レジ（画像認識）モード —
       } else if (mode === "order") {
         // CSRF トークン取得
         const token = document.querySelector('meta[name="csrf-token"]').content;
 
-        // フォーム生成
+        // Rails predict アクション用フォーム作成
         const form = document.createElement("form");
         form.method  = "POST";
         form.action  = "/products/predict";
         form.enctype = "multipart/form-data";
 
-        // トークン埋め込み
+        // authenticity_token 埋め込み
         form.innerHTML = `<input type="hidden" name="authenticity_token" value="${token}">`;
 
-        // FormData の中身（image）をフォームにコピー
+        // FormData の中身(image)をフォームにコピー
         fd.forEach((value, key) => form.append(key, value));
 
-        // フォームを送信
+        // submit
         document.body.appendChild(form);
         form.submit();
       }
@@ -114,7 +116,7 @@ function initCameraPage() {
 
 // 初期化登録
 document.addEventListener("DOMContentLoaded", initCameraPage);
-document.addEventListener("turbo:load",     initCameraPage);
+document.addEventListener("turbo:load", initCameraPage);
 
 // 認識結果ページでの撮影画像プレビュー表示
 document.addEventListener("DOMContentLoaded", () => {
@@ -139,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (nameField && priceField) {
     const storedName  = sessionStorage.getItem("product_name");
     const storedPrice = sessionStorage.getItem("product_price");
-    if (storedName != null) {
+    if (storedName  != null) {
       nameField.value = storedName;
       sessionStorage.removeItem("product_name");
     }
