@@ -120,35 +120,35 @@ class ProductsController < ApplicationController
 
 
 
-  # — 画像認識リクエスト —
+    # — 画像認識リクエスト —
   def predict
     image = params[:image]
     return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
 
     # 本番／開発で送信内容を切り替え
     if Rails.env.production?
-      # S3 にアップした URL を Flask に送信
-      image_url = url_for(image) 
-      resp = HTTParty.post(
-        flask_base_url + '/predict',
-        body: { image_url: image_url }
-      )
+      image_url = url_for(image)
+      resp = HTTParty.post(flask_base_url + '/predict',
+                          body: { image_url: image_url })
     else
-      # ローカルファイルを Flask に送信
-      resp = HTTParty.post(
-        flask_base_url + '/predict',
-        body: { image: File.open(image.tempfile.path) }
-      )
+      resp = HTTParty.post(flask_base_url + '/predict',
+                          body: { image: File.open(image.tempfile.path) })
     end
 
     result = JSON.parse(resp.body)
 
-    @best = result["best"]
+    # ベストマッチ取得
+    @best         = result["best"]
     @best_product = Product.find_by(name: @best["name"])
+
+    # 類似候補取得
     @candidates = result["candidates"].map do |c|
       prod = Product.find_by(name: c["name"])
       { product: prod, name: c["name"], score: c["score"] }
     end
+
+    # 全商品のスコア一覧
+    @all_scores = result["all"] || []
 
     render :predict_result
   end
