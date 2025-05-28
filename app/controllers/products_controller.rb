@@ -148,12 +148,6 @@ class ProductsController < ApplicationController
     render json: { error: "処理エラー" }, status: :internal_server_error
   end
 
-  private
-
-  def flask_base_url
-    Rails.env.production? ? "https://ai-server-f6si.onrender.com" : "http://localhost:10000"
-  end
-end
 
 
   # — レジ画面 —
@@ -223,14 +217,15 @@ end
     end
   end
 
-  # Flask のベース URL
+  # Flask API のベース URL を返す
   def flask_base_url
     if Rails.env.production?
-  'https://ai-server-f6si.onrender.com'
+      "https://ai-server-f6si.onrender.com"
     else
-  'http://localhost:10000'
+      "http://localhost:10000"
     end
   end
+
 
 
   # ActiveStorage Blob → 一時ファイル → Flask に送信
