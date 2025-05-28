@@ -157,7 +157,7 @@ class ProductsController < ApplicationController
 
   # — 認識結果 →def predict_result
   def predict_result
-    # 1) 渡ってきた JSON をパース
+    # 1) JSONパース
     raw_best       = { "name" => params[:predicted_name], "score" => params[:score].to_f }
     raw_candidates = begin
                        JSON.parse(params[:candidates] || "[]")
@@ -165,28 +165,28 @@ class ProductsController < ApplicationController
                        []
     end
 
-    # 2) name_mapping.json（S3キー→正式名マッピング）をロード
-    mapping = {}
+    # 2) マッピングロード
     mapping_file = Rails.root.join("name_mapping.json")
-    mapping = JSON.parse(mapping_file.read) if mapping_file.exist?
+    mapping = mapping_file.exist? ? JSON.parse(mapping_file.read) : {}
 
-    # 3) candidates のキーが S3 オブジェクトキーの場合は正式名に置き換え
-    raw_candidates.each do |c|
-      c["name"] = mapping[c["name"]] if mapping[c["name"]]
-    end
+    # 3) 正式名に置き換え
+    raw_candidates.each { |c| c["name"] = mapping[c["name"]] if mapping[c["name"]] }
 
+    # 4) フォールバック
+    raw_best = raw_candidates.shift if raw_best["name"].blank? && raw_candidates.any?
 
-      # 4) ベストマッチが空なら、候補のトップをベスト扱いにフォールバック
-      raw_best = raw_candidates.shift if raw_best["name"].blank? && raw_candidates.any?
+    @best       = raw_best
+    @candidates = raw_candidates
 
-      @best       = raw_best
-      @candidates = raw_candidates
+    # → ここで all_scores
+    all = [@best] + raw_candidates
+    @all_scores = all.map { |c| { "name" => c["name"], "score" => c["score"] } }
 
-      # 5) DB から対応する Product レコードを引く
-      @best_product       = Product.find_by(name: @best["name"])
-      @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
+    # 5) DB レコード取得
+    @best_product       = Product.find_by(name: @best["name"])
+    @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
 
-      render :predict_result
+    render :predict_result
   end
 
 

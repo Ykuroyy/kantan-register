@@ -80,25 +80,27 @@
     </p>
   <% end %>
 
-  <h3 style="margin-top:2rem;">📊 全商品の類似度スコア</h3>
-  <table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">
-    <thead>
-      <tr>
-        <th style="border:1px solid #ccc; padding:4px;">商品名</th>
-        <th style="border:1px solid #ccc; padding:4px;">スコア (%)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @all_scores.each do |c| %>
+  <% if @all_scores.present? %>
+    <h3 style="margin-top:2rem;">📊 全商品の類似度スコア</h3>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">
+      <thead>
         <tr>
-          <td style="border:1px solid #ccc; padding:4px;"><%= c["name"] %></td>
-          <td style="border:1px solid #ccc; padding:4px; text-align:right;">
-            <%= (c["score"] * 100).round(1) %>%
-          </td>
+          <th style="border:1px solid #ccc; padding:4px;">商品名</th>
+          <th style="border:1px solid #ccc; padding:4px;">スコア (%)</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% @all_scores.each do |c| %>
+          <tr>
+            <td style="border:1px solid #ccc; padding:4px;"><%= c["name"] %></td>
+            <td style="border:1px solid #ccc; padding:4px; text-align:right;">
+              <%= (c["score"] * 100).round(1) %>%
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
 
 
 
