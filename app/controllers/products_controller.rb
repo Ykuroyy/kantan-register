@@ -158,21 +158,24 @@ end
 
   # — 認識結果 →def predict_result
   def predict_result
-    @predicted_name  = params[:predicted_name]
-    @score           = params[:score].to_f
+    # JSONとして渡ってくる candidates パラメータを配列化
+    raw = params[:candidates] || "[]"
+    @candidates = begin
+                    JSON.parse(raw)
+    rescue
+                    []
+    end
 
-    # JSON文字列として渡ってくるならパース
-    raw = params[:candidates]
-    @candidates = raw.is_a?(String) ? JSON.parse(raw) : (params[:candidates] || [])
+    # ベストマッチ情報をハッシュで準備
+    name  = params[:predicted_name]
+    score = params[:score].to_f
+    @best = { "name" => name, "score" => score }
 
-    # ——— ここから追加 ———
-    # Rails 側で DB にヒットしたレコードだけを拾う
-    @candidate_products = @candidates.map do |c|
-      Product.find_by(name: c["name"])
-    end.compact
+    # DBにあればレコードを拾う
+    @best_product = Product.find_by(name: name)
 
-    Rails.logger.info "✅ 対症療法: 見つかった候補件数=#{@candidate_products.size}"
-    # ——— ここまで追加 ———
+    # 類似候補のレコードを拾う
+    @candidate_products = @candidates.map { |c| Product.find_by(name: c["name"]) }.compact
 
     render :predict_result
   end

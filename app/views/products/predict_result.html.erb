@@ -28,45 +28,45 @@
 
   <%# ここから置き換え %>
     <!-- ベストマッチ -->
-    <p style="margin-top:1rem;">
-      ベストマッチ：
-      <strong><%= @best_product&.name || @best["name"] %></strong>
-      (<%= (@best["score"] * 100).round(1) %>%)
-    </p>
-
-    <!-- ここから「カートに追加」フォーム -->
-    <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
-      <%= hidden_field_tag :recognized_name, (@best_product&.name || @best["name"]) %>
-      <%= submit_tag "カートに追加", class: "btn btn-yellow", style: "margin-bottom:1rem;" %>
+    <% if @best.present? %>
+      <p style="margin-top:1rem;">
+        ベストマッチ：
+        <strong><%= @best_product&.name.presence || @best["name"] %></strong>
+        (<%= (@best["score"] * 100).round(1) %>%)
+      </p>
     <% end %>
-    <!-- ここまで「カートに追加」フォーム -->
+
+    <!-- カート追加ボタン（ベストマッチがあれば） -->
+    <% if @best_product || @best["name"].present? %>
+      <%= form_with url: add_to_cart_products_path, method: :post, local: true do %>
+        <%= hidden_field_tag :recognized_name, (@best_product&.name.presence || @best["name"]) %>
+        <%= submit_tag "カートに追加", class: "btn btn-yellow" %>
+      <% end %>
+    <% end %>
 
     <!-- 類似候補 -->
-    <% if @candidates.any? %>
+    <% if @candidate_products.any? %>
       <h3 style="margin-top:1.5rem;">🔎 類似候補</h3>
-      <ul style="display:flex;gap:1rem;flex-wrap:wrap;">
-        <% @candidates.each do |c| %>
-          <% prod = Product.find_by(name: c["name"]) %>
-          <li style="list-style:none;text-align:center;width:100px;">
-            <% if prod&.image&.attached? %>
-              <%= image_tag prod.image.variant(resize_to_limit:[100,100]),
-                            alt: prod.name,
-                            style: "border:1px solid #ccc;border-radius:4px;" %>
+      <ul style="display:flex; gap:1rem; flex-wrap:wrap;">
+        <% @candidate_products.each do |prod| %>
+          <% score = @candidates.find { |c| c["name"] == prod.name }&.[]("score").to_f %>
+          <li style="text-align:center; width:100px;">
+            <% if prod.image.attached? %>
+              <%= image_tag prod.image.variant(resize_to_limit:[100,100]), alt: prod.name %>
             <% else %>
-              <div style="width:100px;height:100px;background:#f0f0f0;
-                          display:flex;align-items:center;justify-content:center;
-                          font-size:0.8em;color:#666;">
+              <div style="width:100px; height:100px; background:#eee;
+                          display:flex; align-items:center; justify-content:center;">
                 no image
               </div>
             <% end %>
-            <p style="margin:0.4em 0 0;font-size:0.9em;">
-              <%= prod&.name || c["name"] %><br>
-              (<%= (c["score"] * 100).round(1) %>%)
+            <p>
+              <%= prod.name %><br>
+              (<%= (score * 100).round(1) %>%)
             </p>
           </li>
         <% end %>
       </ul>
-    <% else %>
+    <% end %>
       <p style="text-align:center;color:#c00;margin-top:1rem;">
         一致する商品はありませんでした。
       </p>
