@@ -122,33 +122,38 @@ class ProductsController < ApplicationController
     
   # — 画像認識リクエスト & 結果表示
   def predict
-    image = params[:image]
-    return render(json: { error: "画像がありません" }, status: :bad_request) if image.blank?
+    # ① 画像取得
+    uploaded = params[:image]
+    return render json: { error: "画像がありません" }, status: :bad_request unless uploaded
 
-    # 1) Flask へ投げる
-    resp = if Rails.env.production?
-      image_url = url_for(image)
-      HTTParty.post(flask_base_url + '/predict',  body: { image_url: image_url })
-           else
-      HTTParty.post(flask_base_url + '/predict',  body: { image: File.open(image.tempfile.path) })
-           end
+    # ② Flask へ画像投げる
+    resp   = HTTParty.post(flask_base_url + "/predict",
+                          body: { image: File.open(uploaded.tempfile.path) })
+    result = JSON.parse(resp.body)
 
-    result     = JSON.parse(resp.body)
+    # ③ JSON 整形
     raw_scores = result["all_scores"] || []
+    scores     = raw_scores.map { |h| h.transform_keys(&:to_sym) }
 
-    # 2) シンボルキー化＆フィルタ
-    scores       = raw_scores.map { |h| h.transform_keys(&:to_sym) }
-    @all_scores  = scores
-    @hit_scores  = scores.select { |c| c[:score] >= 0.2 }
-    @candidates  = @hit_scores.first(3)
-    @best        = @hit_scores.max_by { |c| c[:score] }
+    @all_scores   = scores
+    @hit_scores   = scores.select { |c| c[:score] >= 0.2 }
+    @candidates   = @hit_scores.first(3)
+    @best         = @hit_scores.max_by { |c| c[:score] }
     @best_product = Product.find_by(name: @best[:name])
 
-    # 3) ここで直接ビューをレンダー（別アクション不要）
+    # ④ ビュー描画
     render :predict_result
+  rescue StandardError => e
+    Rails.logger.error e.full_message
+    render json: { error: "処理エラー" }, status: :internal_server_error
   end
 
+  private
 
+  def flask_base_url
+    Rails.env.production? ? "https://ai-server-f6si.onrender.com" : "http://localhost:10000"
+  end
+end
 
 
   # — レジ画面 —
