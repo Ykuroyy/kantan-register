@@ -147,8 +147,8 @@ class ProductsController < ApplicationController
       { product: prod, name: c["name"], score: c["score"] }
     end
 
-    # 全商品のスコア一覧
-    @all_scores = result["all"] || []
+    # ← こちらを追加
+    @all_scores = result["all_scores"] || []
 
     render :predict_result
   end
