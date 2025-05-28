@@ -123,36 +123,31 @@ class ProductsController < ApplicationController
   # — 画像認識リクエスト & 結果表示
   def predict
     uploaded = params[:image]
-    return render json: { error: "画像がありません" }, status: :bad_request unless uploaded
+    return head :bad_request unless uploaded
 
-    # Flask に画像を投げて結果を取得
-    resp = HTTParty.post(
-      flask_base_url + "/predict",
-      body: { image: File.open(uploaded.tempfile.path) }
-    )
+    # Flask に画像投げて結果取得
+    resp   = HTTParty.post(flask_base_url + "/predict",
+               body: { image: File.open(uploaded.tempfile.path) })
     result = JSON.parse(resp.body)
 
-    # 生スコアをシンボルキー化
-    raw_scores  = result["all_scores"] || []
-    scores      = raw_scores.map { |h| h.transform_keys(&:to_sym) }
-
+    # ↓ ここを all_scores から all_similarity_scores に合わせる
+    raw_scores = result["all_similarity_scores"] || []
+    scores     = raw_scores.map { |h| h.transform_keys(&:to_sym) }
     @all_scores = scores
 
-    # しきい値 0.2 以上をヒットとみなす
-    hit = scores.select { |c| c[:score] >= 0.2 }
-
+    # 以下は既存の「しきい値以上ヒット or 上位3件取得」ロジックのまま
+    hit = @all_scores.select { |c| c[:score] >= 0.2 }
     if hit.any?
       @hit_scores = hit
       @best       = hit.max_by { |c| c[:score] }
       @candidates = hit.first(3)
     else
-      # しきい値を満たさない場合は全体から上位を取る
       @hit_scores = []
-      @best       = scores.first
-      @candidates = scores.drop(1).first(3)
+      @best       = @all_scores.first
+      @candidates = @all_scores.drop(1).first(3)
     end
 
-    # DB レコードを引く
+    # DB レコードを拾っておく（ビューで画像＋名前を使いたい場合）
     @best_product       = Product.find_by(name: @best[:name]) if @best
     @candidate_products = @candidates.map { |c| Product.find_by(name: c[:name]) }.compact
 
