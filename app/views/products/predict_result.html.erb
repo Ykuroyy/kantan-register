@@ -16,7 +16,7 @@
 
       <% if @hit_scores.any? && @best.present? %>
         <p>✅ 商品ヒット：<strong><%= @best_product&.name || @best["name"] %></strong>
-        （<%= [(@best["score"] * 100).round(1), 0.1].max %>%）</p>
+        （<%= [(@best["score"] * 100).round(2), 0.01].max %>%）</p>
 
         <% if @best_product&.image&.attached? %>
           <%= image_tag @best_product.image.variant(resize_to_limit: [320, 320]), class: "preview-image" %>
@@ -35,7 +35,7 @@
     <ul>
       <% @candidates.each do |c| %>
       <li>
-        <%= c[:name] %> — <%= [(c[:score] * 100).round(1), 0.1].max %>%
+        <%= c[:name] %> — <%= [(c[:score] * 100).round(2), 0.01].max %>%
       </li>
       <% end %>
     </ul>
@@ -62,7 +62,7 @@
             <!-- 名前セル -->
             <td><%= c[:name] %></td>
             <!-- スコアセル -->
-            <td><%= "#{[(c[:score] * 100).round(1), 0.1].max}%" %></td>
+            <td><%= "#{[(c[:score] * 100).round(2), 0.01].max}%" %></td>
             <!-- カートセル -->
             <td>
               <% if prod %>
