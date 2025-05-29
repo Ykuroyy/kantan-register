@@ -56,21 +56,30 @@ class ProductsController < ApplicationController
     session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
   end
 
-  # — 新規登録処理 —
   def create
     @product = Product.new(product_params)
-    attach_blob_image
 
+    # 画像がある場合、ここで先に attach（session 経由）
+    if session[:product_image_blob_id].present?
+      blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
+      @product.image.attach(blob) if blob
+    end
+
+    # ここで保存（空の商品を防ぐ）
     if @product.save
-      Rails.logger.info "▶️ register_image_to_flask! name=#{@product.name.inspect}"
+      session.delete(:product_image_blob_id)
+
+      # Flask連携（保存が成功してから）
       new_key = register_image_to_flask!(@product.image, @product.name)
       @product.update!(s3_key: new_key) if new_key.present?
-      session.delete(:product_image_blob_id)
+
       redirect_to products_path, notice: "「#{@product.name}」を登録しました"
     else
       render :new, status: :unprocessable_entity
     end
   end
+
+
 
   # — 編集フォーム —
   def edit
