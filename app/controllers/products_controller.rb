@@ -143,25 +143,26 @@ class ProductsController < ApplicationController
     )    
     result = JSON.parse(resp.body)
 
-    # ↓ ここを all_scores から all_similarity_scores に合わせる
+    # 1) Flask 側で返ってくるキーが "all_similarity_scores" なのでそれを受け取る
     raw_scores = result["all_similarity_scores"] || []
-    scores     = raw_scores.map { |h| h.transform_keys(&:to_sym) }
-    @all_scores = scores
+    # 2) JSON のキー文字列をシンボルに変換してインスタンス変数にセット
+    @all_similarity_scores = raw_scores.map { |h| h.transform_keys(&:to_sym) }
 
-    # 以下は既存の「しきい値以上ヒット or 上位3件取得」ロジックのまま
-    hit = @all_scores.select { |c| c[:score] >= 0.2 }
+    # 以下、@all_similarity_scores を使ったヒット判定ロジック
+    hit = @all_similarity_scores.select { |c| c[:score] >= 0.2 }
     if hit.any?
       @hit_scores = hit
       @best       = hit.max_by { |c| c[:score] }
       @candidates = hit.first(3)
     else
       @hit_scores = []
-      @best       = @all_scores.first
-      @candidates = @all_scores.drop(1).first(3)
+      @best       = @all_similarity_scores.first
+      @candidates = @all_similarity_scores.drop(1).first(3)
     end
 
-    # DB レコードを拾っておく（ビューで画像＋名前を使いたい場合）
-    @best_product       = Product.find_by(name: @best[:name]) if @best
+
+    # DB レコードを拾っておく
+    @best_product       = Product.find_by(name: @best[:name])        if @best
     @candidate_products = @candidates.map { |c| Product.find_by(name: c[:name]) }.compact
 
     render :predict_result

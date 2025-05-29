@@ -40,38 +40,14 @@
     </ul>
   <% end %>
 
-  <h3>📊 全商品のスコア</h3>
-  <table>
-    <tr><th>商品名</th><th>スコア</th></tr>
-    <% @all_scores.each do |c| %>
-      <tr>
-        <td><%= c[:name] %></td>
-        <td><%= (c[:score]*100).round(1) %>%</td>
-      </tr>
-    <% end %>
-  </table>
-  <!-- ① ここまで -->
-
-  <% if @best_product.present? %>
-    …（ベストマッチ＆カートボタン）…
-  <% else %>
-    …（ヒットゼロ時メッセージ）…
-  <% end %>
-
-  <% if @candidate_products.any? %>
-    …（既存の類似候補ループ）…
-  <% elsif @best_product.blank? %>
-    …（候補なしメッセージ）…
-  <% end %>
-
-  <% if @all_scores.present? %>
+  <% if @all_similarity_scores.present? %>
     <h3>📊 全商品の類似度スコア</h3>
     <table>
       <thead>
         <tr><th>画像</th><th>商品名</th><th>スコア</th><th>カート</th></tr>
       </thead>
       <tbody>
-        <% @all_scores.each do |c| %>
+        <% @all_similarity_scores.each do |c| %>
           <tr>
             <!-- 画像セル -->
             <td>
