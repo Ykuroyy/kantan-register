@@ -58,18 +58,17 @@ class ProductsController < ApplicationController
 
   def create
     @product = Product.new(product_params)
+    @product.s3_key = nil  # ← 初期化（明示）
 
-    # 画像がある場合、ここで先に attach（session 経由）
     if session[:product_image_blob_id].present?
       blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
       @product.image.attach(blob) if blob
     end
 
-    # ここで保存（空の商品を防ぐ）
     if @product.save
       session.delete(:product_image_blob_id)
 
-      # Flask連携（保存が成功してから）
+      # ✅ 登録済みでない場合のみ送信されるようになる
       new_key = register_image_to_flask!(@product.image, @product.name)
       @product.update!(s3_key: new_key) if new_key.present?
 
@@ -78,6 +77,7 @@ class ProductsController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   end
+
 
 
 
@@ -296,11 +296,10 @@ class ProductsController < ApplicationController
   # 戻り値として S3 へアップしたキー（filename）を返す
   def register_image_to_flask!(attached_image, name)
     return unless attached_image.attached?
+    return if @product&.s3_key.present?  # すでに登録済みなら送信しない
 
-    # S3の署名付きURLを取得（ActiveStorage経由）
     url = Rails.application.routes.url_helpers.rails_blob_url(attached_image, only_path: false)
 
-    # Flaskへ送信
     resp = HTTParty.post(
       "#{flask_base_url}/register_image_v2",
       headers: { "Content-Type" => "application/json" },
@@ -316,9 +315,9 @@ class ProductsController < ApplicationController
       Rails.logger.error "❌ Flask 画像URL登録失敗（#{resp.code}）: #{resp.body}"
     end
 
-    # s3_keyカラムの更新が必要ならここで設定（ファイル名はS3 URL末尾などから抽出可）
     nil
   end
+
 
 
 
