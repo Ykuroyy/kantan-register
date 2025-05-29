@@ -55,11 +55,11 @@ class ProductsController < ApplicationController
     @product = Product.new
     session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
   end
-
+  
   def create
     @product = Product.new(product_params)
-    @product.s3_key = nil  # ← 初期化（明示）
 
+    # 画像を session から取り出して attach
     if session[:product_image_blob_id].present?
       blob = ActiveStorage::Blob.find_by(id: session[:product_image_blob_id])
       @product.image.attach(blob) if blob
@@ -68,9 +68,11 @@ class ProductsController < ApplicationController
     if @product.save
       session.delete(:product_image_blob_id)
 
-      # ✅ 登録済みでない場合のみ送信されるようになる
-      new_key = register_image_to_flask!(@product.image, @product.name)
-      @product.update!(s3_key: new_key) if new_key.present?
+      # s3_key が未設定なら Flask に送信して key を保存
+      unless @product.s3_key.present?
+        new_key = register_image_to_flask!(@product.image, @product.name)
+        @product.update!(s3_key: new_key) if new_key.present?
+      end
 
       redirect_to products_path, notice: "「#{@product.name}」を登録しました"
     else
@@ -296,10 +298,11 @@ class ProductsController < ApplicationController
   # 戻り値として S3 へアップしたキー（filename）を返す
   def register_image_to_flask!(attached_image, name)
     return unless attached_image.attached?
-    return if @product&.s3_key.present?  # すでに登録済みなら送信しない
 
+    # URLを取得
     url = Rails.application.routes.url_helpers.rails_blob_url(attached_image, only_path: false)
 
+    # Flaskへ送信
     resp = HTTParty.post(
       "#{flask_base_url}/register_image_v2",
       headers: { "Content-Type" => "application/json" },
@@ -311,12 +314,14 @@ class ProductsController < ApplicationController
 
     if resp.code == 200
       Rails.logger.info "✅ register_image_to_flask_v2! success: #{name}"
+      parsed = JSON.parse(resp.body)
+      parsed["filename"] # ← S3 に保存された key を取得
     else
       Rails.logger.error "❌ Flask 画像URL登録失敗（#{resp.code}）: #{resp.body}"
+      nil
     end
-
-    nil
   end
+
 
 
 
