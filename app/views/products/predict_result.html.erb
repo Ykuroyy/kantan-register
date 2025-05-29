@@ -14,7 +14,7 @@
     <div class="card">
       <p class="preview-label">登録されている商品画像</p>
 
-      <% if @hit_scores.any? && @best.present? %>
+      <% if @hit_scores.any? %>
         <p>✅ 商品ヒット：<strong><%= @best_product&.name || @best["name"] %></strong>
         （<%= [(@best["score"] * 100).round(2), 0.01].max %>%）</p>
 
