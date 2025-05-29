@@ -149,7 +149,7 @@ class ProductsController < ApplicationController
     @all_similarity_scores = raw_scores.map { |h| h.transform_keys(&:to_sym) }
 
     # 以下、@all_similarity_scores を使ったヒット判定ロジック
-    hit = @all_similarity_scores.select { |c| c[:score] >= 0.2 }
+    hit = @all_similarity_scores.select { |c| c[:score] >= 0.1 }
     if hit.any?
       @hit_scores = hit
       @best       = hit.max_by { |c| c[:score] }
