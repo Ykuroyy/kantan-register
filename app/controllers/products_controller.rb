@@ -3,6 +3,26 @@ class ProductsController < ApplicationController
   require 'aws-sdk-s3'
   require 'securerandom'
 
+  # app/controllers/products_controller.rb
+  require 'net/http'
+
+  def build_cache
+    uri = URI.parse("https://ai-server-f6si.onrender.com/build_cache")  # 例: https://kantan-register-flask.onrender.com/build_cache
+    response = Net::HTTP.post(uri, "", { "Content-Type" => "application/json" })
+
+    if response.is_a?(Net::HTTPSuccess)
+      flash[:notice] = "✅ キャッシュ再構築リクエストを送信しました"
+    else
+      flash[:alert] = "❌ キャッシュ再構築に失敗しました: #{response.body}"
+    end
+
+    redirect_to request.referer || root_path
+  end
+
+
+
+
+
   S3_BUCKET  = ENV.fetch("S3_BUCKET")
   S3_CLIENT  = Aws::S3::Client.new(
     region: ENV["AWS_REGION"],
