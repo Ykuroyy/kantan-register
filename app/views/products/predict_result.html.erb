@@ -11,28 +11,32 @@
                     class: "preview-image", style: "display:none; max-width:100%;",
                     alt: "撮影画像プレビュー" %>
     </div>
-      <div class="card">
-        <p class="preview-label">登録されている商品画像</p>
+    <div class="card">
+      <p class="preview-label">登録されている商品画像</p>
 
-        <% if @hit_scores.any? %>
-          <% if @best_product&.image&.attached? %>
-            <%= image_tag @best_product.image.variant(resize_to_limit:[320,320]), class:"preview-image" %>
-          <% else %>
-            <div class="preview-image no-image">画像なし</div>
-          <% end %>
+      <% if @hit_scores.any? && @best.present? %>
+        <p>✅ 商品ヒット：<strong><%= @best_product&.name || @best["name"] %></strong>
+        （<%= [(@best["score"] * 100).round(1), 0.1].max %>%）</p>
+
+        <% if @best_product&.image&.attached? %>
+          <%= image_tag @best_product.image.variant(resize_to_limit: [320, 320]), class: "preview-image" %>
         <% else %>
-          <div class="preview-image no-image">一致する商品がありません</div>
+          <div class="preview-image no-image">画像なし</div>
         <% end %>
-      </div>
+
+      <% else %>
+        <div class="preview-image no-image">一致する商品がありません</div>
+      <% end %>
+    </div>
   </div>
 
   <% if @candidates.any? %>
     <h3>🔎 類似上位</h3>
     <ul>
       <% @candidates.each do |c| %>
-        <li>
-          <%= c[:name] %> — <%= (c[:score]*100).round(1) %>%
-        </li>
+      <li>
+        <%= c[:name] %> — <%= [(c[:score] * 100).round(1), 0.1].max %>%
+      </li>
       <% end %>
     </ul>
   <% end %>
@@ -58,7 +62,7 @@
             <!-- 名前セル -->
             <td><%= c[:name] %></td>
             <!-- スコアセル -->
-            <td><%= "#{(c[:score] * 100).round(1)}%" %></td>
+            <td><%= "#{[(c[:score] * 100).round(1), 0.1].max}%" %></td>
             <!-- カートセル -->
             <td>
               <% if prod %>
