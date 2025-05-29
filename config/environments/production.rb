@@ -115,8 +115,6 @@ Rails.application.configure do
 
   # 👇👇👇 ここから追加 👇👇👇
   #
-  #  # AIサーバーへのリクエスト許可ホストを追加
-  config.hosts << URI.parse(ENV.fetch("AI_SERVER_URL")).host
 
   # --- Render無料プラン用：本番環境で自動マイグレーション実行（デプロイ後に必ず削除！） ---
   config.after_initialize do
