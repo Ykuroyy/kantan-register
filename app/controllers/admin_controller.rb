@@ -1,5 +1,4 @@
 class AdminController < ApplicationController
-  # 管理画面は Basic 認証を通っている想定
   skip_before_action :verify_authenticity_token
 
   RESET_TOKEN = ENV.fetch("RESET_TOKEN")
@@ -7,7 +6,6 @@ class AdminController < ApplicationController
   def reset_all
     return head :unauthorized unless params[:token] == RESET_TOKEN
 
-    CartItem.delete_all
     OrderItem.delete_all
     Order.delete_all
 
