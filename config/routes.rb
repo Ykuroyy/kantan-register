@@ -29,6 +29,11 @@ Rails.application.routes.draw do
   get '/orders/analytics', to: 'orders#analytics', as: :orders_analytics
 
 
+  # 管理用リセット（Basic 認証下）
+  #  ?token=ENV['RESET_TOKEN'] が必須
+  get "/admin/reset_all", to: "admin#reset_all"
+
+
 
   # Render用ヘルスチェック
   get "up", to: "rails/health#show", as: :rails_health_check
