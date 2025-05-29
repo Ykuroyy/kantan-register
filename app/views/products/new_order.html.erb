@@ -24,8 +24,15 @@
                 <% next unless prod %>
                 <tr>
                   <td><%= prod.name %></td>
-                  <td><%= item[:quantity] %></td>
-                  <td><%= number_to_currency(prod.price * item[:quantity]) %></td>
+                  <!-- ★ここを number_field_tag に差し替え★ -->
+                  <td>
+                    <%= number_field_tag "quantity[#{prod.id}]", item[:quantity],
+                                        min: 1,
+                                        class: "cart-quantity-input" %>
+                  </td>
+                  <td>
+                    <%= number_to_currency(prod.price * item[:quantity]) %>
+                  </td>
                 </tr>
               <% end %>
             </tbody>

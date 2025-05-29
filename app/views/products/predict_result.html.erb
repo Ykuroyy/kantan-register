@@ -11,23 +11,20 @@
                     class: "preview-image", style: "display:none; max-width:100%;",
                     alt: "撮影画像プレビュー" %>
     </div>
-    <div class="card">
-      <p class="preview-label">登録されている商品画像</p>
-      <% if @best_product&.image&.attached? %>
-        <%= image_tag @best_product.image.variant(resize_to_limit: [320,320]),
-                      class: "preview-image" %>
-      <% else %>
-        <div class="preview-image no-image">画像なし</div>
-      <% end %>
-    </div>
-  </div>
+      <div class="card">
+        <p class="preview-label">登録されている商品画像</p>
 
-  <!-- ① ここから：ヒット判定 ＆ 類似上位 ＆ 全件スコア表 -->
-  <% if @hit_scores.any? %>
-    <p>✅ 商品ヒット：<strong><%= @best_product&.name || @best["name"] %></strong>（<%= (@best["score"]*100).round(1) %>%）</p>
-  <% else %>
-    <p style="color:red">一致する商品はありません（スコア < 20%）</p>
-  <% end %>
+        <% if @hit_scores.any? %>
+          <% if @best_product&.image&.attached? %>
+            <%= image_tag @best_product.image.variant(resize_to_limit:[320,320]), class:"preview-image" %>
+          <% else %>
+            <div class="preview-image no-image">画像なし</div>
+          <% end %>
+        <% else %>
+          <div class="preview-image no-image">一致する商品がありません</div>
+        <% end %>
+      </div>
+  </div>
 
   <% if @candidates.any? %>
     <h3>🔎 類似上位</h3>
