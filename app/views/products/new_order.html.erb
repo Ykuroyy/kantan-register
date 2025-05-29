@@ -27,7 +27,7 @@
                   <!-- ★ここを number_field_tag に差し替え★ -->
                   <td>
                     <%= number_field_tag "quantity[#{prod.id}]", item[:quantity],
-                                        min: 1,
+                                        min: 0,
                                         class: "cart-quantity-input" %>
                   </td>
                   <td>

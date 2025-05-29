@@ -203,20 +203,21 @@ class ProductsController < ApplicationController
   end
 
   
-  # — カート内商品の数量更新 —
+  # — カート内商品の数量更新 —# app/controllers/products_controller.rb
   def update_cart
-    new_quantities = params[:quantity] || {}
-
-    # まず数量を更新
-    session[:cart].each do |item|
+    new_q = params[:quantity] || {}
+    # session[:cart] は [{ "product_id"=>1, "quantity"=>2 }, …]
+    session[:cart].delete_if do |item|
       pid = item["product_id"].to_s
-      item["quantity"] = new_quantities[pid].to_i if new_quantities[pid].present?
+      q   = new_q[pid].to_i
+      # ０以下ならカートから完全に削除
+      next true if q <= 0
+      # それ以外は更新
+      item["quantity"] = q
+      false
     end
 
-    # 次に quantity が 0 のアイテムを完全に削除
-    session[:cart].reject! { |item| item["quantity"] <= 0 }
-
-    redirect_to new_order_products_path, notice: "数量を更新しました"
+    redirect_to new_order_products_path, notice: "カートを更新しました"
   end
 
   def clear_cart
