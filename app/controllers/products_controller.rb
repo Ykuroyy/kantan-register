@@ -202,9 +202,21 @@ class ProductsController < ApplicationController
     end
   end
 
+  
+  # — カート内商品の数量更新 —
   def update_cart
-    # （省略：カート更新ロジック）
-    redirect_to new_order_products_path
+    new_quantities = params[:quantity] || {}
+
+    # まず数量を更新
+    session[:cart].each do |item|
+      pid = item["product_id"].to_s
+      item["quantity"] = new_quantities[pid].to_i if new_quantities[pid].present?
+    end
+
+    # 次に quantity が 0 のアイテムを完全に削除
+    session[:cart].reject! { |item| item["quantity"] <= 0 }
+
+    redirect_to new_order_products_path, notice: "数量を更新しました"
   end
 
   def clear_cart
