@@ -297,43 +297,29 @@ class ProductsController < ApplicationController
   def register_image_to_flask!(attached_image, name)
     return unless attached_image.attached?
 
-    blob     = attached_image.blob
-    filename = "#{SecureRandom.uuid}#{File.extname(blob.filename.to_s)}"
+    # S3の署名付きURLを取得（ActiveStorage経由）
+    url = Rails.application.routes.url_helpers.rails_blob_url(attached_image, only_path: false)
 
-    Tempfile.create(['upload', File.extname(blob.filename.to_s)]) do |temp|
-      temp.binmode
-      temp.write blob.download
-      temp.flush
+    # Flaskへ送信
+    resp = HTTParty.post(
+      "#{flask_base_url}/register_image_v2",
+      headers: { "Content-Type" => "application/json" },
+      body: {
+        name: name,
+        image_url: url
+      }.to_json
+    )
 
-      # 1) S3 にアップロード
-      S3_CLIENT.put_object(
-        bucket: S3_BUCKET,
-        key: filename,
-        body: File.open(temp.path),
-        content_type: blob.content_type
-      )
-
-      # 2) Flask サーバーにも送信
-      resp = HTTParty.post(
-        "#{flask_base_url}/register_image",
-        multipart: true,
-        body: {
-          "name" => name,
-          "image" => File.open(temp.path)
-        }
-      )
-
-      if resp.code == 200
-        Rails.logger.info "▶️ register_image_to_flask! sent name=#{name.inspect}"
-        # s3_key カラムがあれば更新
-        @product.update!(s3_key: filename) if @product.respond_to?(:s3_key=)
-      else
-        Rails.logger.error "Flask 画像登録失敗（#{resp.code}）: #{resp.body}"
-      end
+    if resp.code == 200
+      Rails.logger.info "✅ register_image_to_flask_v2! success: #{name}"
+    else
+      Rails.logger.error "❌ Flask 画像URL登録失敗（#{resp.code}）: #{resp.body}"
     end
 
-    filename
-  end 
+    # s3_keyカラムの更新が必要ならここで設定（ファイル名はS3 URL末尾などから抽出可）
+    nil
+  end
+
 
 
   # カート追加ヘルパー

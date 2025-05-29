@@ -128,6 +128,11 @@ Rails.application.configure do
     end
   end
 
+
+
+
+  Rails.application.routes.default_url_options[:host] = "https://kantan-register.onrender.com"
+
 end  # 👈 この `end` の直前に書きます
 
 
