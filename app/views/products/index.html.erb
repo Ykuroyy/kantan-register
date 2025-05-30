@@ -6,6 +6,15 @@
   </div>
 
   <h1 class="form-heading">商品一覧</h1>
+    <%# ↓↓↓ このボタンを追加します ↓↓↓ %>
+    <div style="margin-bottom: 20px;">
+      <%= button_to "AIサーバーのキャッシュを再構築", build_cache_products_path,
+                    method: :post,
+                    data: { confirm: "AIサーバーのキャッシュを再構築します。よろしいですか？\n処理には数分かかる場合があります。" },
+                    class: "btn btn-red" %>
+    </div>
+    <%# ↑↑↑ ここまでを追加 ↑↑↑ %>
+
       <%= link_to "新規商品登録", new_product_path, class: "btn btn-blue" %>
   <!-- フラッシュ -->
   <% if flash[:notice] %>
