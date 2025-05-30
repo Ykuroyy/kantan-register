@@ -1,22 +1,22 @@
 // app/assets/javascripts/recognized_preview.js
 
 function displayRecognizedPreview() {
-  console.log("Attempting to display recognized preview...");
   const imgData = sessionStorage.getItem("capturedImage");
   const imgEl   = document.getElementById("recognized-preview-image");
 
-  console.log("imgData from sessionStorage:", imgData ? imgData.substring(0, 50) + "..." : null);
-  console.log("imgEl (recognized-preview-image):", imgEl);
+  // alertで取得したデータを確認
+  alert("[recognized_preview.js] sessionStorageから取得した画像データ(先頭):\n" + (imgData ? imgData.substring(0, 30) + "..." : "データなし"));
+  alert("[recognized_preview.js] img要素の取得結果:\n" + (imgEl ? "要素あり" : "要素なし (null)"));
 
   if (imgData && imgEl) {
     imgEl.src            = imgData;
     imgEl.style.display  = "block";
-    console.log("Preview image set and displayed.");
+    alert("[recognized_preview.js] プレビュー画像を設定しました。");
 // sessionStorage.removeItem("capturedImage"); // 必要に応じて表示後に削除。デバッグ中はコメントアウトしておくと良い。
 } else if (imgEl) { // imgElは存在するが、imgDataがない場合
-  console.warn("撮影された画像データがsessionStorageに見つかりません。recognized-preview-imageは存在します。");
+    alert("[recognized_preview.js] 警告: sessionStorageに画像データがありませんでした。img要素は存在します。");
 } else {
-  console.warn("recognized-preview-image のimg要素が見つかりません。");
+    alert("[recognized_preview.js] 警告: id='recognized-preview-image' のimg要素が見つかりませんでした。");
 }
 }
 function setupPreviewDisplayListeners() {
@@ -31,7 +31,7 @@ function setupPreviewDisplayListeners() {
     // event.persisted が true の場合、ページが bfcache (Back/forward cache) から復元されたことを示す
     // この場合、DOMContentLoaded や turbo:load が再度発火しないことがあるため、明示的に呼び出す
     if (event.persisted) {
-      console.log("Page restored from bfcache, attempting to display preview.");
+      // console.log("[recognized_preview.js] Page restored from bfcache, attempting to display preview."); // alertにすると煩雑なので、ここはconsole.logのままか削除
       displayRecognizedPreview();
     }
   });
@@ -45,10 +45,9 @@ setupPreviewDisplayListeners();
 
 // 開発中に sessionStorage の内容を確認しやすくするためのヘルパー
 // ブラウザのコンソールで checkSessionStorage() を実行すると中身が見れる
-function checkSessionStorage() {
-  console.log("Current sessionStorage content for 'capturedImage':", sessionStorage.getItem("capturedImage"));
-}
+// function checkSessionStorage() { // You can uncomment this and call it from the console
+//   console.log("Current sessionStorage content for 'capturedImage':", sessionStorage.getItem("capturedImage"));
+// }
 
 // もし `application.js` で `require_tree .` を使っている場合、
 // このファイルは自動的に読み込まれ、上記のイベントリスナーが設定されます。
-

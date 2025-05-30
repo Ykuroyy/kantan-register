@@ -64,4 +64,30 @@
               class: "btn btn-blue", style: "margin-top:1.2rem;" %>
   <%= link_to "レジに戻る", new_order_products_path,
               class: "btn btn-gray", style: "margin-top:.6rem;" %>
+
+  <!-- デバッグ用: sessionStorageの内容を表示 -->
+  <div style="border: 2px solid red; padding: 10px; margin-top: 20px; background-color: #fdd; color: #333;">
+    <p style="font-weight: bold; margin-bottom: 5px;">デバッグ情報 (sessionStorage):</p>
+    <p style="font-size: 0.9em; margin-bottom: 3px;">'capturedImage' のキーで保存されているデータ (最初の100文字):</p>
+    <pre id="debug-session-storage" style="word-wrap: break-word; white-space: pre-wrap; background-color: #fff; padding: 5px; border: 1px solid #ccc; font-size: 0.8em;"></pre>
+  </div>
+
+  <script>
+    function displaySessionStorageDebugInfo() {
+      const debugElement = document.getElementById('debug-session-storage');
+      if (debugElement) {
+        const storedData = sessionStorage.getItem('capturedImage');
+        if (storedData) {
+          debugElement.textContent = storedData.substring(0, 100) + (storedData.length > 100 ? "..." : "");
+        } else {
+          debugElement.textContent = "sessionStorageに 'capturedImage' は見つかりませんでした。";
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', displaySessionStorageDebugInfo);
+    // Turbo Drive を使っている場合は turbo:load も考慮
+    document.addEventListener('turbo:load', displaySessionStorageDebugInfo);
+  </script>
+  <!-- デバッグ用ここまで -->
 </div>
