@@ -116,12 +116,6 @@ const handleCaptureButtonClick = () => {
     } else {
       // 他のモードや予期しないモードの場合
       console.warn(`不明なモード: ${mode} またはボタンは既に処理されました。`);
-          if(captureBtn) captureBtn.disabled = false; // 送信失敗時にボタンを再有効化
-        }
-      }, 50); // 50ミリ秒の遅延 (この値は調整可能)
-    } else {
-      // 他のモードや予期しないモードの場合
-      console.warn(`不明なモード: ${mode} またはボタンは既に処理されました。`);
       if(captureBtn) captureBtn.disabled = false; // 念のためボタンを有効化
     }
   }, "image/jpeg", 0.8);
