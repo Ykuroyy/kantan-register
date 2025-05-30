@@ -17,30 +17,30 @@
                     alt: "撮影画像プレビュー" %>
     </div>
     <%# 登録されているベストマッチ商品画像の表示は、全商品一覧でカバーするため、ここでは省略または簡略化しても良いでしょう %>
-    <%# <div class="card"> %>
-      <%# <p class="preview-label">最も一致する商品</p> %>
-      <%# <% if @recognition_results.present? && (best_match = @recognition_results.first) && (product = best_match[:product]) %>
+    <div class="card">
+      <p class="preview-label">最も一致する商品</p>
+      <% if @recognition_results.present? && (best_match = @recognition_results.first) && (product = best_match[:product])
         <%# <p><strong><%= product.name %></strong> (<%= "%.1f" % (best_match[:score] * 100) %>%)</p> %>
         <%# <% if product.image.attached? %>
-          <%# <%= image_tag product.image.variant(resize_to_limit: [200, 200]), class: "preview-image" %>
+          <%= image_tag product.image.variant(resize_to_limit: [200, 200]), class: "preview-image"
         <%# <% else %>
           <%# <div class="preview-image no-image">画像なし</div> %>
-        <%# <% end %>
+        <% end
       <%# <% else %>
         <%# <div class="preview-image no-image">一致する商品がありません</div> %>
-      <%# <% end %>
+      <% end
     <%# </div> %>
   </div>
 
   <%# 類似上位のリスト表示は、全商品テーブルでスコア順に表示するため、ここでは不要になる場合があります %>
-  <%# <% if @recognition_results.present? && @recognition_results.length > 1 %>
+  <% if @recognition_results.present? && @recognition_results.length > 1
     <%# <h3>🔎 類似上位</h3> %>
     <%# <ul> %>
-      <%# <% @recognition_results.first(5).each do |result| # 例えば上位5件 %>
+      <% @recognition_results.first(5).each do |result| # 例えば上位5件
       <%# <li> %>
         <%# <%= result[:product].name %> — <%= "%.1f" % (result[:score] * 100) %>%
-      <%# </li> %>
-      <%# <% end %>
+      </li>
+      <% end
     <%# </ul> %>
   <%# <% end %>
 
