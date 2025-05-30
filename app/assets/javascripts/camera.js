@@ -217,3 +217,16 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = url;
   });
 });
+
+
+// 認識結果ページで撮影画像を表示
+document.addEventListener("DOMContentLoaded", () => {
+  const previewImage = document.getElementById("recognized-preview-image");
+  const capturedImage = sessionStorage.getItem("capturedImage");
+
+  if (previewImage && capturedImage) {
+    previewImage.src = capturedImage;
+    previewImage.style.display = "block";
+    sessionStorage.removeItem("capturedImage");
+  }
+});
