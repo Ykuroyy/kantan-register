@@ -36,11 +36,11 @@ const handleCaptureButtonClick = () => {
   const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
   preview.src = dataUrl;
   preview.style.display = "block";
-  // alert("[camera.js] canvas.toDataURLの結果 (先頭30文字):\n" + (dataUrl ? dataUrl.substring(0, 30) + "..." : "データなしまたは不正")); // デバッグ完了後はコメントアウト
+
 
   // predict_result ページ用にセッションストレージに保存
   sessionStorage.setItem("capturedImage", dataUrl);
-  // alert("[camera.js] sessionStorage.setItem直後、getItemの結果 (先頭30文字):\n" + (sessionStorage.getItem("capturedImage") ? sessionStorage.getItem("capturedImage").substring(0, 30) + "..." : "取得失敗または空")); // デバッグ完了後はコメントアウト
+
 
   // Blob をサーバに送信
   canvas.toBlob(blob => {
@@ -68,7 +68,7 @@ const handleCaptureButtonClick = () => {
       })
       .catch(err => {
         console.error("キャプチャ保存エラー:", err);
-        alert("画像の保存に失敗しました。もう一度お試しください。");
+
         if(captureBtn) captureBtn.disabled = false; // エラー時にボタンを再有効化
       });
       // 成功時はページ遷移するので finally での再有効化は不要
@@ -105,18 +105,18 @@ const handleCaptureButtonClick = () => {
       document.body.appendChild(form);
       setTimeout(() => {
         const checkDataBeforeSubmit = sessionStorage.getItem("capturedImage");
-        // alert("[camera.js] フォーム送信直前 (setTimeout内)、sessionStorageの内容(先頭30文字):\n" + (checkDataBeforeSubmit ? checkDataBeforeSubmit.substring(0, 30) + "..." : "取得失敗または空")); // デバッグ用
+
         if (checkDataBeforeSubmit) {
           try {
             console.log("[camera.js] Submitting form to /products/predict");
             form.submit();
           } catch (e) {
             console.error("[camera.js] フォーム送信エラー:", e);
-            alert("フォームの送信に失敗しました。");
+          
             if(captureBtn) captureBtn.disabled = false;
           }
         } else {
-          alert("[camera.js] ERROR: Data disappeared from sessionStorage before form submit!");
+        
           if(captureBtn) captureBtn.disabled = false;
         }
       }, 200); // 遅延を 200ミリ秒に増やしてみる
