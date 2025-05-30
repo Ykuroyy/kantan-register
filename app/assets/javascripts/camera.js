@@ -1,5 +1,127 @@
 // app/javascript/camera.js
 
+// グローバルスコープまたは initCameraPage の外でハンドラを定義
+const handleCaptureButtonClick = () => {
+  console.log("Capture button clicked (handler)!"); // デバッグ用ログ
+  const captureBtn = document.getElementById("capture-photo");
+  // ボタンが存在しないか、既に無効なら何もしない (二重実行防止)
+  if (!captureBtn || captureBtn.disabled) {
+    console.log("Capture button not found or already disabled in handler.");
+    return;
+  }
+
+  captureBtn.disabled = true; // ボタンを無効化
+
+  // 必要な要素を再度取得 (initCameraPageから渡すか、ここで再取得)
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const preview = document.getElementById("preview");
+  const container = document.getElementById("camera-container");
+
+  if (!video || !canvas || !preview || !container) {
+    console.error("❌ キャプチャに必要な要素が見つかりません (handler内)");
+    if(captureBtn) captureBtn.disabled = false; // エラーなのでボタンを戻す
+    return;
+  }
+  const ctx = canvas.getContext("2d"); // ctxもここで取得
+  const mode = container.dataset.mode;
+  const productId = container.dataset.productId;
+
+  // 撮影画像を canvas に描画
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // プレビュー表示
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+  preview.src = dataUrl;
+  preview.style.display = "block";
+
+  // predict_result ページ用にセッションストレージに保存
+  sessionStorage.setItem("capturedImage", dataUrl);
+
+  // Blob をサーバに送信
+  canvas.toBlob(blob => {
+    const fd = new FormData();
+    fd.append("image", blob, "capture.jpg");
+
+    // — 新規登録 or 編集 モード —
+    if (mode === "new" || mode === "edit") {
+      const path = mode === "new"
+        ? "/products/new?from_camera=1"
+        : `/products/${productId}/edit?from_camera=1`;
+
+      fetch("/products/capture_product", {
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: fd
+      })
+      .then(response => { // レスポンスオブジェクトを受け取る
+        if (!response.ok) { // HTTPステータスコードでエラーを判断
+          throw new Error(`Server responded with ${response.status}`);
+        }
+        window.location.href = path; // 成功時のみページ遷移
+      })
+      .catch(err => {
+        console.error("キャプチャ保存エラー:", err);
+        alert("画像の保存に失敗しました。もう一度お試しください。");
+        if(captureBtn) captureBtn.disabled = false; // エラー時にボタンを再有効化
+      });
+      // 成功時はページ遷移するので finally での再有効化は不要
+
+    // Flask 画像登録 モードは、以前の修正でDB保存処理を削除したため、
+    // もしこのモードがまだ他の目的で必要であれば、同様のエラーハンドリングとボタン再有効化が必要です。
+    // ここでは、そのモードのロジックは省略されていると仮定します。
+
+    // — レジ（画像認識）モード —
+    } else if (mode === "order") {
+      // CSRF トークン取得
+      const token = document.querySelector('meta[name="csrf-token"]').content;
+
+      // フォーム生成
+      const form = document.createElement("form");
+      form.method  = "POST";
+      form.action  = "/products/predict";
+      form.enctype = "multipart/form-data";
+
+      // authenticity_token hidden input
+      const tokenInput = document.createElement("input");
+      tokenInput.type  = "hidden";
+      tokenInput.name  = "authenticity_token";
+      tokenInput.value = token;
+      form.appendChild(tokenInput);
+
+      // ファイル input を作成し、Blob → File 変換してセット
+      const fileInput = document.createElement("input");
+      fileInput.type  = "file";
+      fileInput.name  = "image";
+      fileInput.style.display = "none";
+      form.appendChild(fileInput);
+
+      // DataTransfer に File を追加
+      const dt = new DataTransfer();
+      dt.items.add(new File([blob], "capture.jpg", { type: "image/jpeg" }));
+      fileInput.files = dt.files;
+
+      // フォーム送信
+      document.body.appendChild(form);
+      try {
+        form.submit();
+      } catch (e) {
+        console.error("フォーム送信エラー:", e);
+        alert("フォームの送信に失敗しました。");
+        if(captureBtn) captureBtn.disabled = false; // 送信失敗時にボタンを再有効化
+      }
+    } else {
+      // 他のモードや予期しないモードの場合
+      console.warn(`不明なモード: ${mode} またはボタンは既に処理されました。`);
+      if(captureBtn) captureBtn.disabled = false; // 念のためボタンを有効化
+    }
+  }, "image/jpeg", 0.8);
+};
+
 function initCameraPage() {
   console.log("📸 initCameraPage 実行開始");
 
@@ -10,7 +132,8 @@ function initCameraPage() {
   const preview    = document.getElementById("preview");
   const container  = document.getElementById("camera-container");
 
-  if (![video, captureBtn, canvas, ctx, preview, container].every(el => el)) {
+  // captureBtnの存在を最初に確認
+  if (!captureBtn || !video || !canvas || !preview || !container) { // ctxはcanvasから取得するのでここでは不要
     console.error("❌ 必須要素が見つかりません");
     return;
   }
@@ -41,104 +164,14 @@ function initCameraPage() {
       }
     });
 
-  // キャプチャボタン押下時
-  captureBtn.addEventListener("click", () => {
-    console.log("Capture button clicked!"); // デバッグ用ログ
-    captureBtn.disabled = true; // ボタンを無効化
-
-    // 撮影画像を canvas に描画
-    canvas.width  = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // プレビュー表示
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-    preview.src = dataUrl;
-    preview.style.display = "block";
-
-    // predict_result ページ用にセッションストレージに保存
-    sessionStorage.setItem("capturedImage", dataUrl);
-
-    // Blob をサーバに送信
-    canvas.toBlob(blob => {
-      const fd = new FormData();
-      fd.append("image", blob, "capture.jpg");
-
-      // — 新規登録 or 編集 モード —
-      if (mode === "new" || mode === "edit") {
-        const path = mode === "new"
-          ? "/products/new?from_camera=1"
-          : `/products/${productId}/edit?from_camera=1`;
-
-        fetch("/products/capture_product", {
-          method: "POST",
-          headers: {
-            "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
-          },
-          body: fd
-        })
-        .then(() => window.location.href = path)
-        .catch(err => {
-          console.error("キャプチャ保存エラー:", err);
-          alert("画像の保存に失敗しました。もう一度お試しください。"); // ユーザーへのフィードバック例
-        })
-        .finally(() => { captureBtn.disabled = false; }); // 成功・失敗に関わらずボタンを有効化
-
-      // — Flask 画像登録 モード —
-      } else if (mode === "register") {
-        fetch("http://127.0.0.1:10000/register_image", {
-          method: "POST",
-          body: fd
-        })
-        .then(res => {
-          if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
-          console.log("✅ 登録に成功しました");
-        })
-        .catch(err => {
-          console.error("登録エラー:", err);
-          alert("Flaskへの画像登録に失敗しました。"); // ユーザーへのフィードバック例
-        })
-        .finally(() => { captureBtn.disabled = false; }); // 成功・失敗に関わらずボタンを有効化
-
-      // — レジ（画像認識）モード —
-      } else if (mode === "order") {
-        // CSRF トークン取得
-        const token = document.querySelector('meta[name="csrf-token"]').content;
-
-        // フォーム生成
-        const form = document.createElement("form");
-        form.method  = "POST";
-        form.action  = "/products/predict";
-        form.enctype = "multipart/form-data";
-
-        // authenticity_token hidden input
-        const tokenInput = document.createElement("input");
-        tokenInput.type  = "hidden";
-        tokenInput.name  = "authenticity_token";
-        tokenInput.value = token;
-        form.appendChild(tokenInput);
-
-        // ファイル input を作成し、Blob → File 変換してセット
-        const fileInput = document.createElement("input");
-        fileInput.type  = "file";
-        fileInput.name  = "image";
-        fileInput.style.display = "none";
-        form.appendChild(fileInput);
-
-        // DataTransfer に File を追加
-        const dt = new DataTransfer();
-        dt.items.add(new File([blob], "capture.jpg", { type: "image/jpeg" }));
-        fileInput.files = dt.files;
-
-        // フォーム送信
-        document.body.appendChild(form);
-        form.submit();
-        // form.submit() はページ遷移を伴うため、この後の finally でのボタン有効化は不要な場合が多いですが、
-        // 念のため、もし submit が失敗するケースを考慮するなら残しても良いでしょう。
-        // ただし、通常はページが切り替わるので captureBtn.disabled = false; は実行されません。
-      }
-    }, "image/jpeg", 0.8);
-  });
+  // イベントリスナーの重複登録を防ぐ
+  // 既存のリスナーがアタッチされていれば削除
+  if (captureBtn._handleCaptureButtonClick) {
+    captureBtn.removeEventListener("click", captureBtn._handleCaptureButtonClick);
+  }
+  // 新しいハンドラをアタッチし、その参照をボタンのプロパティに保存
+  captureBtn.addEventListener("click", handleCaptureButtonClick);
+  captureBtn._handleCaptureButtonClick = handleCaptureButtonClick; // 後で削除できるように参照を保存
 }
 
 // 初期化登録
