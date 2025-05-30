@@ -51,5 +51,4 @@ function checkSessionStorage() {
 
 // もし `application.js` で `require_tree .` を使っている場合、
 // このファイルは自動的に読み込まれ、上記のイベントリスナーが設定されます。
-  }
-});
+
