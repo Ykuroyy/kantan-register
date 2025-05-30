@@ -278,10 +278,20 @@ class ProductsController < ApplicationController
     )
 
     if resp.code == 200
-      Rails.logger.info "✅ register_image_to_flask_v2! success: #{name}"
-      parsed = JSON.parse(resp.body)
-      # Flask APIのレスポンスに合わせて "s3_key" を取得する
-      parsed["s3_key"]
+      begin
+        parsed = JSON.parse(resp.body)
+        s3_key = parsed["s3_key"]
+        if s3_key.present?
+          Rails.logger.info "✅ register_image_to_flask_v2! success: #{name}, s3_key: #{s3_key}"
+          s3_key
+        else
+          Rails.logger.error "❌ Flask API response missing s3_key. Response: #{resp.body}"
+          nil
+        end
+      rescue JSON::ParserError => e
+        Rails.logger.error "❌ Failed to parse JSON response from Flask API: #{e.message}. Response: #{resp.body}"
+        nil
+      end
     else
       Rails.logger.error "❌ Flask 画像URL登録失敗（#{resp.code}）: #{resp.body}"
       nil
