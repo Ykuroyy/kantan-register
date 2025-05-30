@@ -102,6 +102,8 @@ class ProductsController < ApplicationController
 
   def capture_product
     upload = params[:image]
+      Rails.logger.info "--- ProductsController#capture_product called ---"
+      Rails.logger.info "Params: #{params.inspect}"
     return head :bad_request unless upload
 
     blob = ActiveStorage::Blob.create_and_upload!(
@@ -110,6 +112,7 @@ class ProductsController < ApplicationController
       content_type: upload.content_type
     )
     session[:product_image_blob_id] = blob.id
+      Rails.logger.info "Blob created (ID: #{blob.id}) and stored in session."
 
     case params[:mode]
     when 'new'  then redirect_to new_product_path(from_camera: 1)
