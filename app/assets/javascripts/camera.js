@@ -36,14 +36,11 @@ const handleCaptureButtonClick = () => {
   const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
   preview.src = dataUrl;
   preview.style.display = "block";
-
-  // alertで保存するデータを確認（長すぎるので最初の30文字程度）
-  // alert("[camera.js] 保存する画像データ(先頭):\n" + (dataUrl ? dataUrl.substring(0, 30) + "..." : "データなし")); // デバッグ完了後はコメントアウト
+  alert("[camera.js] canvas.toDataURLの結果 (先頭30文字):\n" + (dataUrl ? dataUrl.substring(0, 30) + "..." : "データなしまたは不正"));
 
   // predict_result ページ用にセッションストレージに保存
   sessionStorage.setItem("capturedImage", dataUrl);
-  // alertで保存されたか確認
-  // alert("[camera.js] sessionStorageに保存後、取得データ(先頭):\n" + (sessionStorage.getItem("capturedImage") ? sessionStorage.getItem("capturedImage").substring(0, 30) + "..." : "取得失敗または空")); // デバッグ完了後はコメントアウト
+  alert("[camera.js] sessionStorage.setItem直後、getItemの結果 (先頭30文字):\n" + (sessionStorage.getItem("capturedImage") ? sessionStorage.getItem("capturedImage").substring(0, 30) + "..." : "取得失敗または空"));
 
   // Blob をサーバに送信
   canvas.toBlob(blob => {
@@ -110,6 +107,7 @@ const handleCaptureButtonClick = () => {
       dt.items.add(new File([blob], "capture.jpg", { type: "image/jpeg" }));
       fileInput.files = dt.files;
 
+      // フォーム送信
       document.body.appendChild(form);
       // sessionStorageへの保存を確実にするために、わずかな遅延後にフォームを送信
       setTimeout(() => {
