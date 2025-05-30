@@ -43,6 +43,9 @@ function initCameraPage() {
 
   // キャプチャボタン押下時
   captureBtn.addEventListener("click", () => {
+    console.log("Capture button clicked!"); // デバッグ用ログ
+    captureBtn.disabled = true; // ボタンを無効化
+
     // 撮影画像を canvas に描画
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -75,7 +78,11 @@ function initCameraPage() {
           body: fd
         })
         .then(() => window.location.href = path)
-        .catch(err => console.error("キャプチャ保存エラー:", err));
+        .catch(err => {
+          console.error("キャプチャ保存エラー:", err);
+          alert("画像の保存に失敗しました。もう一度お試しください。"); // ユーザーへのフィードバック例
+        })
+        .finally(() => { captureBtn.disabled = false; }); // 成功・失敗に関わらずボタンを有効化
 
       // — Flask 画像登録 モード —
       } else if (mode === "register") {
@@ -87,7 +94,11 @@ function initCameraPage() {
           if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
           console.log("✅ 登録に成功しました");
         })
-        .catch(err => console.error("登録エラー:", err));
+        .catch(err => {
+          console.error("登録エラー:", err);
+          alert("Flaskへの画像登録に失敗しました。"); // ユーザーへのフィードバック例
+        })
+        .finally(() => { captureBtn.disabled = false; }); // 成功・失敗に関わらずボタンを有効化
 
       // — レジ（画像認識）モード —
       } else if (mode === "order") {
@@ -122,6 +133,9 @@ function initCameraPage() {
         // フォーム送信
         document.body.appendChild(form);
         form.submit();
+        // form.submit() はページ遷移を伴うため、この後の finally でのボタン有効化は不要な場合が多いですが、
+        // 念のため、もし submit が失敗するケースを考慮するなら残しても良いでしょう。
+        // ただし、通常はページが切り替わるので captureBtn.disabled = false; は実行されません。
       }
     }, "image/jpeg", 0.8);
   });

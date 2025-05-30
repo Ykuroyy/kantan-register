@@ -55,7 +55,10 @@ class ProductsController < ApplicationController
       session.delete(:product_image_blob_id)
       unless @product.s3_key.present?
         new_key = register_image_to_flask!(@product.image, @product.name)
-        @product.update!(s3_key: new_key) if new_key.present?
+        if new_key.present?
+          @product.update!(s3_key: new_key)
+          Rails.logger.info "s3_key updated for Product ID: #{@product.id} to #{new_key}"
+        end
       end
       redirect_to products_path, notice: "「#{@product.name}」を登録しました"
     else
@@ -74,7 +77,10 @@ class ProductsController < ApplicationController
 
     if @product.update(filtered)
       new_key = register_image_to_flask!(@product.image, @product.name)
-      @product.update!(s3_key: new_key) if new_key.present? && !@product.s3_key.eql?(new_key)
+      if new_key.present? && @product.s3_key != new_key # s3_keyが変更された場合のみ更新
+        @product.update!(s3_key: new_key)
+        Rails.logger.info "s3_key updated for Product ID: #{@product.id} to #{new_key}"
+      end
       redirect_to products_path, notice: '商品情報を更新しました。'
     else
       render :edit, status: :unprocessable_entity
@@ -274,7 +280,8 @@ class ProductsController < ApplicationController
     if resp.code == 200
       Rails.logger.info "✅ register_image_to_flask_v2! success: #{name}"
       parsed = JSON.parse(resp.body)
-      parsed["filename"]
+      # Flask APIのレスポンスに合わせて "s3_key" を取得する
+      parsed["s3_key"]
     else
       Rails.logger.error "❌ Flask 画像URL登録失敗（#{resp.code}）: #{resp.body}"
       nil
