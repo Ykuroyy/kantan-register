@@ -144,7 +144,7 @@ class ProductsController < ApplicationController
     begin
       # HTTParty を使用した既存のコード
       resp = HTTParty.post(
-        flask_base_url + "/predict",
+        "#{flask_base_url}/predict",
         multipart: true,
         body: { image: File.open(uploaded.tempfile.path) },
         timeout: 60 # HTTPartyのタイムアウト設定例
