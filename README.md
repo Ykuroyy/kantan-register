@@ -1,15 +1,15 @@
-
 # Kantan Register
 
-シンプルな商品登録・在庫管理・AI画像認識レジ機能を備えたWebアプリケーションです。
+シンプルな商品登録・在庫管理・AI画像認識レジ機能を備えたWebアプリケーションです。RailsとPython(Flask)で構成されています。
 
 ---
 
 ## Overview
 
 親しみやすく、誰でもすぐに使えるシンプルPOSシステム。  
-Rails のフロントエンドと MySQL／PostgreSQL をバックエンドに、  
-**Flask サーバー（Python）＋SSIM／SIFT／ORB** による多重比較で、  
+Rails (Ruby on Rails) をフロントエンドおよびメインのバックエンドとし、画像認識処理はPythonのFlaskサーバーが担当します。
+データベースは開発環境でMySQL、本番環境 (Render.com) ではPostgreSQLを使用しています。
+AI画像認識は、**Flaskサーバー（Python）でSSIM／SIFT／ORB** の複数のアルゴリズムによる特徴比較を行い、その複合スコアに基づいて、
 撮影画像と登録画像を高精度マッチングします。
 
 ---
@@ -21,10 +21,10 @@ Rails のフロントエンドと MySQL／PostgreSQL をバックエンドに、
 | 機能                       | 説明                                                                 |
 |----------------------------|----------------------------------------------------------------------|
 | **商品管理**               | カタカナのみの名前制約、価格バリデーション                             |
-| **画像アップロード**       | ActiveStorage ＋ カメラ撮影連携                                       |
-| **AI画像認識レジ**         | Flask サーバー＋SSIM／SIFT／ORB による複合スコアで高精度マッチング      |
+| **画像アップロード**       | ActiveStorage (S3連携) ＋ ブラウザカメラ撮影連携                      |
+| **AI画像認識レジ**         | Flaskサーバーによる画像認識 (SSIM/SIFT/ORB複合スコア) で商品を特定      |
 | **キーワード検索レジ**     | 商品名キーワード検索でカートに追加                                     |
-| **カート管理**             | セッションベース、数量更新・クリア                                     |
+| **カート管理**             | セッションベースでの商品追加、数量更新、カートクリア機能                 |
 | **売上分析ダッシュボード** | 年次／月次／日次切替の売上グラフとサマリー指標                         |
 | **管理画面リセット機能**   | `GET /admin/reset_all?token=…` で全データ削除（Basic 認証下）          |
 | **Basic 認証**             | 管理画面は HTTP Basic 認証                                           |
@@ -32,8 +32,9 @@ Rails のフロントエンドと MySQL／PostgreSQL をバックエンドに、
 ---
 
 ## Live Demo
+Railsアプリケーション: https://kantan-register.onrender.com  
+AI画像認識サーバー(Flask): https://ai-server-f6si.onrender.com (Railsアプリから内部的に呼び出されます)
 
-https://kantan-register.onrender.com  
 _Basic 認証_  
 - ユーザー名：`admin`  
 - パスワード：`2222`  
@@ -45,23 +46,24 @@ _Basic 認証_
 
 ### Rails サイド
 
-- Ruby 3.2.0 / Rails 7.1.5  
-- MySQL 8.0（開発）／PostgreSQL（本番）  
-- Sprockets / Turbo / Stimulus  
-- ActiveStorage（画像管理、S3連携）
-- Groupdate（売上分析）    
-- Chart.js（グラフ描画） 
+- Ruby 3.2.0 / Rails 7.1.5.1 
+- データベース: MySQL 8.0（開発環境）、PostgreSQL（本番環境 on Render.com）
+- アセットパイプライン: Sprockets (主に `app/assets` を使用)
+- フロントエンド: Turbo Drive, Stimulus.js
+- 画像管理: ActiveStorage (Amazon S3 に画像を保存)
+- 売上分析: groupdate gem
+- グラフ描画: Chart.js
 
-本番環境では `url_for(@product.image, host: ...)` で S3 画像 URL を生成し、Flask が `requests.get(image_url)` で読み込み。
+本番環境では、Railsが `url_for(@product.image, host: ...)` を使ってS3上の画像URLを生成し、FlaskサーバーはこのURLから `requests.get(image_url)` を用いて画像データを取得・処理します。
 
 ### Python（画像認識）サイド
 
-- Python 3.11  
-- Flask 3.1.1 
-- Pillow 11.2.1 
-- NumPy 2.2.6  
-- scikit-image 0.25.2（SSIM） 
-- OpenCV（ORB／SIFT）  
+- Python 3.13.2  
+- Flask 3.1.1
+- Pillow (PIL Fork)
+- NumPy
+- scikit-image (SSIM計算用)
+- OpenCV (ORB/SIFT特徴量抽出用)
 - gunicorn  
 - Flask-CORS  
 - requests 2.31.0
@@ -69,6 +71,7 @@ _Basic 認証_
 
 
 #### `requirements.txt` 抜粋
+<!-- このセクションは、主要なライブラリとそのバージョンを記載するのに役立ちます -->
 ```text
 Flask==3.1.1
 Pillow==11.2.1
@@ -126,6 +129,6 @@ boto3==1.38.23
 - レスポンシブ改善／ダークモード  
 
 ## 制作時間
-約 **100時間**
+約 **140時間**
 
 ---
