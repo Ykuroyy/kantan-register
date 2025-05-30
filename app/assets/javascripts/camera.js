@@ -79,40 +79,47 @@ const handleCaptureButtonClick = () => {
 
     // — レジ（画像認識）モード —
     } else if (mode === "order") {
-      // fetch API を使用して非同期で画像を送信
-      const predictFd = new FormData();
-      predictFd.append("image", blob, "capture.jpg");
-      // authenticity_token も FormData に追加 (Rails側で verify_authenticity_token をスキップしていない場合)
-      const csrfToken = document.querySelector('meta[name="csrf-token"]');
-      if (csrfToken) {
-        predictFd.append("authenticity_token", csrfToken.content);
-      }
+      // 元のフォーム送信方法に戻す
+      const token = document.querySelector('meta[name="csrf-token"]').content;
+      const form = document.createElement("form");
+      form.method  = "POST";
+      form.action  = "/products/predict";
+      form.enctype = "multipart/form-data";
 
-      console.log("[camera.js] Sending image to /products/predict via fetch...");
-      fetch("/products/predict", {
-        method: "POST",
-        // headers: { // FormData を使う場合、Content-Type はブラウザが自動設定するので不要なことが多い
-        //   "X-CSRF-Token": csrfToken ? csrfToken.content : ""
-        // },
-        body: predictFd
-      })
-      .then(response => {
-        if (!response.ok) {
-          // サーバーエラーの場合、レスポンスボディをテキストとして取得試行
-          return response.text().then(text => {
-            throw new Error(`Server responded with ${response.status}: ${text}`);
-          });
+      const tokenInput = document.createElement("input");
+      tokenInput.type  = "hidden";
+      tokenInput.name  = "authenticity_token";
+      tokenInput.value = token;
+      form.appendChild(tokenInput);
+
+      const fileInput = document.createElement("input");
+      fileInput.type  = "file";
+      fileInput.name  = "image";
+      fileInput.style.display = "none";
+      form.appendChild(fileInput);
+
+      const dt = new DataTransfer();
+      dt.items.add(new File([blob], "capture.jpg", { type: "image/jpeg" }));
+      fileInput.files = dt.files;
+
+      document.body.appendChild(form);
+      setTimeout(() => {
+        const checkDataBeforeSubmit = sessionStorage.getItem("capturedImage");
+        // alert("[camera.js] フォーム送信直前 (setTimeout内)、sessionStorageの内容(先頭30文字):\n" + (checkDataBeforeSubmit ? checkDataBeforeSubmit.substring(0, 30) + "..." : "取得失敗または空")); // デバッグ用
+        if (checkDataBeforeSubmit) {
+          try {
+            console.log("[camera.js] Submitting form to /products/predict");
+            form.submit();
+          } catch (e) {
+            console.error("[camera.js] フォーム送信エラー:", e);
+            alert("フォームの送信に失敗しました。");
+            if(captureBtn) captureBtn.disabled = false;
+          }
+        } else {
+          alert("[camera.js] ERROR: Data disappeared from sessionStorage before form submit!");
+          if(captureBtn) captureBtn.disabled = false;
         }
-        // 成功した場合、サーバーは predict_result.html.erb をレンダリングするはずなので、
-        // そのページに手動で遷移する (サーバーからのリダイレクトではなく、クライアント側で遷移)
-        // サーバーがJSONを返すように変更し、そのJSONにリダイレクト先URLを含める方がより制御しやすい
-        window.location.href = response.url; // predictアクションがリダイレクトしない場合、レスポンスのURLは送信先と同じになる
-      })
-      .catch(err => {
-        console.error("[camera.js] 画像認識リクエストエラー:", err);
-        alert("画像認識サーバーへの送信に失敗しました。");
-        if(captureBtn) captureBtn.disabled = false;
-      });
+      }, 200); // 遅延を 200ミリ秒に増やしてみる
     } else {
       // 他のモードや予期しないモードの場合
       console.warn(`不明なモード: ${mode} またはボタンは既に処理されました。`);
