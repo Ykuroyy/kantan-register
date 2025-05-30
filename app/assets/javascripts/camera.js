@@ -112,6 +112,7 @@ const handleCaptureButtonClick = () => {
       // sessionStorageへの保存を確実にするために、わずかな遅延後にフォームを送信
       setTimeout(() => {
         try {
+              alert("[camera.js] フォーム送信直前、sessionStorageの内容(先頭30文字):\n" + (sessionStorage.getItem("capturedImage") ? sessionStorage.getItem("capturedImage").substring(0, 30) + "..." : "取得失敗または空"));
           console.log("[camera.js] Submitting form to /products/predict");
           form.submit();
         } catch (e) {
