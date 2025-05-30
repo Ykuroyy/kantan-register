@@ -55,7 +55,7 @@ class ProductsController < ApplicationController
     @product = Product.new
     session.delete(:product_image_blob_id) unless params[:from_camera] == "1"
   end
-  
+
   def create
     @product = Product.new(product_params)
 
@@ -164,45 +164,58 @@ class ProductsController < ApplicationController
     uploaded = params[:image]
     return head :bad_request unless uploaded
 
-    # Flask に画像投げて結果取得
-    resp   = HTTParty.post(
-      flask_base_url + "/predict",
-               multipart: true,
-               body: {
-                 image: File.open(uploaded.tempfile.path)
-               }
-    )    
-    result = JSON.parse(resp.body)
+    begin
+      # Flask に画像投げて結果取得
+      resp = HTTParty.post(
+        flask_base_url + "/predict",
+        multipart: true,
+        body: {
+          image: File.open(uploaded.tempfile.path)
+        }
+      )
 
-    # 1) Flask 側で返ってくるキーが "all_similarity_scores" なのでそれを受け取る
-    raw_scores = result["all_similarity_scores"] || []
-    # 2) JSON のキー文字列をシンボルに変換してインスタンス変数にセット
-    @all_similarity_scores = raw_scores.map { |h| h.transform_keys(&:to_sym) }
+      # HTTP ステータスエラーを検知
+      unless resp.success?
+        Rails.logger.error "❌ Flask API Error: Status #{resp.code}"
+        Rails.logger.error "💬 Response Body: #{resp.body}"
+        redirect_to camera_products_path(mode: "order"), alert: "画像認識に失敗しました（Flask側エラー）"
+        return
+      end
 
-    # 以下、@all_similarity_scores を使ったヒット判定ロジック
-    hit = @all_similarity_scores.select { |c| c[:score] >= 0.1 }
-    if hit.any?
-      @hit_scores = hit
-      @best       = hit.max_by { |c| c[:score] }
-      @candidates = hit.first(3)
-    else
-      @hit_scores = []
-      @best       = @all_similarity_scores.first
-      @candidates = @all_similarity_scores.drop(1).first(3)
+      # JSON パース処理
+      begin
+        result = JSON.parse(resp.body)
+      rescue JSON::ParserError => e
+        Rails.logger.error "❌ JSON Parse Error: #{e.message}"
+        Rails.logger.error "💬 Response Body: #{resp.body}"
+        redirect_to camera_products_path(mode: "order"), alert: "画像認識に失敗しました（JSONエラー）"
+        return
+      end
+
+      # Flask 側で返ってくるキーが "all_similarity_scores"
+      raw_scores = result["all_similarity_scores"] || []
+      @all_similarity_scores = raw_scores.map { |h| h.transform_keys(&:to_sym) }
+
+      hit = @all_similarity_scores.select { |c| c[:score] >= 0.1 }
+      if hit.any?
+        @hit_scores = hit
+        @best       = hit.max_by { |c| c[:score] }
+        @candidates = hit.first(3)
+      else
+        @hit_scores = []
+        @best       = @all_similarity_scores.first
+        @candidates = @all_similarity_scores.drop(1).first(3)
+      end
+
+      @best_product       = Product.find_by(name: @best[:name]) if @best
+      @candidate_products = @candidates.map { |c| Product.find_by(name: c[:name]) }.compact
+
+      render :predict_result
+    rescue StandardError => e
+      Rails.logger.error e.full_message
+      redirect_to camera_products_path(mode: "order"), alert: "画像認識に失敗しました（Railsエラー）"
     end
-
-
-    # DB レコードを拾っておく
-    @best_product       = Product.find_by(name: @best[:name])        if @best
-    @candidate_products = @candidates.map { |c| Product.find_by(name: c[:name]) }.compact
-
-    render :predict_result
-  rescue StandardError => e
-    Rails.logger.error e.full_message
-    render json: { error: "処理エラー" }, status: :internal_server_error
   end
-
-
 
   # — レジ画面 —
   def new_order
