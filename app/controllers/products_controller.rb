@@ -182,17 +182,24 @@ class ProductsController < ApplicationController
 
       render :predict_result
     rescue StandardError => e
-      # エラーメッセージのエンコーディングをUTF-8に変換してからログに出力
-      Rails.logger.error e.full_message.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
-      # エラー情報を安全にUTF-8エンコードしてログに出力
-      error_message = "StandardError in predict: #{e.class.name} - #{e.message}"
-      encoded_message = error_message.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
-      Rails.logger.error encoded_message
+      # エラー情報をログに出力する前に、各要素を安全にUTF-8にエンコード
+      error_class_name = e.class.name.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+      error_message_text = e.message.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+      
+      log_output = "StandardError in predict: #{error_class_name} - #{error_message_text}"
+      Rails.logger.error log_output
+
       if e.backtrace
-        encoded_backtrace = e.backtrace.join("\n").encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
-        Rails.logger.error "Backtrace:\n#{encoded_backtrace}"
+        # バックトレースも各行をエンコードしてから結合
+        encoded_backtrace_lines = e.backtrace.map do |line|
+          line.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+        end
+        Rails.logger.error "Backtrace:\n#{encoded_backtrace_lines.join("\n")}"
       end
-      redirect_to camera_products_path(mode: "order"), alert: "画像認識に失敗しました（Railsエラー）"
+
+      # ユーザーに表示するアラートメッセージは汎用的なものにする
+      alert_user_message = "画像認識処理中に予期せぬエラーが発生しました。しばらくしてからもう一度お試しください。"
+      redirect_to camera_products_path(mode: "order"), alert: alert_user_message
     end
   end
 
