@@ -21,7 +21,8 @@ class ProductsController < ApplicationController
     response = Net::HTTP.post(uri, "", { "Content-Type" => "application/json" })
 
     if response.is_a?(Net::HTTPSuccess)
-      flash[:notice] = "✅ キャッシュ再構築リクエストを送信しました"
+      result = JSON.parse(response.body) # Flaskからのレスポンスボディをパース
+      flash[:notice] = "✅ キャッシュ再構築リクエスト成功: #{result.fetch('message', '完了しました')}" # メッセージを取得して表示
     else
       flash[:alert] = "❌ キャッシュ再構築に失敗しました: #{response.body}"
     end
