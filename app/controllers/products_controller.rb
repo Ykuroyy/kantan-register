@@ -1,15 +1,17 @@
 class ProductsController < ApplicationController
   require 'httparty'
-  require 'aws-sdk-s3'
-  require 'securerandom'
-  require 'net/http'
+  # require 'aws-sdk-s3' # Active Storage を通じてS3を利用しているため、コントローラでの直接参照は不要な場合があります
+  # require 'securerandom' # UUID生成などで必要でなければ不要
+  # require 'net/http' # HTTParty を使用しているため、Net::HTTPの直接利用は build_cache 以外では不要かもしれません
 
-  S3_BUCKET = ENV.fetch("S3_BUCKET")
-  S3_CLIENT = Aws::S3::Client.new(
-    region: ENV["AWS_REGION"],
-    access_key_id: ENV["AWS_ACCESS_KEY_ID"],
-    secret_access_key: ENV["AWS_SECRET_ACCESS_KEY"]
-  )
+  # S3_BUCKET と S3_CLIENT は、このコントローラ内で直接S3バケット操作をしない場合（例: ActiveStorage経由のみの場合）は不要かもしれません。
+  # 必要に応じてコメントアウトまたは削除を検討してください。
+  # S3_BUCKET = ENV.fetch("S3_BUCKET")
+  # S3_CLIENT = Aws::S3::Client.new(
+  #   region: ENV["AWS_REGION"],
+  #   access_key_id: ENV["AWS_ACCESS_KEY_ID"],
+  #   secret_access_key: ENV["AWS_SECRET_ACCESS_KEY"]
+  # )
 
   skip_before_action :verify_authenticity_token, only: [:predict, :capture_product]
   before_action :set_product, only: [:show, :edit, :update, :destroy]
@@ -121,29 +123,52 @@ class ProductsController < ApplicationController
     uploaded = params[:image]
     return head :bad_request unless uploaded
 
+    # Faraday を使う場合はここで初期化
+    # conn = Faraday.new(url: flask_base_url) do |faraday|
+    #   faraday.request :multipart
+    #   faraday.adapter Faraday.default_adapter
+    #   faraday.options.timeout = 60
+    #   faraday.options.open_timeout = 10
+    # end
+
     begin
+      # HTTParty を使用した既存のコード
       resp = HTTParty.post(
         flask_base_url + "/predict",
         multipart: true,
-        body: { image: File.open(uploaded.tempfile.path) }
+        body: { image: File.open(uploaded.tempfile.path) },
+        timeout: 60 # HTTPartyのタイムアウト設定例
       )
+
       unless resp.success?
         Rails.logger.error "❌ Flask API Error: Status #{resp.code}"
         Rails.logger.error "💬 Response Body: #{resp.body}"
-        redirect_to camera_products_path(mode: "order"), alert: "画像認識に失敗しました（Flask側エラー）"
+        # camera_products_path は routes.rb で定義された適切なパスに置き換えてください
+        redirect_to camera_products_path(mode: "order"), alert: "画像認識サーバーとの通信に失敗しました (ステータス: #{resp.code})。"
         return
       end
 
       result = JSON.parse(resp.body)
       raw_scores = result["all_similarity_scores"] || []
-      @all_similarity_scores = raw_scores.map { |h| h.transform_keys(&:to_sym) }
+      @recognition_results = []
 
-      hit = @all_similarity_scores.select { |c| c[:score] >= 0.1 }
-      @hit_scores = hit
-      @best = hit.max_by { |c| c[:score] }
-      @candidates = hit.first(3)
-      @best_product = Product.find_by(name: @best[:name]) if @best
-      @candidate_products = @candidates.map { |c| Product.find_by(name: c[:name]) }.compact
+      if raw_scores.is_a?(Array)
+        raw_scores.each do |item|
+          product = Product.find_by(name: item["name"]) # Flaskからのレスポンスは文字列キーの想定
+          if product
+            @recognition_results << {
+              product: product,
+              score: item["score"].to_f
+            }
+          else
+            Rails.logger.warn "Product not found in Rails DB for name: #{item['name']}"
+          end
+        end
+        @recognition_results.sort_by! { |r| -r[:score] } # スコアの高い順にソート
+      else
+        Rails.logger.error "Flask response 'all_similarity_scores' is not an array: #{raw_scores.inspect}"
+        flash.now[:alert] = "画像認識サーバーからの応答形式が不正です (スコアリスト)。"
+      end
 
       render :predict_result
     rescue StandardError => e
@@ -151,6 +176,9 @@ class ProductsController < ApplicationController
       redirect_to camera_products_path(mode: "order"), alert: "画像認識に失敗しました（Railsエラー）"
     end
   end
+  # ここに recognize_products_from_image メソッドを定義する必要はありません。
+  # 既存の predict アクションを上記のように修正することで対応します。
+
 
   def new_order
     if params[:recognized_name].present?

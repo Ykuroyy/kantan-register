@@ -131,18 +131,6 @@ function initCameraPage() {
 document.addEventListener("DOMContentLoaded", initCameraPage);
 document.addEventListener("turbo:load", initCameraPage);
 
-// 認識結果ページでの撮影画像プレビュー表示
-document.addEventListener("DOMContentLoaded", () => {
-  const resultPreview = document.getElementById("recognized-preview-image");
-  if (!resultPreview) return;
-  const dataUrl = sessionStorage.getItem("capturedImage");
-  if (dataUrl) {
-    resultPreview.src           = dataUrl;
-    resultPreview.style.display = "block";
-    sessionStorage.removeItem("capturedImage");
-  }
-});
-
 // 編集画面→カメラ→戻り の name/price 保存＆復元
 document.addEventListener("DOMContentLoaded", () => {
   const nameField  = document.querySelector("input[name='product[name]']");

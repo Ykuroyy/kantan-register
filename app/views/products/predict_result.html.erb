@@ -1,88 +1,89 @@
 <div class="container">
   <%= link_to "トップページに戻る", root_path, class: "btn btn-gray" %>
 
-  <h2 class="form-heading">🔍 認識結果</h2>
+  <h2 class="form-heading">🔍 画像認識結果 (全商品)</h2>
+
+  <% if flash[:alert] %>
+    <p style="color: red;"><%= flash[:alert] %></p>
+  <% end %>
 
   <!-- 画像プレビュー -->
   <div class="grid">
     <div class="card">
       <p class="preview-label">撮影した画像</p>
+      <%# TODO: JavaScriptで撮影した画像をここに表示する処理を追加する %>
       <%= image_tag "", id: "recognized-preview-image",
                     class: "preview-image", style: "display:none; max-width:100%;",
                     alt: "撮影画像プレビュー" %>
     </div>
-    <div class="card">
-      <p class="preview-label">登録されている商品画像</p>
-
-      <% if @hit_scores.any? %>
-        <p>✅ 商品ヒット：<strong><%= @best_product&.name || @best["name"] %></strong>
-        （<%= [(@best["score"] * 100).round(2), 0.01].max %>%）</p>
-
-        <% if @best_product&.image&.attached? %>
-          <%= image_tag @best_product.image.variant(resize_to_limit: [320, 320]), class: "preview-image" %>
-        <% else %>
-          <div class="preview-image no-image">画像なし</div>
-        <% end %>
-
-      <% else %>
-        <div class="preview-image no-image">一致する商品がありません</div>
-      <% end %>
-    </div>
+    <%# 登録されているベストマッチ商品画像の表示は、全商品一覧でカバーするため、ここでは省略または簡略化しても良いでしょう %>
+    <%# <div class="card"> %>
+      <%# <p class="preview-label">最も一致する商品</p> %>
+      <%# <% if @recognition_results.present? && (best_match = @recognition_results.first) && (product = best_match[:product]) %>
+        <%# <p><strong><%= product.name %></strong> (<%= "%.1f" % (best_match[:score] * 100) %>%)</p> %>
+        <%# <% if product.image.attached? %>
+          <%# <%= image_tag product.image.variant(resize_to_limit: [200, 200]), class: "preview-image" %>
+        <%# <% else %>
+          <%# <div class="preview-image no-image">画像なし</div> %>
+        <%# <% end %>
+      <%# <% else %>
+        <%# <div class="preview-image no-image">一致する商品がありません</div> %>
+      <%# <% end %>
+    <%# </div> %>
   </div>
 
-  <% if @candidates.any? %>
-    <h3>🔎 類似上位</h3>
-    <ul>
-      <% @candidates.each do |c| %>
-      <li>
-        <%= c[:name] %> — <%= [(c[:score] * 100).round(2), 0.01].max %>%
-      </li>
-      <% end %>
-    </ul>
-  <% end %>
+  <%# 類似上位のリスト表示は、全商品テーブルでスコア順に表示するため、ここでは不要になる場合があります %>
+  <%# <% if @recognition_results.present? && @recognition_results.length > 1 %>
+    <%# <h3>🔎 類似上位</h3> %>
+    <%# <ul> %>
+      <%# <% @recognition_results.first(5).each do |result| # 例えば上位5件 %>
+      <%# <li> %>
+        <%# <%= result[:product].name %> — <%= "%.1f" % (result[:score] * 100) %>%
+      <%# </li> %>
+      <%# <% end %>
+    <%# </ul> %>
+  <%# <% end %>
 
-  <% if @all_similarity_scores.present? %>
+  <% if @recognition_results.present? %>
     <h3>📊 全商品の類似度スコア</h3>
     <table>
       <thead>
-        <tr><th>画像</th><th>商品名</th><th>スコア</th><th>カート</th></tr>
+        <tr>
+          <th>商品画像</th>
+          <th>商品名</th>
+          <th>スコア</th>
+          <th>操作</th>
+        </tr>
       </thead>
       <tbody>
-        <% @all_similarity_scores.each do |c| %>
+        <% @recognition_results.each do |result| %>
+          <% product = result[:product] %>
           <tr>
-            <!-- 画像セル -->
             <td>
-              <% prod = Product.find_by(name: c[:name]) %>
-              <% if prod&.image&.attached? %>
-                <%= image_tag(prod.image.variant(resize_to_limit: [100,100])) %>
+              <% if product.image.attached? %>
+                <%= image_tag product.image.variant(resize_to_limit: [100,100]), width: "100" %>
               <% else %>
-                —
+                <span>画像なし</span>
               <% end %>
             </td>
-            <!-- 名前セル -->
-            <td><%= c[:name] %></td>
-            <!-- スコアセル -->
-            <td><%= "#{[(c[:score] * 100).round(2), 0.01].max}%" %></td>
-            <!-- カートセル -->
+            <td><%= product.name %></td>
+            <td><%= "%.3f" % result[:score] %></td> <%# スコアはパーセントではなく、0.000 から 1.000 の形式で表示 %>
             <td>
-              <% if prod %>
-                <%= form_with url: add_to_cart_products_path, local: true do %>
-                  <%= hidden_field_tag :recognized_name, prod.name %>
-                  <%= submit_tag "＋カート", class: "btn btn-sm btn-yellow" %>
-                <% end %>
-              <% else %>
-                —
-              <% end %>
+              <%= button_to "カートに追加", add_to_cart_products_path(recognized_name: product.name), method: :post, class: "btn btn-primary btn-sm" %>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
+  <% else %>
+    <p>認識結果はありませんでした。</p>
   <% end %>
 
 
 <!-- キャッシュ再構築ボタン（Flask API 叩く） -->
 <%# <%= link_to "キャッシュを構築する", build_cache_products_path %> 
+
+  <hr style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
 
   <!-- 操作ボタン -->
   <%= link_to "撮影をやり直す", camera_products_path(mode: "order"),
@@ -90,3 +91,4 @@
   <%= link_to "レジに戻る", new_order_products_path,
               class: "btn btn-gray", style: "margin-top:.6rem;" %>
 </div>
+
