@@ -82,8 +82,7 @@
 
 
 <!-- キャッシュ再構築ボタン（Flask API 叩く） -->
-<%= button_to "キャッシュ再構築", build_cache_path, method: :post, remote: true, class: "btn btn-red", style: "margin-top:1rem;" %>
-
+<%# <%= link_to "キャッシュを構築する", build_cache_products_path %> 
 
   <!-- 操作ボタン -->
   <%= link_to "撮影をやり直す", camera_products_path(mode: "order"),
