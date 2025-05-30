@@ -182,10 +182,12 @@ class ProductsController < ApplicationController
 
       render :predict_result
     rescue StandardError => e
-      Rails.logger.error e.full_message
+      # エラーメッセージのエンコーディングをUTF-8に変換してからログに出力
+      Rails.logger.error e.full_message.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
       redirect_to camera_products_path(mode: "order"), alert: "画像認識に失敗しました（Railsエラー）"
     end
   end
+
   # ここに recognize_products_from_image メソッドを定義する必要はありません。
   # 既存の predict アクションを上記のように修正することで対応します。
 
