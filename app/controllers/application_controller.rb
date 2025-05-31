@@ -14,15 +14,19 @@ class ApplicationController < ActionController::Base
     Rails.env.production?
   end
 
-  def current_cart
-    session[:cart] ||= []
-  end
-
   def cart_items
-    current_cart.map do |item|
-      product = Product.find_by(id: item["product_id"])
+    unless session[:cart].is_a?(Array) && session[:cart].all? { |i| i.is_a?(Hash) && i.key?("product_id") }
+      Rails.logger.warn "⚠️ カート情報が不正なので初期化します: #{session[:cart].inspect}"
+      session[:cart] = []
+      return []
+    end
+
+    session[:cart].map do |item|
+      product = Product.find_by(id: item["product_id"].to_i)
       quantity = item["quantity"].to_i
       subtotal = product&.price.to_i * quantity
+
+      next unless product
 
       {
         product: product,
