@@ -225,15 +225,8 @@ class ProductsController < ApplicationController
     @products = @products.where("name LIKE ?", "%#{params[:keyword]}%") if params[:keyword].present?
   end
 
-  def add_to_cart
-    prod = Product.find_by(name: params[:recognized_name])
-    if prod
-      _add_to_cart(prod.id)
-      redirect_to new_order_products_path, notice: "#{prod.name} をカートに追加しました"
-    else
-      redirect_to new_order_products_path, alert: "商品が見つかりませんでした"
-    end
-  end
+
+
 
   def update_cart
     new_q = params[:quantity] || {}

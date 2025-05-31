@@ -14,6 +14,10 @@ class ApplicationController < ActionController::Base
     Rails.env.production?
   end
 
+  def current_cart
+    session[:cart] ||= []
+  end
+
   def cart_items
     unless session[:cart].is_a?(Array) && session[:cart].all? { |i| i.is_a?(Hash) && i.key?("product_id") }
       Rails.logger.warn "⚠️ カート情報が不正なので初期化します: #{session[:cart].inspect}"
