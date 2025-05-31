@@ -32,22 +32,41 @@ class OrdersController < ApplicationController
 
     # ── adapter ごとに日付文字列生成を切り替え ──────────────
     adapter = ActiveRecord::Base.connection.adapter_name.downcase
+    # date_sql =
+    # if adapter.include?("mysql")
+    # "DATE_FORMAT(order_items.created_at, '#{mysql_fmt}')"
+    # else
+    # PostgreSQL
+    # "to_char(order_items.created_at, '#{pg_fmt}')"
+    # end
+
     date_sql =
       if adapter.include?("mysql")
-        "DATE_FORMAT(order_items.created_at, '#{mysql_fmt}')"
+        "DATE_FORMAT(orders.created_at, '#{mysql_fmt}')"
       else
         # PostgreSQL
-        "to_char(order_items.created_at, '#{pg_fmt}')"
+        "to_char(orders.created_at, '#{pg_fmt}')"
       end
+
+
+
     date_expr = Arel.sql(date_sql)
 
     # ── 集計クエリ ───────────────────────────────────────
+    # rows = OrderItem
+    #  .joins(:product)
+    #  .where(order_items: { created_at: start_date.beginning_of_day..end_date.end_of_day })
+    #  .group(date_expr)
+    #  .order(date_expr)
+    #  .sum("order_items.quantity * products.price")
+
     rows = OrderItem
-           .joins(:product)
-           .where(order_items: { created_at: start_date.beginning_of_day..end_date.end_of_day })
+           .joins(:product, :order)
+           .where(orders: { created_at: start_date.beginning_of_day..end_date.end_of_day })
            .group(date_expr)
            .order(date_expr)
            .sum("order_items.quantity * products.price")
+
 
     @period_labels = rows.keys
     @period_data   = rows.values
