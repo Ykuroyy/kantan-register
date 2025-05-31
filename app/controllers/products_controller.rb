@@ -1,17 +1,5 @@
 class ProductsController < ApplicationController
   require 'httparty'
-  # require 'aws-sdk-s3' # Active Storage を通じてS3を利用しているため、コントローラでの直接参照は不要な場合があります
-  # require 'securerandom' # UUID生成などで必要でなければ不要
-  # require 'net/http' # HTTParty を使用しているため、Net::HTTPの直接利用は build_cache 以外では不要かもしれません
-
-  # S3_BUCKET と S3_CLIENT は、このコントローラ内で直接S3バケット操作をしない場合（例: ActiveStorage経由のみの場合）は不要かもしれません。
-  # 必要に応じてコメントアウトまたは削除を検討してください。
-  # S3_BUCKET = ENV.fetch("S3_BUCKET")
-  # S3_CLIENT = Aws::S3::Client.new(
-  #   region: ENV["AWS_REGION"],
-  #   access_key_id: ENV["AWS_ACCESS_KEY_ID"],
-  #   secret_access_key: ENV["AWS_SECRET_ACCESS_KEY"]
-  # )
 
   skip_before_action :verify_authenticity_token, only: [:predict, :capture_product]
   before_action :set_product, only: [:show, :edit, :update, :destroy]
@@ -153,7 +141,6 @@ class ProductsController < ApplicationController
       unless resp.success?
         Rails.logger.error "❌ Flask API Error: Status #{resp.code}"
         Rails.logger.error "💬 Response Body: #{resp.body}"
-        # camera_products_path は routes.rb で定義された適切なパスに置き換えてください
         redirect_to camera_products_path(mode: "order"), alert: "画像認識サーバーとの通信に失敗しました (ステータス: #{resp.code})。"
         return
       end
@@ -197,7 +184,7 @@ class ProductsController < ApplicationController
         Rails.logger.error "Backtrace:\n#{encoded_backtrace_lines.join("\n")}"
       end
 
-      # ユーザーに表示するアラートメッセージは汎用的なものにする
+     
       alert_user_message = "画像認識処理中に予期せぬエラーが発生しました。しばらくしてからもう一度お試しください。"
       redirect_to camera_products_path(mode: "order"), alert: alert_user_message
     end
@@ -225,6 +212,17 @@ class ProductsController < ApplicationController
     @products = @products.where("name LIKE ?", "%#{params[:keyword]}%") if params[:keyword].present?
   end
 
+
+
+    def add_to_cart
+      prod = Product.find_by(name: params[:recognized_name])
+      if prod
+        _add_to_cart(prod.id)
+        redirect_to new_order_products_path, notice: "#{prod.name} をカートに追加しました"
+      else
+        redirect_to new_order_products_path, alert: "商品が見つかりませんでした"
+      end
+    end
 
 
 
