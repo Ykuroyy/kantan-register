@@ -59,9 +59,9 @@
   <div class="card" style="text-align:center; margin-top:2rem;">
     <h2 class="chart-heading">🏅 商品別売上ランキング</h2>
       <ul style="list-style:none; padding:0;">
-        <% @sales_data.each do |name, total| %>
+        <% @sales_data.sort_by { |_, v| -v }.each_with_index do |(name, total), i| %>
           <li style="margin:0.4rem 0;">
-            <%= name || "削除済み商品" %>（<%= number_with_delimiter(total) %>円）
+            <%= "#{i + 1}位：#{name || '削除済み商品'}（#{number_with_delimiter(total)}円）" %>
           </li>
         <% end %>
       </ul>

@@ -9,18 +9,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const productLabels = JSON.parse(container.dataset.productLabels);
   const productData   = JSON.parse(container.dataset.productData);
 
-  // 売上グラフ
+  // ✅ 修正：日別売上グラフを「棒グラフ」にして beginAtZero を設定
   const ctx1 = document.getElementById("period-sales-chart").getContext("2d");
   new Chart(ctx1, {
-    type: "line",
+    type: "bar",
     data: {
       labels: periodLabels,
       datasets: [{
-        label: "売上",
+        label: "売上金額（円）",
         data: periodData,
-        borderWidth: 2
+        borderWidth: 1
       }],
     },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
   });
 
   // 商品別販売数グラフ
