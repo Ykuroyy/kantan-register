@@ -158,6 +158,7 @@ boto3==1.38.23
 - [🆕 新規商品登録 → AIキャッシュ再構築の流れ](https://i.gyazo.com/31e1a58c9cbf006d1d09f5e50cfe6e32.gif)
 - [📸 レジ画面①：カメラ撮影 → 商品認識 → 会計完了](https://i.gyazo.com/0faad65d0ece249a0482196c472e7b0a.gif)
 - [🛒 レジ画面②：カメラ撮影 → カート編集 → 会計完了](https://i.gyazo.com/78706e029cdd0edc752c25403b908f11.gif)
+- [📊 分析画面：日別 → 月間 → 年間](https://i.gyazo.com/47951c9c86bac043f663c11b9346a0dc.gif)
 
 
 
