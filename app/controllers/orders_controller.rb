@@ -17,7 +17,7 @@ class OrdersController < ApplicationController
       pg_fmt     = "YYYY-MM" # PostgreSQLのto_charフォーマット
       pg_trunc   = "month"
     else # "daily"
-      start_date = today - 6.days # JSTの過去7日間の開始日（今日を含む）
+      start_date = today          # JSTの今日の日付
       end_date   = today          # JSTの過去7日間の終了日（今日）
       pg_fmt     = "YYYY-MM-DD" # PostgreSQLのto_charフォーマット
       pg_trunc   = "day"
