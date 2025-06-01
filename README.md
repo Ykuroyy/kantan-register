@@ -115,15 +115,13 @@ boto3==1.38.23
 - `order_items` : 商品×数量×価格の中間テーブル  
 
 
-## 画面遷移図（ビジュアル）
-
-![画面遷移図](kantan-register-flow.png)
-
 ## データベース構造図（ER図）
 
 ![ER図](kantan-register-er-diagram.png)
 
+## 画面遷移図（ビジュアル）
 
+![画面遷移図](kantan-register-flow.png)
 
 
 ## 開発背景
@@ -158,10 +156,8 @@ boto3==1.38.23
 実際のレジ操作の様子を動画で確認できます：
 
 - [🆕 新規商品登録 → AIキャッシュ再構築の流れ](https://i.gyazo.com/31e1a58c9cbf006d1d09f5e50cfe6e32.gif)
-- [📸 レジ画面①：カメラ撮影 → 商品認識](https://i.gyazo.com/0faad65d0ece249a0482196c472e7b0a.gif)
-- [🛒 レジ画面②：カート編集 → 会計完了](https://i.gyazo.com/78706e029cdd0edc752c25403b908f11.gif)
-
-> ※クリックでブラウザ上で再生されます。
+- [📸 レジ画面①：カメラ撮影 → 商品認識 → 会計完了](https://i.gyazo.com/0faad65d0ece249a0482196c472e7b0a.gif)
+- [🛒 レジ画面②：カメラ撮影 → カート編集 → 会計完了](https://i.gyazo.com/78706e029cdd0edc752c25403b908f11.gif)
 
 
 

@@ -67,8 +67,8 @@ class OrdersController < ApplicationController
                      .sum(:quantity)
 
     @sales_data = OrderItem
-                  .joins(:product)
-                  .where(order_items: { created_at: start_date.beginning_of_day..end_date.end_of_day })
+                  .joins(:product, :order) # :order を join する
+                  .where(orders: { created_at: start_date.beginning_of_day..end_date.end_of_day }) # orders.created_at で絞り込む
                   .group("products.name")
                   .sum("order_items.quantity * products.price")
   end
